@@ -1,0 +1,6 @@
+{
+  "name": "WE MOVE — Déménagement & Stockage",
+  "description": "Refonte visuelle épurée, moderne et soignée pour WE MOVE. Déménagement de particuliers, transfert d’entreprises, garde-meubles et monte-meubles.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

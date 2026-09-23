@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-slab: 'Roboto Slab', serif;
+  --color-brand-blue: #0082CA;
+  --color-brand-blue-hover: #006FA8;
+  --color-brand-blue-dark: #00537A;
+  --color-brand-coral: #EE3E38;
+  --color-brand-coral-hover: #D92D20;
+  --color-brand-coral-subtle: rgba(238, 62, 56, 0.08);
+  --color-surface-main: #FFFFFF;
+  --color-surface-secondary: #FAFAF8;
+  --color-text-main: #20252B;
+  --color-text-secondary: #59616C;
+  --color-border-subtle: #E6E8EB;
+}
+
+:root {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color-scheme: light;
+}
+
+body {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #FFFFFF;
+  color: #20252B;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Accessible focus styling */
+:focus-visible {
+  outline: 2px solid #0082CA;
+  outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
