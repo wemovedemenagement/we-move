@@ -1,133 +1,29 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
-import React from 'react';
+import { ArrowDown, ArrowRight, ArrowUpRight, CalendarCheck2, Check, HeartHandshake, MapPin, MessageCircle, MoveUpRight, PackageCheck, Phone, ShieldCheck, Truck } from 'lucide-react';
 import { Link } from '../router';
-import { Logo } from '../components/Logo';
-import heroImage from '../assets/images/hero_moving_service_1790153159353.jpg';
+import { LogoMark } from '../components/Logo';
+import teamImage from '../assets/images/hero_moving_service_1790153159353.jpg';
+import careImage from '../assets/images/service_craft_protection_1790153177359.jpg';
+import liftImage from '../assets/images/furniture_lift_exterior_1790153551793.jpg';
 
-export const AboutPage: React.FC = () => {
-  return (
-    <div className="py-12 sm:py-20 bg-white">
-      <div className="max-w-[1240px] mx-auto px-5 sm:px-8">
-        
-        {/* Hero split */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center pb-16 border-b border-[#E6E8EB]">
-          <div className="lg:col-span-7 space-y-6">
-            <div className="inline-block p-4 sm:p-5 rounded-2xl bg-[#FAFAF8] border border-[#E2E8F0] shadow-2xs">
-              <Logo variant="horizontal" size="lg" />
-            </div>
-
-            <div className="text-[13px] font-semibold text-[#0082CA] tracking-wider uppercase font-mono flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#EE3E38]" />
-              <span>Notre Entreprise & Nos Valeurs</span>
-            </div>
-            <h1 className="text-[34px] sm:text-[44px] font-semibold text-[#20252B] tracking-tight leading-[1.15] [text-wrap:balance]">
-              « Déménager avec le sourire », bien plus qu’une signature.
-            </h1>
-            <p className="text-[17px] text-[#59616C] leading-relaxed max-w-xl">
-              WE MOVE est née avec une ambition claire : réconcilier les clients avec l'expérience du déménagement grâce à un professionnalisme rigoureux, une écoute bienveillante et des prix justes sans mauvaise surprise.
-            </p>
-            <div className="pt-2">
-              <Link
-                href="/devis/"
-                className="inline-flex items-center justify-center px-6 h-12 rounded-md bg-[#0082CA] text-white text-[15px] font-medium hover:bg-[#006FA8] transition-colors"
-              >
-                Parler de votre projet
-              </Link>
-            </div>
-          </div>
-
-          <div className="lg:col-span-5">
-            <div className="rounded-lg overflow-hidden border border-[#E6E8EB] aspect-[4/3] bg-[#FAFAF8] shadow-xs">
-              <img 
-                src={heroImage} 
-                alt="L'équipe WE MOVE sur le terrain"
-                className="w-full h-full object-cover"
-                referrerPolicy="no-referrer"
-              />
-            </div>
-            <p className="mt-2 text-[12px] text-[#59616C]/80 text-right">
-              Équipes formées aux techniques de portage et au respect des biens
-            </p>
-          </div>
-        </div>
-
-        {/* Les 4 piliers */}
-        <div className="py-16 border-b border-[#E6E8EB]">
-          <div className="max-w-2xl mb-12">
-            <h2 className="text-[26px] sm:text-[32px] font-semibold text-[#20252B] tracking-tight">
-              Nos 4 engagements fondamentaux
-            </h2>
-            <p className="mt-2 text-[15.5px] text-[#59616C]">
-              Chaque intervention est encadrée par des exigences de qualité strictes.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="p-8 rounded-lg border border-[#E6E8EB] bg-[#FAFAF8]">
-              <div className="text-[14px] font-mono text-[#0082CA] font-semibold mb-2">01. Soin du mobilier</div>
-              <h3 className="text-[19px] font-semibold text-[#20252B] mb-2">Protection systématique</h3>
-              <p className="text-[14.5px] text-[#59616C] leading-relaxed">
-                Aucun meuble ne quitte votre domicile sans être houssé ou enveloppé sous couverture épaisse. Nous traitons vos biens avec le même égard que les nôtres.
-              </p>
-            </div>
-
-            <div className="p-8 rounded-lg border border-[#E6E8EB] bg-[#FAFAF8]">
-              <div className="text-[14px] font-mono text-[#0082CA] font-semibold mb-2">02. Ponctualité & Rigueur</div>
-              <h3 className="text-[19px] font-semibold text-[#20252B] mb-2">Planning maîtrisé</h3>
-              <p className="text-[14.5px] text-[#59616C] leading-relaxed">
-                Nous respectons les créneaux d'arrivée convenus et anticipons les temps de route et de stationnement pour que votre journée se déroule sans retard.
-              </p>
-            </div>
-
-            <div className="p-8 rounded-lg border border-[#E6E8EB] bg-[#FAFAF8]">
-              <div className="text-[14px] font-mono text-[#0082CA] font-semibold mb-2">03. Transparence tarifaire</div>
-              <h3 className="text-[19px] font-semibold text-[#20252B] mb-2">Aucun coût caché</h3>
-              <p className="text-[14.5px] text-[#59616C] leading-relaxed">
-                Nos devis sont détaillés poste par poste : assurance, fournitures, nombre d'hommes et véhicules nécessaires sont clairement précisés avant acceptation.
-              </p>
-            </div>
-
-            <div className="p-8 rounded-lg border border-[#E6E8EB] bg-[#FAFAF8]">
-              <div className="text-[14px] font-mono text-[#0082CA] font-semibold mb-2">04. Équipes qualifiées</div>
-              <h3 className="text-[19px] font-semibold text-[#20252B] mb-2">Personnel permanent</h3>
-              <p className="text-[14.5px] text-[#59616C] leading-relaxed">
-                Nos déménageurs et chauffeurs sont formés aux règles de sécurité, à l'arrimage en camion et à la manipulation des pièces lourdes et précieuses.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Flotte & Matériel */}
-        <div className="py-16">
-          <div className="max-w-2xl mb-8">
-            <h2 className="text-[26px] sm:text-[32px] font-semibold text-[#20252B] tracking-tight">
-              Flotte de véhicules & Moyens techniques
-            </h2>
-            <p className="mt-2 text-[15.5px] text-[#59616C]">
-              Un parc matériel régulièrement renouvelé et entretenu pour assurer des liaisons locales et nationales.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 border border-[#E6E8EB] rounded-lg bg-white">
-              <h4 className="text-[17px] font-semibold text-[#20252B]">Camions capitonnés 20 m³ & 30 m³</h4>
-              <p className="mt-2 text-[14px] text-[#59616C]">Équipés de hayons élévateurs et barres d'arrimage pour un maintien parfait du mobilier sur la route.</p>
-            </div>
-            <div className="p-6 border border-[#E6E8EB] rounded-lg bg-white">
-              <h4 className="text-[17px] font-semibold text-[#20252B]">Fourgons urbains 12 m³</h4>
-              <p className="mt-2 text-[14px] text-[#59616C]">Gabarits maniables pour accéder aux ruelles historiques et parkings souterrains en centre-ville.</p>
-            </div>
-            <div className="p-6 border border-[#E6E8EB] rounded-lg bg-white">
-              <h4 className="text-[17px] font-semibold text-[#20252B]">Échelles élévatrices tractées</h4>
-              <p className="mt-2 text-[14px] text-[#59616C]">Monte-meubles compacts avec moteur thermique ou électrique silencieux pour le confort du voisinage.</p>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  );
-};
+const commitments = [
+  { icon: ShieldCheck, title: 'Du soin dans chaque geste.', tag: 'VOS BIENS, RESPECTÉS', text: 'Housses, couvertures épaisses et emballages adaptés : la protection du mobilier fait partie du déménagement, du départ jusqu’à l’installation.', detail: 'Protection & manutention', tone: 'blue' },
+  { icon: CalendarCheck2, title: 'Une organisation qui rassure.', tag: 'VOTRE TEMPS, CONSIDÉRÉ', text: 'Les accès, le stationnement et les temps de trajet sont anticipés. Nous préparons les étapes avec vous pour un jour J bien organisé.', detail: 'Préparation & ponctualité', tone: 'sage' },
+  { icon: MessageCircle, title: 'Les choses dites clairement.', tag: 'VOTRE CONFIANCE, MÉRITÉE', text: 'Prestations, fournitures, moyens mobilisés : votre devis détaille ce qui est prévu. Vous disposez des informations pour choisir sereinement.', detail: 'Écoute & transparence', tone: 'sand' },
+  { icon: HeartHandshake, title: 'Des personnes impliquées.', tag: 'VOTRE PROJET, ACCOMPAGNÉ', text: 'Portage, arrimage, manipulation du mobilier : nos équipes mettent leur savoir-faire au service de votre déménagement et restent à votre écoute.', detail: 'Savoir-faire & attention', tone: 'coral' },
+];
+export function AboutPage() {
+  return <div className="about-page">
+    <section className="about-hero wm-container">
+      <p className="eyebrow about-kicker"><span /> L’ESPRIT WE MOVE</p>
+      <div className="about-hero-heading"><h1>On déménage des vies.<br /><span>Avec soin. Avec le sourire.</span></h1><div><p>Changer d’adresse, c’est ouvrir un nouveau chapitre. Notre métier : vous aider à le commencer l’esprit léger.</p><a className="text-link" href="#notre-conviction">Ce qui nous anime <ArrowDown size={17} /></a></div></div>
+      <figure className="about-hero-figure"><img src={teamImage} width="1200" height="896" fetchPriority="high" alt="Deux déménageurs transportent avec soin une commode dans un intérieur lumineux" /><div className="about-photo-tag"><span /> LE SENS DU SERVICE, LE GOÛT DU TRAVAIL BIEN FAIT.</div><figcaption><HeartHandshake size={28} strokeWidth={1.3} /><span>Un nouveau départ.<br /><strong>Une équipe à vos côtés.</strong></span></figcaption></figure>
+      <div className="about-signature"><span>LE MOUVEMENT, C’EST NOTRE MÉTIER.</span><span>L’attention, c’est notre nature.</span><ArrowDown size={19} /></div>
+    </section>
+    <section id="notre-conviction" className="about-manifesto wm-container"><div><p className="eyebrow">01 — NOTRE CONVICTION</p><div className="about-brand-mark"><LogoMark width={70} height={53} /></div></div><div><h2>Un déménagement réussi,<br />c’est bien plus que des cartons<br /><span>arrivés à destination.</span></h2><div className="about-manifesto-text"><p>C’est se sentir écouté avant le départ. Savoir comment la journée va se dérouler. Confier ses affaires en sachant qu’elles recevront l’attention qu’elles méritent.</p><p>Chez We Move, nous associons une préparation rigoureuse à une approche humaine. Pour les particuliers comme pour les entreprises, chaque projet commence par la même chose : comprendre ce qui compte pour vous.</p></div><Link href="/contact/" className="text-link">Faisons connaissance <ArrowUpRight size={18} /></Link></div></section>
+    <section className="about-commitments"><div className="wm-container"><div className="section-heading"><div><p className="eyebrow">02 — NOS ENGAGEMENTS</p><h2>Le service se promet.<br /><span>Le soin se prouve.</span></h2></div><p className="about-section-intro">Quatre convictions simples.<br />Des gestes concrets, à chaque étape.</p></div><div className="about-values-grid">{commitments.map(({icon: Icon, title, tag, text, detail, tone}, i) => <article className="about-value" key={tag}><div className="about-value-top"><span className={`mega-icon mega-icon-${tone}`}><Icon size={25} strokeWidth={1.4} /></span><span>0{i + 1}</span></div><p className="eyebrow">{tag}</p><h3>{title}</h3><p>{text}</p><div className="about-value-detail"><Check size={14} />{detail}</div></article>)}</div></div></section>
+    <section className="about-craft wm-container"><div className="about-craft-photo"><img src={careImage} alt="Protection d’un meuble avec une couverture de déménagement" width="1200" height="896" loading="lazy" /><div className="about-craft-caption"><PackageCheck size={23} strokeWidth={1.5} /><span>Bien protéger.<br /><strong>Pour mieux recommencer.</strong></span></div></div><div className="about-craft-copy"><p className="eyebrow">03 — LE SOUCI DU DÉTAIL</p><h2>Ce qui a de la valeur<br />pour vous en a<br /><span>aussi pour nous.</span></h2><p>Une table de famille. Un bureau où tout a commencé. Un objet auquel vous tenez. Derrière chaque meuble, il y a une histoire qui mérite de l’attention.</p><ul><li><span>01</span><div><h3>Observer avant d’agir.</h3><p>Repérer les accès et adapter la manutention à votre mobilier.</p></div></li><li><span>02</span><div><h3>Protéger avant de transporter.</h3><p>Choisir les protections et préparer l’arrimage pour le trajet.</p></div></li><li><span>03</span><div><h3>Accompagner jusqu’à l’arrivée.</h3><p>Rester attentifs à vos indications dans votre nouvel espace.</p></div></li></ul><Link href="/services/" className="text-link">Découvrir nos savoir-faire <ArrowUpRight size={18} /></Link></div></section>
+    <section className="about-equipment"><div className="wm-container"><div className="section-heading"><div><p className="eyebrow">04 — LES MOYENS DE BIEN FAIRE</p><h2>La bonne équipe.<br /><span>Le bon équipement.</span></h2></div><p className="about-section-intro">Du passage étroit au mobilier volumineux, nous adaptons les moyens aux contraintes de votre projet.</p></div><div className="about-equipment-grid"><div className="about-equipment-list">{[{icon:Truck,title:'Camions capitonnés',desc:'Des véhicules de 20 m³ et 30 m³, avec hayons et barres d’arrimage pour le transport de votre mobilier.',label:'POUR LES GRANDS DÉPARTS'},{icon:MapPin,title:'Fourgons urbains',desc:'Un gabarit de 12 m³ pour les déménagements qui demandent de la souplesse en ville.',label:'POUR LES ACCÈS EN VILLE'},{icon:MoveUpRight,title:'Monte-meubles',desc:'Des échelles élévatrices et un opérateur pour les meubles qui ne passent pas par l’escalier.',label:'POUR LES ACCÈS EN HAUTEUR'}].map(({icon:Icon,title,desc,label})=><article key={title}><Icon size={27} strokeWidth={1.3} /><div><p className="eyebrow">{label}</p><h3>{title}</h3><p>{desc}</p></div></article>)}</div><figure><img src={liftImage} alt="Monte-meubles déployé sur la façade d’un immeuble" width="1200" height="896" loading="lazy" /><figcaption><span>À CHAQUE ACCÈS, SA SOLUTION.</span><Link href="/location-monte-meubles/" aria-label="Découvrir la location de monte-meubles"><ArrowUpRight size={22} /></Link></figcaption></figure></div></div></section>
+    <section className="about-local wm-container"><div className="about-local-icon"><MapPin size={30} strokeWidth={1.4} /></div><div><p className="eyebrow">ICI, ET À VOTRE PROCHAINE ADRESSE.</p><h2>Paris & Île-de-France.<br />Au plus près de votre projet.</h2><p>Appartements, maisons, bureaux : nous préparons votre déménagement en tenant compte de votre quartier, de vos accès et de votre destination.</p></div><Link href="/secteurs/" className="text-link">Nos secteurs d’intervention <ArrowUpRight size={18} /></Link></section>
+    <section className="about-invitation"><div className="wm-container"><span className="about-invitation-icon"><HeartHandshake size={32} strokeWidth={1.3} /></span><p className="eyebrow">LE PROCHAIN CHAPITRE COMMENCE PAR UN ÉCHANGE.</p><h2>Et si on faisait<br /><span>un bout de chemin ensemble ?</span></h2><p>Racontez-nous votre projet. Nous prendrons le temps de le préparer avec vous.</p><div><Link href="/devis/" className="wm-button">Parlons de mon déménagement <ArrowUpRight size={19} /></Link><a href="tel:0173743690" className="text-link"><Phone size={16} />01 73 74 36 90</a></div><small>Devis gratuit · Sans engagement</small></div></section>
+  </div>;
+}

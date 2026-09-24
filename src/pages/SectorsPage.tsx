@@ -1,234 +1,32 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
-import React from 'react';
+import { useMemo, useState } from 'react';
+import { ArrowDown, ArrowRight, ArrowUpRight, Building2, Check, ChevronRight, Compass, MapPin, Navigation, Phone, Search, ShieldCheck, Signpost, Truck, X } from 'lucide-react';
 import { Link } from '../router';
+import { PARIS_ARRONDISSEMENTS, ILE_DE_FRANCE_DEPTS, NATIONAL_AXES } from '../data/sectors';
 
-const PARIS_ARRONDISSEMENTS = [
-  'Paris 1er - Louvre',
-  'Paris 2e - Bourse',
-  'Paris 3e - Temple',
-  'Paris 4e - Hôtel-de-Ville',
-  'Paris 5e - Panthéon',
-  'Paris 6e - Luxembourg',
-  'Paris 7e - Palais-Bourbon',
-  'Paris 8e - Élysée',
-  'Paris 9e - Opéra',
-  'Paris 10e - Enclos Saint-Laurent',
-  'Paris 11e - Popincourt',
-  'Paris 12e - Reuilly',
-  'Paris 13e - Gobelins',
-  'Paris 14e - Observatoire',
-  'Paris 15e - Vaugirard (Siège WE MOVE)',
-  'Paris 16e - Passy',
-  'Paris 17e - Batignolles-Monceau',
-  'Paris 18e - Buttes-Montmartre',
-  'Paris 19e - Buttes-Chaumont',
-  'Paris 20e - Ménilmontant',
+const zones = [{ id: 'paris', title: 'Paris', subtitle: 'Les 20 arrondissements', count: '20', icon: Building2 }, { id: 'idf', title: 'Île-de-France', subtitle: 'Les 7 départements autour de Paris', count: '07', icon: MapPin }, { id: 'national', title: 'En France', subtitle: 'Vos projets longue distance', count: '↗', icon: Compass }] as const;
+type Zone = typeof zones[number]['id'];
+const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[’'-]/g, ' ').toLowerCase().trim();
+const destinations = [
+  ...PARIS_ARRONDISSEMENTS.map(item => ({ id: item.code, zone: 'paris' as Zone, title: item.name.replace(' (Siège WE MOVE)', ''), code: item.code, description: item.zone, search: `${item.name} ${item.code} ${item.zone}`, href: `/devis/?dep=${encodeURIComponent(`${item.name.replace(' (Siège WE MOVE)', '')} ${item.code}`)}` })),
+  ...ILE_DE_FRANCE_DEPTS.map(item => ({ id: item.code, zone: 'idf' as Zone, title: item.name, code: item.code, description: item.cities.replace('...', '…'), search: `${item.code} ${item.name} ${item.cities} ${item.badge}`, href: `/devis/?dep=${encodeURIComponent(item.name)}` })),
+  ...NATIONAL_AXES.map((item, i) => ({ id: `national-${i}`, zone: 'national' as Zone, title: item.to, code: 'FR', description: 'Au départ de Paris ou de l’Île-de-France. Organisation et calendrier à définir avec vous.', search: `${item.to} ${item.from}`, href: `/devis/?dep=Paris&arr=${encodeURIComponent(item.to.split(' & ')[0])}` })),
 ];
-
-const ILE_DE_FRANCE_DEPTS = [
-  {
-    code: '92',
-    name: 'Hauts-de-Seine',
-    cities: 'Boulogne-Billancourt, Neuilly-sur-Seine, Levallois-Perret, Courbevoie, Issy-les-Moulineaux, Rueil-Malmaison, Antony...',
-  },
-  {
-    code: '94',
-    name: 'Val-de-Marne',
-    cities: 'Créteil, Vincennes, Saint-Maur-des-Fossés, Nogent-sur-Marne, Ivry-sur-Seine, Maisons-Alfort, Charenton-le-Pont...',
-  },
-  {
-    code: '93',
-    name: 'Seine-Saint-Denis',
-    cities: 'Montreuil, Saint-Denis, Pantin, Saint-Ouen, Noisy-le-Grand, Les Lilas, Aubervilliers, Bagnolet...',
-  },
-  {
-    code: '78',
-    name: 'Yvelines',
-    cities: 'Versailles, Saint-Germain-en-Laye, Poissy, Sartrouville, Rambouillet, Saint-Quentin-en-Yvelines...',
-  },
-  {
-    code: '91',
-    name: 'Essonne',
-    cities: 'Évry-Courcouronnes, Massy, Palaiseau, Sainte-Geneviève-des-Bois, Savigny-sur-Orge, Chilly-Mazarin...',
-  },
-  {
-    code: '95',
-    name: 'Val-d’Oise',
-    cities: 'Cergy, Pontoise, Argenteuil, Enghien-les-Bains, Sarcelles, Franconville, Taverny...',
-  },
-  {
-    code: '77',
-    name: 'Seine-et-Marne',
-    cities: 'Meaux, Melun, Chelles, Marne-la-Vallée, Fontainebleau, Torcy, Pontault-Combault...',
-  },
-];
-
-const NATIONAL_AXES = [
-  { from: 'Paris', to: 'Lyon & Rhône-Alpes', delay: '24h à 48h', type: 'Formule dédiée ou groupage' },
-  { from: 'Paris', to: 'Bordeaux & Aquitaine', delay: '24h à 48h', type: 'Lignes régulières' },
-  { from: 'Paris', to: 'Marseille, Nice & PACA', delay: '48h', type: 'Camions capitonnés grand volume' },
-  { from: 'Paris', to: 'Nantes, Rennes & Bretagne', delay: '24h à 48h', type: 'Transferts complets' },
-  { from: 'Paris', to: 'Lille & Hauts-de-France', delay: '24h', type: 'Liaisons express' },
-  { from: 'Paris', to: 'Strasbourg & Grand-Est', delay: '24h à 48h', type: 'Lignes sécurisées' },
-];
-
-export const SectorsPage: React.FC = () => {
-  return (
-    <div className="py-12 sm:py-20 bg-white">
-      <div className="max-w-[1240px] mx-auto px-5 sm:px-8 space-y-16">
-        
-        {/* Header Section */}
-        <div className="max-w-3xl space-y-5">
-          <span className="text-[12.5px] font-mono uppercase tracking-wider text-[#0082CA] font-semibold flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#0082CA]" />
-            Couverture géographique certifiée
-          </span>
-          <h1 className="text-[36px] sm:text-[46px] font-bold text-[#111827] tracking-tight leading-[1.15]">
-            Nos secteurs d’intervention : Paris, Île-de-France & National
-          </h1>
-          <p className="text-[17px] text-[#475569] leading-relaxed">
-            Basée dans le 15ᵉ arrondissement de Paris, l’entreprise <strong>WE MOVE DÉMÉNAGEMENT</strong> mobilise ses camions capitonnés, ses monte-meubles et ses équipes qualifiées 7 jours sur 7 dans toute la région parisienne et sur l’ensemble du territoire français.
-          </p>
-          <div className="pt-2 flex flex-wrap items-center gap-3">
-            <Link
-              href="/devis/"
-              className="inline-flex items-center gap-2 px-6 h-12 rounded-xl bg-[#0082CA] text-white text-[14.5px] font-semibold hover:bg-[#006FA8] transition-colors shadow-xs"
-            >
-              <span>Calculer le tarif pour mon trajet</span>
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
-            </Link>
-            <a
-              href="tel:0173743690"
-              className="inline-flex items-center gap-2 px-5 h-12 rounded-xl border border-[#CBD5E1] text-[#1E293B] text-[14px] font-medium hover:bg-[#F8FAFC] transition-colors"
-            >
-              <span>Ligne directe : 01 73 74 36 90</span>
-            </a>
-          </div>
-        </div>
-
-        {/* 1. Paris Intra-Muros */}
-        <div className="pt-8 border-t border-[#E5E7EB]">
-          <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
-            <div>
-              <h2 className="text-[24px] sm:text-[28px] font-bold text-[#111827]">
-                Paris intra-muros (75) — Les 20 arrondissements
-              </h2>
-              <p className="text-[14px] text-[#64748B] mt-1">
-                Autorisations de stationnement préfectorales, gestion des cours pavées, escaliers haussmanniens et passages étroits.
-              </p>
-            </div>
-            <span className="text-[12px] font-mono text-[#0082CA] bg-[#EBF5FB] px-3 py-1 rounded-full font-semibold">
-              Interventions quotidiennes 7j/7
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {PARIS_ARRONDISSEMENTS.map((arr) => (
-              <div
-                key={arr}
-                className="p-3 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] hover:bg-white hover:border-[#0082CA] transition-colors text-[13px] font-medium text-[#334155] flex items-center gap-2"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-[#0082CA] shrink-0" />
-                <span>{arr}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* 2. Île-de-France / Petite & Grande Couronne */}
-        <div className="pt-8 border-t border-[#E5E7EB]">
-          <div className="mb-6">
-            <h2 className="text-[24px] sm:text-[28px] font-bold text-[#111827]">
-              Île-de-France — Petite & Grande Couronne
-            </h2>
-            <p className="text-[14px] text-[#64748B] mt-1">
-              Des déménagements clés en main pour appartements, pavillons résidentiels et sièges d’entreprises.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {ILE_DE_FRANCE_DEPTS.map((dept) => (
-              <div
-                key={dept.code}
-                className="p-5 rounded-2xl border border-[#E2E8F0] bg-white hover:shadow-xs transition-all space-y-2"
-              >
-                <div className="flex items-center gap-2.5">
-                  <span className="w-9 h-9 rounded-lg bg-[#EBF5FB] text-[#0082CA] font-bold font-mono text-[14px] flex items-center justify-center">
-                    {dept.code}
-                  </span>
-                  <h3 className="text-[16px] font-bold text-[#111827]">
-                    {dept.name}
-                  </h3>
-                </div>
-                <p className="text-[13px] text-[#64748B] leading-relaxed pt-1">
-                  {dept.cities}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* 3. Liaisons Nationales & Longue Distance */}
-        <div className="pt-8 border-t border-[#E5E7EB]">
-          <div className="mb-6">
-            <h2 className="text-[24px] sm:text-[28px] font-bold text-[#111827]">
-              Déménagement national & province depuis / vers Paris
-            </h2>
-            <p className="text-[14px] text-[#64748B] mt-1">
-              Liaisons régulières directes avec traçabilité GPS, équipement capitonné et assurance tous risques incluse.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {NATIONAL_AXES.map((axis) => (
-              <div
-                key={axis.to}
-                className="p-4 rounded-xl border border-[#E2E8F0] bg-[#FAFAF8] space-y-2"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-[14px] font-bold text-[#111827]">
-                    {axis.from} &harr; {axis.to}
-                  </span>
-                  <span className="text-[11px] font-mono text-[#059669] bg-[#ECFDF5] px-2 py-0.5 rounded font-medium">
-                    {axis.delay}
-                  </span>
-                </div>
-                <p className="text-[12.5px] text-[#64748B]">
-                  {axis.type}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Final CTA Card */}
-        <div className="rounded-2xl bg-[#111827] text-white p-8 sm:p-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-lg">
-          <div className="space-y-2 max-w-xl">
-            <h3 className="text-[22px] sm:text-[26px] font-bold tracking-tight">
-              Votre ville ou commune n'est pas listée ?
-            </h3>
-            <p className="text-[14.5px] text-[#94A3B8]">
-              Nous intervenons partout en France sans exception. Demandez votre devis gratuit et personnalisé sous 24h.
-            </p>
-          </div>
-          <Link
-            href="/devis/"
-            className="inline-flex items-center gap-2 px-7 h-12 rounded-xl bg-[#0082CA] text-white text-[14.5px] font-semibold hover:bg-[#006FA8] transition-colors shrink-0"
-          >
-            <span>Obtenir mon tarif ferme</span>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
-        </div>
-
-      </div>
-    </div>
-  );
-};
+export function SectorsPage() {
+  const [activeZone, setActiveZone] = useState<Zone>('paris');
+  const [search, setSearch] = useState('');
+  const query = normalize(search);
+  const results = useMemo(() => destinations.filter(item => query ? normalize(item.search).includes(query) : item.zone === activeZone), [query, activeZone]);
+  const selectZone = (zone: Zone) => { setActiveZone(zone); setSearch(''); };
+  return <div className="sectors-page">
+    <section className="sectors-hero wm-container"><div className="sectors-hero-copy"><p className="eyebrow"><span /> NOS SECTEURS D’INTERVENTION</p><h1>Tout près.<br />Ou beaucoup plus loin.<br /><span>Toujours à vos côtés.</span></h1><p>Une nouvelle rue, une autre ville, un nouveau départ. Depuis Paris, We Move accompagne vos déménagements en Île-de-France et vers le reste de la France.</p><div className="sectors-hero-actions"><a href="#destinations" className="wm-button">Trouver mon secteur <ArrowDown size={18} /></a><Link href="/devis/" className="text-link">Parlons de votre trajet <ArrowUpRight size={18} /></Link></div><span className="sectors-hero-note"><MapPin size={15} /> Notre point de départ : Paris 15ᵉ</span></div><figure className="sectors-hero-photo"><img src="/images/we-move-demenagement-paris-hero.webp" alt="Camion We Move et déménageurs dans une rue parisienne" width="1916" height="821" fetchPriority="high" /><figcaption><span className="sectors-pin"><MapPin size={22} /></span><div><span>ICI COMMENCE VOTRE PROJET.</span><strong>Paris, et votre prochaine adresse.</strong></div><ArrowUpRight size={19} /></figcaption><span className="sectors-photo-label">DE QUARTIER EN QUARTIER, DE VILLE EN VILLE.</span></figure></section>
+    <section className="sectors-coverage wm-container" aria-label="Notre couverture"><div><strong>20</strong><span>arrondissements parisiens</span></div><div><strong>7</strong><span>départements autour de Paris</span></div><div><Compass size={33} strokeWidth={1.2} /><span>des trajets dans toute la France</span></div><span className="sectors-coverage-note">La même attention,<br /><strong>quelle que soit la distance.</strong></span></section>
+    <section id="destinations" className="sectors-directory wm-container"><div className="section-heading"><div><p className="eyebrow">01 — VOTRE PROCHAINE ADRESSE</p><h2>Vous allez où ?<br /><span>On prépare le chemin.</span></h2></div><p className="sectors-intro">Explorez nos secteurs ou recherchez votre ville. Chaque trajet commence par une préparation adaptée à vos accès et à vos besoins.</p></div><div className="sectors-zone-selector" role="group" aria-label="Choisir une zone d’intervention">{zones.map(({id,title,subtitle,icon:Icon})=><button key={id} aria-pressed={!query && activeZone === id} onClick={()=>selectZone(id)}><span className="zone-selector-icon"><Icon size={23} strokeWidth={1.5} /></span><span><strong>{title}</strong><small>{subtitle}</small></span><ArrowUpRight size={19} /></button>)}</div>
+      <div className="sectors-search-row"><div><h3>{query ? 'Résultats de votre recherche' : activeZone === 'paris' ? 'Paris, arrondissement par arrondissement.' : activeZone === 'idf' ? 'Tout autour de Paris.' : 'Un nouveau départ, plus loin.'}</h3><p aria-live="polite" role="status">{results.length} {results.length === 1 ? 'secteur affiché' : 'secteurs affichés'}{query ? ' · Toutes les zones' : ''}</p></div><div className="sectors-search"><Search size={18} /><label className="sr-only" htmlFor="sector-search">Rechercher une ville, un département ou un code postal</label><input id="sector-search" type="search" value={search} onChange={event=>setSearch(event.target.value)} placeholder="Ville, département, code postal…" autoComplete="off" />{search && <button onClick={()=>setSearch('')} aria-label="Effacer la recherche"><X size={17} /></button>}</div></div>
+      {results.length ? <div className={`sector-results ${!query && activeZone === 'paris' ? 'sector-results-paris' : ''}`}>{results.map(item=><Link href={item.href} key={item.id} className={`sector-card sector-card-${item.zone}`}><div className="sector-card-top"><span className="sector-code">{item.code}</span><ArrowUpRight size={17} /></div><h4>{item.title}</h4><p>{item.description}</p><span className="sector-card-action">Préparer mon trajet <ArrowRight size={13} /></span></Link>)}</div> : <div className="sectors-empty"><Search size={29} strokeWidth={1.3} /><h3>Votre ville n’apparaît pas ?</h3><p>Cette liste présente nos principaux secteurs. Parlez-nous de votre destination pour étudier votre trajet.</p><div><button className="text-link" onClick={()=>setSearch('')}>Réinitialiser la recherche <X size={15} /></button><Link className="wm-button" href="/contact/">Vérifier mon trajet <ArrowUpRight size={17} /></Link></div></div>}
+      <div className="sectors-directory-foot"><span><Signpost size={18} /> Une destination hors liste ? Nous étudions aussi les trajets sur mesure.</span><Link href="/contact/" className="text-link">Nous en parler <ArrowUpRight size={17} /></Link></div>
+    </section>
+    <section className="sectors-expertise"><div className="wm-container"><div className="section-heading"><div><p className="eyebrow">02 — CONNAÎTRE LE TERRAIN CHANGE TOUT</p><h2>La distance compte.<br /><span>Les détails aussi.</span></h2></div><p className="sectors-intro">Un trajet ne se résume pas à deux adresses. Nous préparons les conditions de départ et d’arrivée pour organiser votre déménagement.</p></div><div className="sectors-expertise-grid">{[{icon:Building2,title:'Les accès, anticipés.',text:'Étages, ascenseur, cour intérieure ou escalier étroit : nous identifions les contraintes et le besoin éventuel d’un monte-meubles.',label:'AU PIED DE VOTRE IMMEUBLE'},{icon:Navigation,title:'Le trajet, organisé.',text:'Stationnement, distance de portage et itinéraire sont pris en compte pour prévoir les moyens adaptés à votre journée.',label:'ENTRE VOS DEUX ADRESSES'},{icon:ShieldCheck,title:'Vos biens, protégés.',text:'Que vous traversiez une rue ou la France, le conditionnement et l’arrimage du mobilier reçoivent la même attention.',label:'À CHAQUE KILOMÈTRE'}].map(({icon:Icon,title,text,label},i)=><article key={title}><div><Icon size={28} strokeWidth={1.4} /><span>0{i+1}</span></div><p className="eyebrow">{label}</p><h3>{title}</h3><p>{text}</p></article>)}</div></div></section>
+    <section className="sectors-long-distance wm-container"><div className="sectors-journey" aria-label="De votre adresse actuelle à votre nouvelle adresse"><div className="journey-point"><MapPin size={23} /><span>LE DÉPART<strong>Paris & Île-de-France</strong></span></div><div className="journey-path"><span /><Truck size={32} strokeWidth={1.3} /><span /></div><div className="journey-point"><Compass size={24} /><span>LA SUITE<strong>Votre nouvelle vie</strong></span></div><p>Une équipe. Un trajet préparé.<br />Le même soin à l’arrivée.</p></div><div><p className="eyebrow">03 — VOIR PLUS LOIN</p><h2>Changer de région.<br /><span>Garder l’esprit léger.</span></h2><p>Vous quittez la région parisienne ? Nous étudions votre déménagement longue distance en fonction du volume, du calendrier et des conditions d’accès.</p><ul><li><Check size={16} /> Un devis adapté à votre trajet</li><li><Check size={16} /> Une organisation définie avec vous</li><li><Check size={16} /> Des moyens adaptés à votre mobilier</li></ul><Link href="/devis/?dep=Paris" className="text-link">Préparer mon départ en région <ArrowUpRight size={18} /></Link></div></section>
+    <section className="sectors-cta"><div className="wm-container"><div><p className="eyebrow">UNE ADRESSE EN TÊTE ?</p><h2>Le prochain arrêt,<br /><span>c’est chez vous.</span></h2><p>Racontez-nous votre trajet. Nous préparons la suite ensemble.</p></div><div><Link href="/devis/" className="wm-button">Demander mon devis gratuit <ArrowUpRight size={19} /></Link><a href="tel:0173743690"><Phone size={16} />01 73 74 36 90</a><small>Sans engagement · À votre écoute</small></div></div></section>
+  </div>;
+}

@@ -37,7 +37,7 @@ export const ServicesPage: React.FC = () => {
                 <div className="flex items-center gap-3 text-[13px] text-[#59616C]">
                   <span className="font-mono text-[#0082CA] font-semibold">0{idx + 1}</span>
                   <span aria-hidden="true">·</span>
-                  <span className="font-mono text-xs">Route : {service.route}</span>
+                  <span className="text-xs">Un accompagnement sur mesure</span>
                 </div>
 
                 <h2 className="text-[24px] sm:text-[28px] font-semibold text-[#20252B] tracking-tight">

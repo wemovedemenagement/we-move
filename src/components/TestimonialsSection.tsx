@@ -479,47 +479,70 @@ export const TestimonialsSection: React.FC = () => {
   };
 
   return (
-    <section id="avis" className="py-20 sm:py-28 bg-[#FAFAF8] border-b border-[#E6E8EB] relative">
+    <section id="avis" className="relative py-20 sm:py-28 lg:py-32 bg-[#FAFAF8] border-b border-[#E2E8F0]/70 overflow-hidden">
       {/* Schema.org microdata injection */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(googleReviewsSchema) }}
       />
 
-      <div className="max-w-[1240px] mx-auto px-5 sm:px-8">
+      {/* Decorative ambient background radial lighting */}
+      <div 
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100/40 via-slate-100/30 to-transparent pointer-events-none blur-3xl -z-0" 
+        aria-hidden="true" 
+      />
+
+      <div className="relative z-10 max-w-[1240px] mx-auto px-5 sm:px-8">
         
         {/* ================= SECTION HEADER & GOOGLE TRUST BADGE ================= */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12 sm:mb-16">
-          <div className="max-w-2xl">
-            {/* Clean unboxed metadata separator */}
-            <div className="flex items-center gap-2 text-[12px] font-mono text-[#59616C] mb-3">
-              <span className="w-2 h-2 rounded-full bg-[#1A73E8]" />
-              <span className="text-[#1A73E8] font-semibold uppercase tracking-wider">
-                Avis Google certifiés
+          <div className="max-w-2xl space-y-4">
+            
+            {/* Néo-Glassmorphic Badge */}
+            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-[#1A73E8]/25 text-[#1A73E8] shadow-2xs font-mono text-[12px] font-semibold tracking-wide">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#1A73E8] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#1A73E8]"></span>
               </span>
-              <span aria-hidden="true" className="text-[#CBD5E1]">·</span>
-              <span className="text-[#111827] font-medium">114 avis vérifiés</span>
-              <span aria-hidden="true" className="text-[#CBD5E1]">·</span>
-              <span>Paris 15ᵉ</span>
+              <span>Avis Google certifiés · 114 avis vérifiés · Paris 15ᵉ</span>
             </div>
 
-            <h2 className="text-[30px] sm:text-[40px] font-semibold text-[#111827] tracking-tight leading-[1.18] [text-wrap:balance]">
-              Ce que nos clients disent sur notre fiche Google
+            {/* Headline with Gradient Accent */}
+            <h2 className="text-[34px] sm:text-[46px] lg:text-[50px] font-bold text-[#0F172A] tracking-tight leading-[1.12] font-display [text-wrap:balance]">
+              Ce que nos clients disent sur notre{' '}
+              <span className="relative inline-block text-[#1A73E8]">
+                <span className="bg-gradient-to-r from-[#1A73E8] via-[#0082CA] to-[#0284C7] bg-clip-text text-transparent">
+                  fiche Google
+                </span>
+                <svg
+                  className="absolute -bottom-1 left-0 w-full h-2.5 text-[#1A73E8]/30"
+                  viewBox="0 0 100 20"
+                  preserveAspectRatio="none"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path d="M0 15 Q 50 0, 100 15" stroke="currentColor" strokeWidth="6" strokeLinecap="round" />
+                </svg>
+              </span>
             </h2>
 
-            <p className="mt-3 text-[15px] sm:text-[16px] text-[#59616C] leading-relaxed">
+            {/* Subtitle */}
+            <p className="text-[16.5px] sm:text-[18px] text-[#475569] leading-relaxed font-normal">
               Consultez les retours authentiques et non modérés déposés par nos clients sur la fiche Google Maps officielle de{' '}
-              <strong className="font-semibold text-[#111827]">WE MOVE DÉMÉNAGEMENT</strong> (6 Rue du Dr Finlay, 75015 Paris).
+              <strong className="font-semibold text-[#0F172A]">WE MOVE DÉMÉNAGEMENT</strong> (6 Rue du Dr Finlay, 75015 Paris).
             </p>
           </div>
 
-          {/* Official Google Scoreboard Card */}
-          <div className="shrink-0 bg-white border border-[#E5E7EB] rounded-2xl p-5 sm:p-6 shadow-xs hover:border-[#CBD5E1] transition-all max-w-md w-full lg:w-auto">
-            <div className="flex items-center justify-between gap-4 pb-4 border-b border-[#F1F5F9]">
+          {/* Official Sublimated Google Scoreboard Card */}
+          <div className="shrink-0 bg-white/95 backdrop-blur-md border border-[#E2E8F0] rounded-3xl p-6 sm:p-7 shadow-md hover:shadow-xl hover:border-[#1A73E8]/30 transition-all duration-300 max-w-md w-full lg:w-auto relative overflow-hidden group">
+            {/* Accent top gradient line */}
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#1A73E8] via-[#4285F4] to-[#34A853] opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20" />
+
+            <div className="flex items-center justify-between gap-4 pb-4 border-b border-slate-100">
               <div className="flex items-center gap-3.5">
-                {/* Official Google Logo */}
-                <div className="w-12 h-12 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-center shrink-0 shadow-2xs">
-                  <svg className="w-6 h-6" viewBox="0 0 24 24" aria-hidden="true">
+                {/* Official Google Logo Badge */}
+                <div className="w-13 h-13 rounded-2xl bg-white border border-slate-200/80 flex items-center justify-center shrink-0 shadow-md group-hover:scale-105 transition-transform duration-300">
+                  <svg className="w-6.5 h-6.5" viewBox="0 0 24 24" aria-hidden="true">
                     <path
                       fill="#4285F4"
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -541,10 +564,10 @@ export const TestimonialsSection: React.FC = () => {
 
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[26px] font-bold font-mono tracking-tight text-[#111827] leading-none">
+                    <span className="text-[28px] font-bold font-mono tracking-tight text-[#0F172A] leading-none">
                       4,8
                     </span>
-                    <span className="text-[14px] text-[#64748B] font-medium">/ 5</span>
+                    <span className="text-[14px] text-slate-500 font-medium">/ 5</span>
                   </div>
                   <div className="flex items-center text-[#FBBC05] mt-1" aria-label="Note de 4.8 sur 5">
                     {[...Array(5)].map((_, i) => (
@@ -561,7 +584,7 @@ export const TestimonialsSection: React.FC = () => {
                 href={OFFICIAL_GOOGLE_PROFILE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="shrink-0 p-2 text-[#64748B] hover:text-[#1A73E8] hover:bg-[#F1F5F9] rounded-lg transition-colors"
+                className="shrink-0 p-2 text-slate-400 hover:text-[#1A73E8] hover:bg-slate-100 rounded-xl transition-colors"
                 title="Ouvrir la fiche sur Google Maps"
                 aria-label="Ouvrir la fiche sur Google Maps"
               >
@@ -572,28 +595,28 @@ export const TestimonialsSection: React.FC = () => {
             </div>
 
             {/* Distribution bars (Real Breakdown based on 114 reviews) */}
-            <div className="mt-3.5 space-y-1.5 text-[11px] font-mono text-[#64748B]">
-              <div className="flex items-center gap-2">
-                <span className="w-4">5★</span>
-                <div className="flex-1 h-2 bg-[#F1F5F9] rounded-full overflow-hidden">
-                  <div className="h-full bg-[#FBBC05] rounded-full" style={{ width: '92%' }} />
+            <div className="mt-4 space-y-2 text-[11.5px] font-mono text-slate-600">
+              <div className="flex items-center gap-2.5">
+                <span className="w-4 font-bold">5★</span>
+                <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-amber-400 rounded-full" style={{ width: '92%' }} />
                 </div>
-                <span className="w-8 text-right tabular-nums">92%</span>
+                <span className="w-8 text-right tabular-nums font-bold">92%</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="w-4">4★</span>
-                <div className="flex-1 h-2 bg-[#F1F5F9] rounded-full overflow-hidden">
-                  <div className="h-full bg-[#FBBC05] rounded-full" style={{ width: '6%' }} />
+              <div className="flex items-center gap-2.5">
+                <span className="w-4 font-bold">4★</span>
+                <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-amber-400 rounded-full" style={{ width: '6%' }} />
                 </div>
-                <span className="w-8 text-right tabular-nums">6%</span>
+                <span className="w-8 text-right tabular-nums font-bold">6%</span>
               </div>
             </div>
 
             {/* Bottom metadata */}
-            <div className="mt-3 pt-3 border-t border-[#F1F5F9] flex items-center justify-between text-[11.5px] text-[#475569]">
-              <span className="font-medium text-[#111827]">114 avis Google certifiés</span>
-              <span className="text-[#059669] font-medium flex items-center gap-1">
-                <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+            <div className="mt-4 pt-3.5 border-t border-slate-100 flex items-center justify-between text-[12px] text-slate-600">
+              <span className="font-semibold text-[#0F172A]">114 avis Google certifiés</span>
+              <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
                 100% authentiques
@@ -603,10 +626,10 @@ export const TestimonialsSection: React.FC = () => {
         </div>
 
         {/* ================= INTERACTIVE CONTROLS BAR (FILTERS + INSTANT SEARCH) ================= */}
-        <div className="bg-white border border-[#E5E7EB] rounded-xl p-3 sm:p-4 mb-8 shadow-2xs">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="bg-white/90 backdrop-blur-md border border-[#E2E8F0] rounded-2xl p-3.5 sm:p-4 mb-10 shadow-xs">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
             
-            {/* Functional Category Filter Tabs (Single-line, no candy badges) */}
+            {/* Functional Category Filter Tabs */}
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
               {[
                 { id: 'all', label: 'Tous (114)' },
@@ -624,10 +647,10 @@ export const TestimonialsSection: React.FC = () => {
                       setSelectedCategory(tab.id);
                       setVisibleCount(9);
                     }}
-                    className={`px-3.5 py-1.5 rounded-lg text-[13px] font-medium whitespace-nowrap transition-colors cursor-pointer ${
+                    className={`px-4 py-2 rounded-xl text-[13px] font-semibold whitespace-nowrap transition-all cursor-pointer ${
                       isActive
-                        ? 'bg-[#111827] text-white shadow-2xs'
-                        : 'text-[#4B5563] hover:text-[#111827] hover:bg-[#F3F4F6]'
+                        ? 'bg-[#0F172A] text-white shadow-sm'
+                        : 'text-[#64748B] hover:text-[#0F172A] hover:bg-slate-100'
                     }`}
                   >
                     {tab.label}
@@ -637,7 +660,7 @@ export const TestimonialsSection: React.FC = () => {
             </div>
 
             {/* Live Search Input */}
-            <div className="relative min-w-[240px] sm:max-w-xs">
+            <div className="relative min-w-[250px] sm:max-w-xs">
               <input
                 type="text"
                 value={searchQuery}
@@ -646,10 +669,10 @@ export const TestimonialsSection: React.FC = () => {
                   setVisibleCount(9);
                 }}
                 placeholder="Rechercher (ex: piano, 80 postes, ponctuel...)"
-                className="w-full pl-9 pr-8 py-2 text-[13px] bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-[#111827] placeholder-[#94A3B8] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#1A73E8]/20 focus:border-[#1A73E8] transition-all"
+                className="w-full pl-9 pr-8 py-2.5 text-[13px] bg-slate-50 border border-slate-200 rounded-xl text-[#0F172A] placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#1A73E8]/20 focus:border-[#1A73E8] transition-all"
               />
               <svg
-                className="w-4 h-4 text-[#94A3B8] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -660,7 +683,7 @@ export const TestimonialsSection: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569] p-0.5"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
                   title="Effacer la recherche"
                 >
                   <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
@@ -691,13 +714,13 @@ export const TestimonialsSection: React.FC = () => {
 
         {/* ================= EMPTY STATE IF SEARCH YIELDS NOTHING ================= */}
         {filteredReviews.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-[#E5E7EB] p-12 text-center max-w-lg mx-auto">
-            <div className="w-12 h-12 rounded-full bg-[#F1F5F9] text-[#64748B] flex items-center justify-center mx-auto mb-4">
+          <div className="bg-white rounded-3xl border border-[#E2E8F0] p-12 text-center max-w-lg mx-auto shadow-xs">
+            <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center mx-auto mb-4">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h3 className="text-[16px] font-semibold text-[#111827]">Aucun avis ne correspond à cette recherche</h3>
+            <h3 className="text-[16px] font-bold text-[#0F172A]">Aucun avis ne correspond à cette recherche</h3>
             <p className="mt-1 text-[14px] text-[#64748B]">
               Essayez des termes plus généraux comme « piano », « monte-meuble », « soin » ou « équipe ».
             </p>
@@ -707,14 +730,14 @@ export const TestimonialsSection: React.FC = () => {
                 setSearchQuery('');
                 setSelectedCategory('all');
               }}
-              className="mt-4 px-4 py-2 text-[13px] font-medium text-white bg-[#111827] rounded-lg hover:bg-black transition-colors cursor-pointer"
+              className="mt-5 px-5 py-2.5 text-[13px] font-bold text-white bg-[#0F172A] rounded-xl hover:bg-black transition-colors cursor-pointer shadow-xs"
             >
               Afficher tous les 114 avis
             </button>
           </div>
         ) : (
           /* ================= 3-COLUMN AUTHENTIC GOOGLE REVIEWS GRID ================= */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {displayedReviews.map((rev) => {
               const isLong = rev.comment.length > 200;
               const isExpanded = expandedReviewId === rev.id;
@@ -723,26 +746,29 @@ export const TestimonialsSection: React.FC = () => {
               return (
                 <article
                   key={rev.id}
-                  className="bg-white rounded-2xl border border-[#E5E7EB] p-5 sm:p-6 flex flex-col justify-between transition-all duration-200 hover:border-[#CBD5E1] hover:shadow-xs group"
+                  className="group relative bg-white rounded-3xl border border-[#E2E8F0] p-6 sm:p-7 flex flex-col justify-between hover:border-[#1A73E8]/30 shadow-xs hover:shadow-2xl hover:shadow-[#1A73E8]/10 transition-all duration-500 hover:-translate-y-1.5"
                 >
+                  {/* Accent Top Gradient Line on Hover */}
+                  <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#1A73E8] via-[#4285F4] to-[#34A853] opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20 rounded-t-3xl" />
+
                   <div>
                     {/* Top Row: Google Avatar + Name + Local Guide + Review Metadata */}
-                    <div className="flex items-start justify-between gap-3 mb-3.5">
+                    <div className="flex items-start justify-between gap-3 mb-4">
                       <div className="flex items-center gap-3">
                         {/* Authentic Google Style Initial Avatar */}
                         <div
-                          className={`w-10 h-10 rounded-full ${rev.avatarBg} text-white font-semibold flex items-center justify-center text-[14px] shrink-0 select-none shadow-2xs`}
+                          className={`w-11 h-11 rounded-full ${rev.avatarBg} text-white font-bold flex items-center justify-center text-[15px] shrink-0 select-none shadow-md border border-white/40`}
                         >
                           {rev.avatarLetter}
                         </div>
 
                         <div>
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <h3 className="text-[14.5px] font-semibold text-[#111827] leading-snug">
+                            <h3 className="text-[15px] font-bold text-[#0F172A] leading-snug">
                               {rev.author}
                             </h3>
                             {rev.isLocalGuide && (
-                              <span className="text-[10.5px] text-[#D97706] font-medium inline-flex items-center gap-0.5">
+                              <span className="text-[10.5px] text-[#D97706] font-bold inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-amber-50 border border-amber-200/80">
                                 <svg className="w-3 h-3 text-[#F59E0B] fill-current" viewBox="0 0 20 20">
                                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                 </svg>
@@ -751,8 +777,8 @@ export const TestimonialsSection: React.FC = () => {
                             )}
                           </div>
 
-                          {/* Unboxed Metadata Line with typographic separators */}
-                          <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-[#64748B]">
+                          {/* Unboxed Metadata Line */}
+                          <div className="flex items-center gap-1.5 mt-0.5 text-[11.5px] text-slate-500">
                             <span>Avis vérifié</span>
                             {rev.reviewCount && (
                               <>
@@ -779,35 +805,35 @@ export const TestimonialsSection: React.FC = () => {
                             </svg>
                           ))}
                         </div>
-                        <span className="text-[11px] text-[#94A3B8] font-mono block mt-0.5">
+                        <span className="text-[11px] text-slate-400 font-mono block mt-0.5">
                           {rev.date}
                         </span>
                       </div>
                     </div>
 
                     {/* Prestation Details & Exact Customer-Reported Pricing */}
-                    <div className="flex items-center gap-1.5 mb-2.5 text-[11.5px] text-[#475569] flex-wrap">
-                      <span className="font-medium text-[#111827]">
+                    <div className="flex items-center gap-1.5 mb-3 text-[12px] text-slate-700 flex-wrap">
+                      <span className="font-semibold text-[#0F172A]">
                         {rev.serviceType}
                       </span>
                       {rev.priceTag && (
                         <>
-                          <span aria-hidden="true" className="text-[#CBD5E1]">·</span>
-                          <span className="font-mono text-[#059669] font-medium bg-[#ECFDF5] px-1.5 py-0.5 rounded text-[10.5px]">
+                          <span aria-hidden="true" className="text-slate-300">·</span>
+                          <span className="font-mono text-emerald-700 font-bold bg-emerald-50 border border-emerald-200/70 px-2 py-0.5 rounded-md text-[11px]">
                             {rev.priceTag}
                           </span>
                         </>
                       )}
                       {rev.visitedDate && (
                         <>
-                          <span aria-hidden="true" className="text-[#CBD5E1]">·</span>
-                          <span className="text-[#94A3B8] italic">{rev.visitedDate}</span>
+                          <span aria-hidden="true" className="text-slate-300">·</span>
+                          <span className="text-slate-400 italic">{rev.visitedDate}</span>
                         </>
                       )}
                     </div>
 
                     {/* Verbatim quote */}
-                    <p className="text-[13.5px] sm:text-[14px] text-[#334155] leading-relaxed">
+                    <p className="text-[14px] sm:text-[14.5px] text-slate-700 leading-relaxed font-normal">
                       « {displayedComment} »
                     </p>
 
@@ -816,7 +842,7 @@ export const TestimonialsSection: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setExpandedReviewId(isExpanded ? null : rev.id)}
-                        className="mt-1.5 text-[12px] font-medium text-[#1A73E8] hover:underline cursor-pointer"
+                        className="mt-2 text-[12.5px] font-bold text-[#1A73E8] hover:underline cursor-pointer"
                       >
                         {isExpanded ? 'Réduire l’avis' : 'Lire l’avis complet'}
                       </button>
@@ -824,9 +850,9 @@ export const TestimonialsSection: React.FC = () => {
                   </div>
 
                   {/* Card Bottom: Verified Google Indicator */}
-                  <div className="pt-3 mt-4 border-t border-[#F1F5F9] flex items-center justify-between text-[11px] text-[#64748B]">
-                    <span className="flex items-center gap-1.5">
-                      <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                  <div className="pt-4 mt-5 border-t border-slate-100 flex items-center justify-between text-[11.5px] text-slate-500">
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
                         <path
                           fill="#4285F4"
                           d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -846,7 +872,7 @@ export const TestimonialsSection: React.FC = () => {
                       </svg>
                       <span>Avis certifié Google Maps</span>
                     </span>
-                    <span className="text-[#059669] font-medium flex items-center gap-1">
+                    <span className="text-emerald-600 font-semibold flex items-center gap-1">
                       <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                       </svg>
@@ -861,66 +887,65 @@ export const TestimonialsSection: React.FC = () => {
 
         {/* ================= PAGINATION / LOAD MORE BUTTON ================= */}
         {filteredReviews.length > visibleCount && (
-          <div className="mt-10 text-center">
+          <div className="mt-12 text-center">
             <button
               type="button"
               onClick={() => setVisibleCount((prev) => Math.min(prev + 6, filteredReviews.length))}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-[#CBD5E1] bg-white text-[13.5px] font-semibold text-[#111827] hover:border-[#1A73E8] hover:text-[#1A73E8] transition-colors cursor-pointer shadow-2xs"
+              className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl border border-slate-300 bg-white text-[14px] font-bold text-[#0F172A] hover:border-[#1A73E8] hover:text-[#1A73E8] hover:shadow-md transition-all duration-300 cursor-pointer"
             >
               <span>Afficher plus d’avis ({filteredReviews.length - visibleCount} restants)</span>
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
           </div>
         )}
 
-        {/* ================= SUBLIME BOTTOM CONVERSION & TRUST BANNER ================= */}
-        <div className="mt-14 sm:mt-16 rounded-2xl border border-[#E5E7EB] bg-white p-7 sm:p-9 shadow-xs">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-[#E8F0FE] text-[#1A73E8] flex items-center justify-center shrink-0">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-[17px] sm:text-[18px] font-semibold text-[#111827]">
-                  Vous avez déménagé avec WE MOVE DÉMÉNAGEMENT ?
-                </h3>
-                <p className="mt-1 text-[13.5px] sm:text-[14px] text-[#59616C] leading-relaxed max-w-xl">
-                  Partagez votre expérience sur notre fiche Google officielle. Vos avis aident les futurs particuliers et entreprises d'Île-de-France à choisir un déménageur de confiance.
-                </p>
-              </div>
+        {/* ================= SUBLIMATED BOTTOM CONVERSION & TRUST BANNER ================= */}
+        <div className="mt-16 sm:mt-20 p-8 sm:p-10 bg-gradient-to-br from-white via-slate-50/80 to-sky-50/30 rounded-3xl border border-[#E2E8F0] shadow-md relative overflow-hidden flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 group">
+          {/* Ambient glow decoration inside banner */}
+          <div className="absolute top-0 right-0 w-80 h-80 bg-blue-100/50 rounded-full blur-3xl pointer-events-none -z-0" />
+
+          <div className="relative z-10 flex items-start gap-4 sm:gap-6 max-w-2xl">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#1A73E8] to-[#00537A] text-white flex items-center justify-center shrink-0 shadow-md shadow-[#1A73E8]/20 group-hover:scale-105 transition-transform duration-300">
+              <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
             </div>
-
-            <div className="flex items-center gap-3 shrink-0 flex-wrap sm:flex-nowrap">
-              <a
-                href={OFFICIAL_GOOGLE_PROFILE_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border border-[#CBD5E1] bg-white text-[13px] font-medium text-[#111827] hover:text-[#1A73E8] hover:border-[#1A73E8] transition-colors cursor-pointer shadow-2xs"
-              >
-                <span>Consulter les 114 avis</span>
-                <svg className="w-3.5 h-3.5 text-[#64748B]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                </svg>
-              </a>
-
-              <a
-                href={OFFICIAL_GOOGLE_PROFILE_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#0082CA] text-white text-[13px] font-semibold hover:bg-[#00699e] transition-colors cursor-pointer shadow-xs"
-              >
-                <span>Déposer un avis sur Google</span>
-                <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                </svg>
-              </a>
+            <div className="space-y-1.5">
+              <h3 className="text-[18.5px] sm:text-[20px] font-bold text-[#0F172A] font-display">
+                Vous avez déménagé avec WE MOVE DÉMÉNAGEMENT ?
+              </h3>
+              <p className="text-[14.5px] sm:text-[15.5px] text-[#475569] leading-relaxed">
+                Partagez votre expérience sur notre fiche Google officielle. Vos avis aident les futurs particuliers et entreprises d'Île-de-France à choisir un déménageur de confiance.
+              </p>
             </div>
+          </div>
 
+          <div className="relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto shrink-0">
+            <a
+              href={OFFICIAL_GOOGLE_PROFILE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2.5 h-12 px-6 rounded-2xl border border-[#CBD5E1] bg-white text-[14px] font-semibold text-[#1E293B] hover:border-[#1A73E8] hover:text-[#1A73E8] hover:bg-[#F8FAFC] hover:shadow-sm transition-all duration-300 cursor-pointer"
+            >
+              <span>Consulter les 114 avis</span>
+              <svg className="w-4 h-4 text-[#64748B]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
+
+            <a
+              href={OFFICIAL_GOOGLE_PROFILE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2.5 h-12 px-7 rounded-2xl bg-gradient-to-r from-[#1A73E8] to-[#00537A] text-white text-[14px] font-bold hover:from-[#1557B0] hover:to-[#003E5C] transition-all duration-300 shadow-md shadow-[#1A73E8]/20 hover:shadow-lg hover:shadow-[#1A73E8]/30 cursor-pointer"
+            >
+              <span>Déposer un avis sur Google</span>
+              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+            </a>
           </div>
         </div>
 

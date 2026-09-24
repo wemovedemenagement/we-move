@@ -581,6 +581,16 @@ export const FurnitureIcon: React.FC<FurnitureIconProps> = ({ name, className = 
         </svg>
       );
 
+    case 'bath':
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 12h16a1 1 0 0 1 1 1v3a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4v-3a1 1 0 0 1 1-1z" />
+          <path d="M6 12V5a2 2 0 0 1 2-2h3" />
+          <line x1="7" y1="20" x2="6" y2="22" />
+          <line x1="17" y1="20" x2="18" y2="22" />
+        </svg>
+      );
+
     default:
       return (
         <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">

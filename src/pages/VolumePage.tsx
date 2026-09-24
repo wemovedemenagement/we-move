@@ -14,17 +14,21 @@ import {
 import { FurnitureIcon } from '../components/FurnitureIcon';
 import { TruckVisualizer } from '../components/TruckVisualizer';
 
-const CATEGORY_FILTERS: Array<{ id: 'Tous' | FurnitureCategory; label: string; icon: string }> = [
-  { id: 'Tous', label: 'Tous les objets', icon: 'category-all' },
-  { id: 'Salon', label: 'Salon', icon: 'sofa-large' },
-  { id: 'Chambre', label: 'Chambre', icon: 'bed-double' },
-  { id: 'Séjour', label: 'Séjour', icon: 'dining-table' },
-  { id: 'Cuisine', label: 'Cuisine & Électro', icon: 'fridge' },
-  { id: 'Bureau', label: 'Bureau', icon: 'desk' },
-  { id: 'Cartons', label: 'Cartons', icon: 'boxes' },
-  { id: 'Enfants', label: 'Enfants', icon: 'crib' },
-  { id: 'Extérieur & Garage', label: 'Extérieur', icon: 'outdoor' },
-  { id: 'Objets Spéciaux', label: 'Spéciaux & Art', icon: 'piano' },
+interface CategoryFilterDef {
+  id: string;
+  label: string;
+  icon: string;
+  categories: FurnitureCategory[];
+}
+
+const CATEGORY_FILTERS: CategoryFilterDef[] = [
+  { id: 'salon_sejour', label: 'Salon', icon: 'sofa-large', categories: ['Salon', 'Séjour'] },
+  { id: 'chambre', label: 'Chambre', icon: 'bed-double', categories: ['Chambre', 'Enfants'] },
+  { id: 'cuisine', label: 'Cuisine', icon: 'fridge', categories: ['Cuisine'] },
+  { id: 'bain', label: 'Bain', icon: 'bath', categories: ['Salle de bain'] },
+  { id: 'bureau', label: 'Bureau', icon: 'desk', categories: ['Bureau'] },
+  { id: 'cartons', label: 'Cartons', icon: 'boxes', categories: ['Cartons'] },
+  { id: 'speciaux', label: 'Spéciaux', icon: 'piano', categories: ['Extérieur & Garage', 'Objets Spéciaux'] },
 ];
 
 const STORAGE_KEY = 'wemove_calculator_inventory';
@@ -33,7 +37,7 @@ export const VolumePage: React.FC = () => {
   const { push, query } = useRouter();
   const initialFromQuery = query.initial ? Number(query.initial) : null;
 
-  const [activeCategory, setActiveCategory] = useState<'Tous' | FurnitureCategory>('Tous');
+  const [activeCategory, setActiveCategory] = useState<string>('salon_sejour');
   const [searchQuery, setSearchQuery] = useState('');
   const [onlySelected, setOnlySelected] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState(false);
@@ -222,8 +226,9 @@ export const VolumePage: React.FC = () => {
 
   // Filtered items list
   const filteredItems = useMemo(() => {
+    const currentFilter = CATEGORY_FILTERS.find(f => f.id === activeCategory) || CATEGORY_FILTERS[0];
     return INVENTORY_ITEMS.filter(item => {
-      const matchesCat = activeCategory === 'Tous' || item.category === activeCategory;
+      const matchesCat = currentFilter.categories.includes(item.category);
       const matchesSearch =
         searchQuery.trim() === '' ||
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -270,32 +275,56 @@ export const VolumePage: React.FC = () => {
   };
 
   return (
-    <div className="py-8 sm:py-12 bg-[#FBFBFA] min-h-screen text-[#111827]">
-      <div className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="relative py-10 sm:py-16 bg-[#FAFAF8] min-h-screen text-[#0F172A] overflow-hidden">
+      {/* Decorative ambient background radial lighting */}
+      <div 
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#0082CA]/10 via-slate-100/30 to-transparent pointer-events-none blur-3xl -z-0" 
+        aria-hidden="true" 
+      />
 
-        {/* ================= COMPACT & ELEGANT HEADER ================= */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6 pb-6 border-b border-[#EAEBED]">
-          <div>
-            <div className="flex items-center gap-2 text-[12px] text-[#59616C] mb-1.5 font-mono">
-              <span className="w-2 h-2 rounded-full bg-[#0082CA]" />
-              <span className="text-[#0082CA] font-semibold uppercase tracking-wider">Calculateur officiel</span>
-              <span aria-hidden="true">·</span>
-              <span>Norme NF Logistique Déménagement</span>
+      <div className="relative z-10 max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8">
+
+        {/* ================= SUBLIMATED EXECUTIVE HEADER ================= */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8 pb-8 border-b border-[#E2E8F0]">
+          <div className="space-y-3">
+            
+            {/* Néo-Glassmorphic Badge */}
+            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-[#0082CA]/25 text-[#0082CA] shadow-2xs font-mono text-[12px] font-semibold tracking-wide">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0082CA] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#0082CA]"></span>
+              </span>
+              <span>Calculateur officiel · Norme NF Logistique Déménagement</span>
             </div>
 
-            <h1 className="text-[28px] sm:text-[36px] font-bold text-[#111827] tracking-tight leading-tight">
-              Calculateur de volume
+            {/* Headline */}
+            <h1 className="text-[32px] sm:text-[44px] lg:text-[48px] font-bold text-[#0F172A] tracking-tight leading-[1.12] font-display">
+              Calculateur de{' '}
+              <span className="relative inline-block text-[#0082CA]">
+                <span className="bg-gradient-to-r from-[#0082CA] via-[#0284C7] to-[#0369A1] bg-clip-text text-transparent">
+                  volume
+                </span>
+                <svg
+                  className="absolute -bottom-1 left-0 w-full h-2.5 text-[#0082CA]/30"
+                  viewBox="0 0 100 20"
+                  preserveAspectRatio="none"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path d="M0 15 Q 50 0, 100 15" stroke="currentColor" strokeWidth="6" strokeLinecap="round" />
+                </svg>
+              </span>
             </h1>
 
-            <p className="mt-1 text-[14.5px] sm:text-[15.5px] text-[#59616C] max-w-2xl">
+            <p className="text-[16px] sm:text-[17.5px] text-[#475569] max-w-2xl font-normal leading-relaxed">
               Ajustez vos meubles et cartons ci-dessous. Le cubage, le camion adapté et le devis se mettent à jour instantanément.
             </p>
           </div>
 
-          {/* Quick presets row in header */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[12px] text-[#59616C] font-medium mr-1 hidden sm:inline">
-              Base rapide :
+          {/* Presets Quick Selector */}
+          <div className="flex items-center gap-2 flex-wrap p-1.5 bg-white/90 backdrop-blur-md border border-[#E2E8F0] rounded-2xl shadow-xs">
+            <span className="text-[12px] text-[#64748B] font-mono font-semibold px-2 hidden sm:inline">
+              Preset rapide :
             </span>
             {VOLUME_PRESETS.map((p) => {
               const isSelected = activePresetId === p.id;
@@ -304,15 +333,15 @@ export const VolumePage: React.FC = () => {
                   key={p.id}
                   type="button"
                   onClick={() => applyPreset(p.id)}
-                  className={`px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+                  className={`px-3.5 py-1.5 rounded-xl text-[12.5px] font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                     isSelected
-                      ? 'bg-[#0082CA] text-white shadow-xs font-semibold'
-                      : 'bg-white border border-[#E5E7EB] text-[#59616C] hover:text-[#111827] hover:border-[#0082CA]/50'
+                      ? 'bg-[#0F172A] text-white shadow-sm ring-1 ring-slate-700'
+                      : 'bg-white text-[#64748B] hover:text-[#0F172A] hover:bg-slate-100 border border-[#E2E8F0]'
                   }`}
                   title={`${p.name} (${p.area} · ~${p.badge})`}
                 >
                   <span>{p.name.split('/')[0].trim()}</span>
-                  <span className={`text-[10px] font-mono ${isSelected ? 'text-white/80' : 'text-[#0082CA]'}`}>
+                  <span className={`text-[10.5px] font-mono font-bold ${isSelected ? 'text-sky-300' : 'text-[#0082CA]'}`}>
                     {p.badge.replace(' à ', '-')}
                   </span>
                 </button>
@@ -325,22 +354,22 @@ export const VolumePage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* ================= LEFT COLUMN: INVENTORY PICKER (8 Cols) ================= */}
-          <div className="lg:col-span-8 space-y-4">
+          <div className="lg:col-span-8 space-y-5">
             
             {/* Filter Controls Bar */}
-            <div className="bg-white rounded-xl border border-[#E5E7EB] p-3 sm:p-3.5 shadow-2xs space-y-3">
+            <div className="bg-white/90 backdrop-blur-md rounded-2xl border border-[#E2E8F0] p-4 shadow-xs space-y-3.5">
               
-              {/* Clean Category Tabs */}
+              {/* Category Tabs Bar */}
               <div 
-                className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none"
+                className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 scrollbar-none"
                 role="tablist"
                 aria-label="Catégories de meubles"
               >
                 {CATEGORY_FILTERS.map((cat) => {
                   const isActive = activeCategory === cat.id;
-                  const countInCat = cat.id === 'Tous'
-                    ? totalItemsCount
-                    : INVENTORY_ITEMS.filter(i => i.category === cat.id).reduce((acc, i) => acc + (quantities[i.id] || 0), 0);
+                  const countInCat = INVENTORY_ITEMS
+                    .filter(i => cat.categories.includes(i.category))
+                    .reduce((acc, i) => acc + (quantities[i.id] || 0), 0);
 
                   return (
                     <button
@@ -349,17 +378,17 @@ export const VolumePage: React.FC = () => {
                       role="tab"
                       aria-selected={isActive}
                       onClick={() => setActiveCategory(cat.id)}
-                      className={`px-3 py-2 rounded-lg text-[13px] font-medium transition-all whitespace-nowrap cursor-pointer flex items-center gap-2 ${
+                      className={`px-3 py-1.5 rounded-xl text-[12.5px] font-semibold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
                         isActive
-                          ? 'bg-[#111827] text-white shadow-xs font-semibold'
-                          : 'bg-[#F9FAFB] text-[#4B5563] hover:text-[#111827] hover:bg-[#F3F4F6]'
+                          ? 'bg-[#0F172A] text-white shadow-sm'
+                          : 'bg-white text-[#64748B] hover:text-[#0F172A] hover:bg-slate-100 border border-[#E2E8F0]'
                       }`}
                     >
-                      <FurnitureIcon name={cat.icon} className={`w-5 h-5 ${isActive ? 'text-white' : 'text-[#0082CA]'}`} />
+                      <FurnitureIcon name={cat.icon} className={`w-4 h-4 ${isActive ? 'text-white' : 'text-[#0082CA]'}`} />
                       <span>{cat.label}</span>
                       {countInCat > 0 && (
-                        <span className={`text-[11px] font-mono px-1.5 py-0.2 rounded-full font-bold ${
-                          isActive ? 'bg-white/20 text-white' : 'bg-[#0082CA]/10 text-[#0082CA]'
+                        <span className={`text-[10.5px] font-mono px-1.5 py-0.2 rounded-md font-bold ${
+                          isActive ? 'bg-white/20 text-white' : 'bg-[#EBF5FB] text-[#0082CA]'
                         }`}>
                           {countInCat}
                         </span>
@@ -370,9 +399,9 @@ export const VolumePage: React.FC = () => {
               </div>
 
               {/* Search & Only Selected Toggle Row */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-2 border-t border-[#F3F4F6]">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-slate-100">
                 <div className="relative flex-1">
-                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#9CA3AF]">
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
@@ -382,27 +411,27 @@ export const VolumePage: React.FC = () => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Filtrer un meuble (ex: canapé, armoire, frigo, cartons...)"
-                    className="w-full pl-9 pr-8 h-9 text-[13px] rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] focus:bg-white focus:border-[#0082CA] focus:outline-hidden transition-colors"
+                    className="w-full pl-9 pr-8 py-2 text-[13px] bg-slate-50 border border-slate-200 rounded-xl text-[#0F172A] placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0082CA]/20 focus:border-[#0082CA] transition-all"
                   />
                   {searchQuery && (
                     <button
                       type="button"
                       onClick={() => setSearchQuery('')}
-                      className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-[#9CA3AF] hover:text-[#111827]"
+                      className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-[#0F172A]"
                     >
                       ✕
                     </button>
                   )}
                 </div>
 
-                <div className="flex items-center justify-between sm:justify-end gap-2 text-[12px]">
+                <div className="flex items-center justify-between sm:justify-end gap-2.5 text-[12.5px]">
                   <button
                     type="button"
                     onClick={() => setOnlySelected(!onlySelected)}
-                    className={`px-3 py-1.5 rounded-lg border text-[12px] font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+                    className={`px-3.5 py-1.5 rounded-xl border text-[12.5px] font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                       onlySelected
-                        ? 'bg-[#0082CA]/10 border-[#0082CA] text-[#0082CA] font-semibold'
-                        : 'bg-white border-[#E5E7EB] text-[#4B5563] hover:text-[#111827] hover:border-[#D1D5DB]'
+                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-bold'
+                        : 'bg-white border-[#E2E8F0] text-[#64748B] hover:text-[#0F172A] hover:bg-slate-50'
                     }`}
                   >
                     <span>{onlySelected ? '✓' : '○'}</span>
@@ -413,7 +442,7 @@ export const VolumePage: React.FC = () => {
                     type="button"
                     onClick={resetAll}
                     disabled={totalItemsCount === 0}
-                    className="text-[#6B7280] hover:text-red-600 disabled:opacity-30 disabled:hover:text-[#6B7280] transition-colors underline cursor-pointer text-[12px] ml-1"
+                    className="text-[#64748B] hover:text-red-600 disabled:opacity-30 disabled:hover:text-[#64748B] transition-colors underline cursor-pointer text-[12.5px] ml-1 font-semibold"
                   >
                     Vider
                   </button>
@@ -423,7 +452,7 @@ export const VolumePage: React.FC = () => {
             </div>
 
             {/* Clean Grid of Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredItems.map((item) => {
                 const qty = quantities[item.id] || 0;
                 const isSelected = qty > 0;
@@ -432,19 +461,19 @@ export const VolumePage: React.FC = () => {
                 return (
                   <div
                     key={item.id}
-                    className={`p-3.5 rounded-xl border transition-all duration-150 flex flex-col justify-between ${
+                    className={`p-4 rounded-2xl border transition-all duration-300 flex flex-col justify-between group ${
                       isSelected
-                        ? 'bg-white border-[#0082CA] shadow-xs ring-1 ring-[#0082CA]/20'
-                        : 'bg-white border-[#E5E7EB] hover:border-[#CBD5E1]'
+                        ? 'bg-white border-[#0082CA] shadow-md shadow-[#0082CA]/10 ring-2 ring-[#0082CA]/20'
+                        : 'bg-white/80 border-[#E2E8F0] hover:bg-white hover:border-slate-300 hover:shadow-xs'
                     }`}
                   >
                     {/* Top Row: Icon + Title & Unit m³ */}
                     <div className="flex items-start gap-3.5">
                       <div
-                        className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                        className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300 ${
                           isSelected
-                            ? 'bg-[#0082CA] text-white shadow-xs'
-                            : 'bg-[#F0F5FA] text-[#0082CA] border border-[#D9E3EE]'
+                            ? 'bg-[#0082CA] text-white shadow-md'
+                            : 'bg-[#EBF5FB] text-[#0082CA] border border-[#0082CA]/20 group-hover:scale-105'
                         }`}
                         aria-hidden="true"
                       >
@@ -453,17 +482,17 @@ export const VolumePage: React.FC = () => {
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-baseline justify-between gap-1">
-                          <h3 className="text-[14px] font-semibold text-[#111827] leading-snug truncate">
+                          <h3 className="text-[14.5px] font-bold text-[#0F172A] leading-snug truncate font-display">
                             {item.name}
                           </h3>
                         </div>
 
-                        <p className="text-[12px] text-[#6B7280] leading-snug line-clamp-1 mt-0.5">
+                        <p className="text-[12px] text-[#64748B] leading-snug line-clamp-1 mt-0.5">
                           {item.subtitle}
                         </p>
 
-                        <div className="flex items-center gap-1.5 mt-1 text-[11px] text-[#6B7280] font-mono">
-                          <span className="text-[#0082CA] font-semibold">{item.m3} m³</span>
+                        <div className="flex items-center gap-1.5 mt-1 text-[11px] text-[#64748B] font-mono font-medium">
+                          <span className="text-[#0082CA] font-bold">{item.m3} m³</span>
                           <span aria-hidden="true">·</span>
                           <span>{item.category}</span>
                         </div>
@@ -471,25 +500,25 @@ export const VolumePage: React.FC = () => {
                     </div>
 
                     {/* Bottom Row: Stepper Controls */}
-                    <div className="mt-3 pt-2.5 border-t border-[#F3F4F6] flex items-center justify-between">
-                      <div className="text-[11.5px] font-mono">
+                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                      <div className="text-[12px] font-mono">
                         {qty > 0 ? (
                           <span className="text-[#0082CA] font-bold">
                             {Math.round(item.m3 * qty * 10) / 10} m³
                           </span>
                         ) : (
-                          <span className="text-slate-400">0</span>
+                          <span className="text-slate-400 font-normal">0 m³</span>
                         )}
                       </div>
 
                       {/* Accessible Tactile Stepper */}
-                      <div className="flex items-center gap-1 bg-[#F9FAFB] p-0.5 rounded-lg border border-[#E5E7EB]">
+                      <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-xl border border-slate-200">
                         <button
                           type="button"
                           onClick={() => updateQuantity(item.id, -1)}
                           disabled={qty === 0}
                           aria-label={`Retirer un ${item.name}`}
-                          className="w-7 h-7 rounded-md bg-white border border-[#E5E7EB] flex items-center justify-center text-[#111827] disabled:opacity-25 disabled:cursor-not-allowed hover:bg-[#F3F4F6] active:scale-95 transition-all cursor-pointer font-bold text-sm select-none"
+                          className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-[#0F172A] disabled:opacity-25 disabled:cursor-not-allowed hover:bg-slate-100 active:scale-95 transition-all cursor-pointer font-bold text-sm select-none shadow-2xs"
                         >
                           −
                         </button>
@@ -501,14 +530,14 @@ export const VolumePage: React.FC = () => {
                           value={qty}
                           onChange={(e) => setDirectQuantity(item.id, parseInt(e.target.value, 10) || 0)}
                           aria-label={`Quantité de ${item.name}`}
-                          className="w-8 text-center font-mono font-bold text-[13.5px] text-[#111827] bg-transparent focus:outline-hidden focus:bg-white rounded py-0.5"
+                          className="w-8 text-center font-mono font-bold text-[13.5px] text-[#0F172A] bg-transparent focus:outline-hidden focus:bg-white rounded py-0.5"
                         />
 
                         <button
                           type="button"
                           onClick={() => updateQuantity(item.id, 1)}
                           aria-label={`Ajouter un ${item.name}`}
-                          className="w-7 h-7 rounded-md bg-[#0082CA] text-white flex items-center justify-center hover:bg-[#006FA8] active:scale-95 transition-all cursor-pointer font-bold text-sm select-none"
+                          className="w-7 h-7 rounded-lg bg-[#0082CA] text-white flex items-center justify-center hover:bg-[#006FA8] active:scale-95 transition-all cursor-pointer font-bold text-sm select-none shadow-2xs"
                         >
                           +
                         </button>
@@ -518,7 +547,7 @@ export const VolumePage: React.FC = () => {
                             type="button"
                             onClick={() => updateQuantity(item.id, 5)}
                             title="Ajouter 5 cartons"
-                            className="px-1.5 h-7 rounded-md bg-white border border-[#E5E7EB] text-[10.5px] font-mono font-semibold text-[#0082CA] hover:bg-[#F3F4F6] transition-all cursor-pointer ml-0.5"
+                            className="px-1.5 h-7 rounded-lg bg-white border border-slate-200 text-[11px] font-mono font-bold text-[#0082CA] hover:bg-slate-100 transition-all cursor-pointer ml-0.5"
                           >
                             +5
                           </button>
@@ -532,11 +561,11 @@ export const VolumePage: React.FC = () => {
 
             {/* Empty state */}
             {filteredItems.length === 0 && (
-              <div className="p-10 text-center bg-white rounded-xl border border-[#E5E7EB] space-y-2">
-                <p className="text-[14.5px] font-semibold text-[#111827]">
+              <div className="p-12 text-center bg-white rounded-3xl border border-[#E2E8F0] space-y-3 shadow-xs">
+                <p className="text-[16px] font-bold text-[#0F172A]">
                   Aucun meuble ne correspond à votre filtre
                 </p>
-                <p className="text-[13px] text-[#6B7280]">
+                <p className="text-[14px] text-[#64748B]">
                   Désactivez le filtre "Sélectionnés uniquement" ou modifiez votre recherche.
                 </p>
                 <button
@@ -545,7 +574,7 @@ export const VolumePage: React.FC = () => {
                     setOnlySelected(false);
                     setSearchQuery('');
                   }}
-                  className="mt-2 px-3 py-1.5 rounded-lg bg-[#0082CA] text-white text-[12px] font-medium hover:bg-[#006FA8] cursor-pointer"
+                  className="mt-2 px-5 py-2.5 rounded-xl bg-[#0082CA] text-white text-[13px] font-bold hover:bg-[#006FA8] cursor-pointer shadow-xs"
                 >
                   Afficher tout le catalogue
                 </button>
@@ -553,12 +582,12 @@ export const VolumePage: React.FC = () => {
             )}
 
             {/* Small note on heavy items */}
-            <div className="p-3.5 rounded-xl border border-[#E5E7EB] bg-white flex items-center justify-between gap-3 text-[12.5px] text-[#59616C]">
-              <div className="flex items-center gap-2">
-                <span className="text-[16px]">🎹</span>
+            <div className="p-4 rounded-2xl border border-[#E2E8F0] bg-white flex items-center justify-between gap-3 text-[13px] text-[#475569] shadow-2xs">
+              <div className="flex items-center gap-2.5">
+                <span className="text-[18px]">🎹</span>
                 <span>Un piano, coffre-fort ou passage difficile ? Notre monte-meubles monte jusqu’au 8ᵉ étage.</span>
               </div>
-              <Link href="/location-monte-meubles/" className="text-[#0082CA] font-semibold hover:underline shrink-0">
+              <Link href="/location-monte-meubles/" className="text-[#0082CA] font-bold hover:underline shrink-0">
                 En savoir plus →
               </Link>
             </div>
@@ -566,7 +595,7 @@ export const VolumePage: React.FC = () => {
           </div>
 
           {/* ================= RIGHT COLUMN: STICKY COCKPIT (4 Cols) ================= */}
-          <div className="lg:col-span-4 sticky top-20 space-y-4">
+          <div className="lg:col-span-4 sticky top-24 space-y-4">
             
             {/* Live Truck Simulation Widget */}
             <TruckVisualizer
@@ -576,98 +605,100 @@ export const VolumePage: React.FC = () => {
               fillPercentage={logisticsAdvice.fillPercentage}
             />
 
-            {/* Main Volume Cockpit Card */}
-            <div className="bg-white rounded-2xl border-2 border-[#0082CA] p-5 shadow-sm space-y-4">
+            {/* Main Sublimated Volume Cockpit Card */}
+            <div className="bg-white rounded-3xl border-2 border-[#0082CA] p-6 shadow-xl space-y-5 relative overflow-hidden group">
+              {/* Accent top gradient line */}
+              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#0082CA] via-sky-400 to-[#10B981]" />
               
               {/* Big Volume Display */}
               <div className="flex items-start justify-between">
                 <div>
-                  <span className="text-[11px] font-mono uppercase tracking-wider text-[#0082CA] font-semibold block">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-[#0082CA] font-bold block">
                     Volume estimé
                   </span>
-                  <div className="flex items-baseline gap-2 mt-0.5">
-                    <span className="text-[44px] font-mono tabular-nums font-black text-[#111827] leading-none">
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="text-[48px] font-mono tabular-nums font-black text-[#0F172A] leading-none">
                       {totalVolume}
                     </span>
-                    <span className="text-[22px] font-extrabold text-[#0082CA]">m³</span>
+                    <span className="text-[24px] font-extrabold text-[#0082CA]">m³</span>
                   </div>
                 </div>
 
                 <div className="text-right">
-                  <span className="text-[11px] font-mono uppercase text-[#6B7280] block">Articles</span>
-                  <span className="text-[18px] font-mono font-bold text-[#111827]">{totalItemsCount}</span>
-                  <span className="text-[11px] font-mono text-[#6B7280] block">~{estimatedWeightKg} kg</span>
+                  <span className="text-[11px] font-mono uppercase text-slate-400 block font-semibold">Articles</span>
+                  <span className="text-[20px] font-mono font-bold text-[#0F172A]">{totalItemsCount}</span>
+                  <span className="text-[11.5px] font-mono text-slate-500 block">~{estimatedWeightKg} kg</span>
                 </div>
               </div>
 
               {/* Logistic Specifications */}
-              <div className="space-y-2 pt-2 border-t border-[#F3F4F6] text-[12.5px]">
-                <div className="flex items-center justify-between py-1 border-b border-[#F3F4F6]">
-                  <span className="text-[#59616C] flex items-center gap-1.5">
+              <div className="space-y-2.5 pt-3 border-t border-slate-100 text-[13px]">
+                <div className="flex items-center justify-between py-1 border-b border-slate-100">
+                  <span className="text-[#64748B] flex items-center gap-2">
                     <span>🚛</span>
                     <span>Véhicule conseillé</span>
                   </span>
-                  <span className="font-semibold text-[#111827] text-right">
+                  <span className="font-bold text-[#0F172A] text-right">
                     {logisticsAdvice.vehicleType}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between py-1 border-b border-[#F3F4F6]">
-                  <span className="text-[#59616C] flex items-center gap-1.5">
+                <div className="flex items-center justify-between py-1 border-b border-slate-100">
+                  <span className="text-[#64748B] flex items-center gap-2">
                     <span>👷</span>
                     <span>Équipe requise</span>
                   </span>
-                  <span className="font-semibold text-[#111827]">
+                  <span className="font-bold text-[#0F172A]">
                     {logisticsAdvice.team}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between py-1 border-b border-[#F3F4F6]">
-                  <span className="text-[#59616C] flex items-center gap-1.5">
+                <div className="flex items-center justify-between py-1 border-b border-slate-100">
+                  <span className="text-[#64748B] flex items-center gap-2">
                     <span>📦</span>
                     <span>Cartons conseillés</span>
                   </span>
-                  <span className="font-mono font-semibold text-[#111827]">
+                  <span className="font-mono font-bold text-[#0F172A]">
                     ~{logisticsAdvice.boxes} cartons
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between py-1">
-                  <span className="text-[#59616C] flex items-center gap-1.5">
+                  <span className="text-[#64748B] flex items-center gap-2">
                     <span>🅿️</span>
                     <span>Voirie recommandée</span>
                   </span>
-                  <span className="font-medium text-[#111827]">
+                  <span className="font-semibold text-[#0F172A]">
                     {logisticsAdvice.parkingMeter}
                   </span>
                 </div>
               </div>
 
               {/* Primary Call to Action */}
-              <div className="pt-2 space-y-2">
+              <div className="pt-2 space-y-2.5">
                 <button
                   type="button"
                   onClick={() => push(`/devis/?volume=${totalVolume}`)}
-                  className="w-full h-12 rounded-xl bg-[#0082CA] hover:bg-[#006FA8] active:scale-[0.99] text-white text-[15px] font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-[#0082CA]/25"
+                  className="w-full h-13 rounded-2xl bg-gradient-to-r from-[#0082CA] to-[#006FA8] hover:from-[#0074B5] hover:to-[#005B8C] active:scale-[0.99] text-white text-[15px] font-bold transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#0082CA]/30 hover:shadow-xl hover:shadow-[#0082CA]/40"
                 >
                   <span>Demander un devis ({totalVolume} m³)</span>
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                   </svg>
                 </button>
 
-                <p className="text-[11.5px] text-[#6B7280] text-center">
+                <p className="text-[11.5px] text-[#64748B] text-center font-medium">
                   Devis gratuit sous 2h · Injection automatique du volume
                 </p>
               </div>
 
               {/* Quick Actions (Copy / Detail Drawer) */}
-              <div className="pt-2 border-t border-[#F3F4F6] flex items-center justify-between text-[12px]">
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[12.5px]">
                 <button
                   type="button"
                   onClick={copyToClipboard}
                   disabled={selectedItemsSummary.length === 0}
-                  className="text-[#0082CA] font-medium hover:underline disabled:opacity-40 cursor-pointer flex items-center gap-1"
+                  className="text-[#0082CA] font-bold hover:underline disabled:opacity-40 cursor-pointer flex items-center gap-1.5"
                 >
                   {copyFeedback ? '✓ Copié !' : '📋 Copier la liste'}
                 </button>
@@ -676,7 +707,7 @@ export const VolumePage: React.FC = () => {
                   type="button"
                   onClick={() => setShowItemListModal(true)}
                   disabled={selectedItemsSummary.length === 0}
-                  className="text-[#59616C] font-medium hover:text-[#111827] disabled:opacity-40 cursor-pointer"
+                  className="text-[#64748B] font-semibold hover:text-[#0F172A] disabled:opacity-40 cursor-pointer"
                 >
                   Voir détail ({selectedItemsSummary.length}) →
                 </button>
@@ -693,43 +724,43 @@ export const VolumePage: React.FC = () => {
       {/* ================= MODAL: DETAIL LIST OF SELECTED ITEMS ================= */}
       {showItemListModal && (
         <div 
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
           onClick={() => setShowItemListModal(false)}
         >
           <div 
-            className="bg-white rounded-2xl max-w-lg w-full max-h-[85vh] flex flex-col shadow-2xl border border-[#E5E7EB] overflow-hidden"
+            className="bg-white rounded-3xl max-w-lg w-full max-h-[85vh] flex flex-col shadow-2xl border border-[#E2E8F0] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="p-4 sm:p-5 border-b border-[#E5E7EB] flex items-center justify-between">
+            <div className="p-5 border-b border-[#E2E8F0] flex items-center justify-between">
               <div>
-                <h3 className="text-[16px] font-semibold text-[#111827]">
+                <h3 className="text-[17px] font-bold text-[#0F172A] font-display">
                   Votre sélection ({totalItemsCount} articles)
                 </h3>
-                <p className="text-[12px] text-[#6B7280]">
+                <p className="text-[12.5px] text-[#64748B] mt-0.5">
                   Total cubage calculé : <strong className="text-[#0082CA] font-bold">{totalVolume} m³</strong>
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowItemListModal(false)}
-                className="w-8 h-8 rounded-lg bg-[#F9FAFB] hover:bg-[#F3F4F6] flex items-center justify-center text-[#6B7280] font-bold cursor-pointer"
+                className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 font-bold cursor-pointer transition-colors"
               >
                 ✕
               </button>
             </div>
 
             {/* Modal List */}
-            <div className="p-4 sm:p-5 overflow-y-auto space-y-2 flex-1 divide-y divide-[#F3F4F6]">
+            <div className="p-5 overflow-y-auto space-y-2 flex-1 divide-y divide-slate-100">
               {selectedItemsSummary.map(({ item, qty }) => (
-                <div key={item.id} className="pt-2 first:pt-0 flex items-center justify-between text-[13px]">
+                <div key={item.id} className="pt-2.5 first:pt-0 flex items-center justify-between text-[13.5px]">
                   <div className="flex items-center gap-2.5 min-w-0 pr-2">
                     <span className="font-mono font-bold text-[#0082CA] shrink-0">{qty}×</span>
-                    <span className="truncate text-[#111827] font-medium">{item.name}</span>
+                    <span className="truncate text-[#0F172A] font-semibold">{item.name}</span>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="font-mono text-[#6B7280] text-[12px]">
+                  <div className="flex items-center gap-2.5 shrink-0">
+                    <span className="font-mono text-[#64748B] font-medium text-[12.5px]">
                       {Math.round(item.m3 * qty * 10) / 10} m³
                     </span>
                     <button
@@ -746,11 +777,11 @@ export const VolumePage: React.FC = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 border-t border-[#E5E7EB] bg-[#F9FAFB] flex items-center justify-between gap-3">
+            <div className="p-4.5 border-t border-[#E2E8F0] bg-slate-50 flex items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={resetAll}
-                className="text-[12px] text-red-600 hover:underline font-medium cursor-pointer"
+                className="text-[12.5px] text-red-600 hover:underline font-bold cursor-pointer"
               >
                 Tout réinitialiser
               </button>
@@ -761,7 +792,7 @@ export const VolumePage: React.FC = () => {
                   setShowItemListModal(false);
                   push(`/devis/?volume=${totalVolume}`);
                 }}
-                className="px-4 py-2 rounded-xl bg-[#0082CA] text-white text-[13px] font-semibold hover:bg-[#006FA8] cursor-pointer"
+                className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-[#0082CA] to-[#006FA8] text-white text-[13.5px] font-bold hover:from-[#0074B5] hover:to-[#005B8C] cursor-pointer shadow-md shadow-[#0082CA]/20"
               >
                 Passer au devis →
               </button>
@@ -770,18 +801,18 @@ export const VolumePage: React.FC = () => {
         </div>
       )}
 
-      {/* ================= MOBILE BOTTOM BAR (<15% viewport height) ================= */}
+      {/* ================= MOBILE BOTTOM BAR ================= */}
       {totalVolume > 0 && (
-        <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-[#E5E7EB] p-3 shadow-lg z-40 flex items-center justify-between gap-3">
+        <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-[#E2E8F0] p-3.5 shadow-xl z-40 flex items-center justify-between gap-3">
           <div>
-            <span className="text-[10.5px] text-[#6B7280] uppercase font-mono block">Volume calculé</span>
+            <span className="text-[10.5px] text-[#64748B] uppercase font-mono font-bold block">Volume calculé</span>
             <div className="flex items-baseline gap-1">
-              <span className="font-mono text-[22px] font-bold text-[#111827]">{totalVolume}</span>
+              <span className="font-mono text-[24px] font-bold text-[#0F172A]">{totalVolume}</span>
               <span className="text-[13px] font-bold text-[#0082CA]">m³</span>
               <button
                 type="button"
                 onClick={() => setShowItemListModal(true)}
-                className="text-[11px] text-[#0082CA] underline ml-2 font-mono"
+                className="text-[11.5px] text-[#0082CA] underline ml-2 font-mono font-bold"
               >
                 ({totalItemsCount} art.)
               </button>
@@ -791,11 +822,11 @@ export const VolumePage: React.FC = () => {
           <button
             type="button"
             onClick={() => push(`/devis/?volume=${totalVolume}`)}
-            className="px-4 h-10 rounded-xl bg-[#0082CA] hover:bg-[#006FA8] text-white text-[13px] font-semibold flex items-center gap-1.5 shadow-sm cursor-pointer"
+            className="px-5 h-11 rounded-2xl bg-gradient-to-r from-[#0082CA] to-[#006FA8] text-white text-[13.5px] font-bold flex items-center gap-2 shadow-md shadow-[#0082CA]/25 cursor-pointer"
           >
             <span>Devis ({totalVolume} m³)</span>
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>
           </button>
         </div>

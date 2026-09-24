@@ -4,6 +4,8 @@
  */
 
 import React from 'react';
+import { BLOG_ARTICLES } from '../data/articles';
+import { SITE_URL } from '../data/blogSeo';
 import { useRouter, Link } from '../router';
 
 export interface BreadcrumbCrumb {
@@ -21,6 +23,8 @@ export const Breadcrumb: React.FC = () => {
 
   // Derive breadcrumbs trail based on the current pathname
   const getCrumbs = (): BreadcrumbCrumb[] => {
+    const article = BLOG_ARTICLES.find(item => pathname === `/blog/${item.slug}/`);
+    if (article) return [{ label: 'Accueil', href: '/' }, { label: 'Conseils', href: '/blog/' }, { label: article.shortTitle }];
     switch (pathname) {
       case '/services/':
         return [
@@ -56,6 +60,10 @@ export const Breadcrumb: React.FC = () => {
           { label: 'Accueil', href: '/' },
           { label: 'Qui sommes-nous' },
         ];
+      case '/secteurs/':
+        return [{ label: 'Accueil', href: '/' }, { label: 'Nos secteurs' }];
+      case '/blog/':
+        return [{ label: 'Accueil', href: '/' }, { label: 'Conseils & guides' }];
       case '/volume/':
         return [
           { label: 'Accueil', href: '/' },
@@ -99,7 +107,7 @@ export const Breadcrumb: React.FC = () => {
       '@type': 'ListItem',
       position: index + 1,
       name: crumb.label,
-      item: crumb.href ? `https://wemove.fr${crumb.href}` : `https://wemove.fr${pathname}`,
+      item: crumb.href ? `${SITE_URL}${crumb.href}` : `${SITE_URL}${pathname}`,
     })),
   };
 
@@ -194,3 +202,5 @@ export const Breadcrumb: React.FC = () => {
     </div>
   );
 };
+
+

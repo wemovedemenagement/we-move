@@ -109,82 +109,117 @@ const STEPS: StepDetail[] = [
 
 export const ProcessSection: React.FC = () => {
   return (
-    <section id="methode" className="py-16 sm:py-24 lg:py-28 bg-[#FAFAF8] border-b border-[#E6E8EB]/70 relative overflow-hidden">
+    <section id="methode" className="relative py-20 sm:py-28 lg:py-32 bg-[#FAFAF8] border-b border-[#E2E8F0]/70 overflow-hidden">
       
-      {/* Decorative ambient background accents */}
+      {/* Decorative ambient background radial lighting */}
       <div 
-        className="absolute top-1/2 left-0 -translate-y-1/2 w-96 h-96 bg-[#0082CA]/5 rounded-full blur-3xl pointer-events-none"
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#0082CA]/10 via-slate-100/30 to-transparent pointer-events-none blur-3xl -z-0" 
         aria-hidden="true" 
       />
       <div 
-        className="absolute bottom-0 right-0 w-80 h-80 bg-[#10B981]/5 rounded-full blur-3xl pointer-events-none"
+        className="absolute bottom-0 right-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none -z-0"
         aria-hidden="true" 
       />
 
-      <div className="max-w-[1240px] mx-auto px-5 sm:px-8 relative">
+      <div className="relative z-10 max-w-[1240px] mx-auto px-5 sm:px-8">
         
-        {/* ================= 1. SECTION HEADER (PREMIUM EDITORIAL) ================= */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-12 sm:mb-16">
-          <div className="max-w-2xl space-y-3">
-            <div className="text-[12.5px] font-mono uppercase tracking-wider text-[#0082CA] font-semibold flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#0082CA]" />
+        {/* ================= 1. EXECUTIVE NEO-GLASS HEADER ================= */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-14 sm:mb-20">
+          <div className="max-w-2xl space-y-4">
+            
+            {/* Néo-Glassmorphic Badge */}
+            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-[#0082CA]/25 text-[#0082CA] shadow-2xs font-mono text-[12px] font-semibold tracking-wide">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0082CA] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#0082CA]"></span>
+              </span>
               <span>Méthode de travail · Rigueur & sérénité</span>
             </div>
 
-            <h2 className="text-[32px] sm:text-[42px] lg:text-[46px] font-bold text-[#111827] tracking-tight leading-[1.14] [text-wrap:balance]">
-              Préparer votre déménagement, étape par étape.
+            {/* Headline with Gradient Accent */}
+            <h2 className="text-[34px] sm:text-[46px] lg:text-[52px] font-bold text-[#0F172A] tracking-tight leading-[1.12] font-display [text-wrap:balance]">
+              Préparer votre déménagement,{' '}
+              <span className="relative inline-block">
+                <span className="bg-gradient-to-r from-[#0082CA] via-[#0284C7] to-[#0369A1] bg-clip-text text-transparent">
+                  étape par étape
+                </span>
+                <svg
+                  className="absolute -bottom-1 left-0 w-full h-2.5 text-[#0082CA]/30"
+                  viewBox="0 0 100 20"
+                  preserveAspectRatio="none"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M0 15 Q 50 0, 100 15"
+                    stroke="currentColor"
+                    strokeWidth="6"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </span>
+              .
             </h2>
 
-            <p className="text-[16.5px] sm:text-[18px] text-[#475569] leading-relaxed max-w-xl">
+            {/* Subtitle */}
+            <p className="text-[17px] sm:text-[18.5px] text-[#475569] leading-relaxed max-w-xl font-normal">
               Une organisation rigoureuse en amont évite les imprévus le jour J. Voici comment se déroule la préparation de votre intervention avec WE MOVE.
             </p>
           </div>
 
           {/* Quick Pillars on the right */}
-          <div className="flex flex-col sm:flex-row lg:flex-col gap-2.5 lg:items-end shrink-0 pt-2 lg:pt-0">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white border border-[#E2E8F0] text-[12.5px] font-medium text-[#1E293B] shadow-2xs">
-              <span className="w-2 h-2 rounded-full bg-[#10B981]" />
+          <div className="flex flex-col sm:flex-row lg:flex-col gap-3 lg:items-end shrink-0 pt-2 lg:pt-0">
+            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-white/90 backdrop-blur-md border border-emerald-200/80 text-[13px] font-semibold text-slate-800 shadow-2xs">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
               <span>Accompagnement personnalisé de A à Z</span>
             </div>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white border border-[#E2E8F0] text-[12.5px] font-medium text-[#1E293B] shadow-2xs">
-              <span className="w-2 h-2 rounded-full bg-[#0082CA]" />
+            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-white/90 backdrop-blur-md border border-sky-200/80 text-[13px] font-semibold text-slate-800 shadow-2xs">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#0082CA]" />
               <span>Devis ferme et transparent sous 24h</span>
             </div>
           </div>
         </div>
 
         {/* ================= 2. 4-STEPS TIMELINE GRID ================= */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-7 relative">
           
-          {/* Subtle horizontal connecting bar for large screens */}
+          {/* Subtle horizontal connecting progress bar for desktop */}
           <div 
-            className="hidden lg:block absolute top-[45px] left-12 right-12 h-[2px] bg-gradient-to-r from-[#0082CA]/20 via-[#0082CA]/40 to-[#10B981]/40 -z-0"
+            className="hidden lg:block absolute top-[52px] left-16 right-16 h-[2.5px] bg-gradient-to-r from-[#0082CA] via-sky-400 to-emerald-400 opacity-30 z-0"
             aria-hidden="true"
           />
 
           {STEPS.map((step) => (
             <div
               key={step.number}
-              className="bg-white rounded-2xl border border-[#E2E8F0] p-6 sm:p-7 flex flex-col justify-between hover:border-[#CBD5E1] hover:shadow-xl hover:shadow-slate-900/5 transition-all duration-300 relative group z-10"
+              className="group relative bg-white rounded-3xl border border-[#E2E8F0] p-6 sm:p-7 flex flex-col justify-between hover:border-[#0082CA]/40 shadow-xs hover:shadow-2xl hover:shadow-[#0082CA]/10 transition-all duration-500 hover:-translate-y-1.5 z-10"
             >
+              {/* Top Accent Gradient Line on Hover */}
+              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#0082CA] via-sky-400 to-[#0284C7] opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20 rounded-t-3xl" />
+
               <div>
                 {/* Step Top Row: Number Circle + Badge */}
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-6 relative z-10">
                   {/* Step Number Circle with Icon */}
                   <div
-                    className={`w-13 h-13 rounded-2xl ${step.iconBg} ${step.iconColor} border border-white flex items-center justify-center font-mono font-bold text-[17px] shadow-sm transition-transform group-hover:scale-105 group-hover:shadow-md`}
+                    className={`w-14 h-14 rounded-2xl ${step.iconBg} ${step.iconColor} border border-white/80 flex items-center justify-center font-mono font-bold text-[18px] shadow-md transition-all duration-500 group-hover:scale-110 group-hover:shadow-xl group-hover:border-[#0082CA]/30`}
                   >
-                    {step.number}
+                    {step.icon}
                   </div>
 
                   {/* Micro badge */}
-                  <span className="text-[11px] font-mono font-semibold px-2.5 py-1 rounded-md bg-[#F1F5F9] text-[#475569]">
+                  <span className="text-[11.5px] font-mono font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200/60 shadow-2xs">
                     {step.badge}
                   </span>
                 </div>
 
+                {/* Step Number Indicator */}
+                <div className="text-[12px] font-mono font-bold text-[#0082CA] tracking-wider mb-1 uppercase">
+                  Étape {step.number}
+                </div>
+
                 {/* Step Title */}
-                <h3 className="text-[17px] sm:text-[18px] font-bold text-[#111827] group-hover:text-[#0082CA] transition-colors leading-snug">
+                <h3 className="text-[18px] sm:text-[19px] font-bold text-[#0F172A] group-hover:text-[#0082CA] transition-colors leading-snug font-display">
                   {step.title}
                 </h3>
 
@@ -194,18 +229,15 @@ export const ProcessSection: React.FC = () => {
                 </p>
 
                 {/* Key check highlights */}
-                <ul className="mt-5 space-y-2 pt-4 border-t border-[#F1F5F9] text-[12.5px] text-[#334155]">
+                <ul className="mt-5 space-y-2.5 pt-4 border-t border-[#F1F5F9] text-[12.5px] text-[#334155]">
                   {step.highlights.map((item, hIdx) => (
-                    <li key={hIdx} className="flex items-start gap-2">
-                      <svg
-                        className="w-3.5 h-3.5 text-[#10B981] shrink-0 mt-0.5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>{item}</span>
+                    <li key={hIdx} className="flex items-start gap-2.5">
+                      <div className="w-4.5 h-4.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-emerald-500 group-hover:text-white transition-colors duration-300">
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <span className="font-medium">{item}</span>
                     </li>
                   ))}
                 </ul>
@@ -213,8 +245,8 @@ export const ProcessSection: React.FC = () => {
 
               {/* Bottom deliverable footer badge */}
               <div className="mt-6 pt-4 border-t border-[#F1F5F9] flex items-center justify-between text-[11.5px]">
-                <span className="text-[#94A3B8] font-mono">{step.phase}</span>
-                <span className="font-semibold text-[#0082CA] bg-[#EBF5FB] px-2 py-0.5 rounded">
+                <span className="text-[#94A3B8] font-mono font-semibold">{step.phase}</span>
+                <span className="font-semibold text-[#0082CA] bg-[#EBF5FB] px-2.5 py-1 rounded-xl border border-[#0082CA]/20">
                   {step.deliverable}
                 </span>
               </div>
@@ -222,30 +254,33 @@ export const ProcessSection: React.FC = () => {
           ))}
         </div>
 
-        {/* ================= 3. BOTTOM ENGAGEMENT BANNER ================= */}
-        <div className="mt-12 sm:mt-16 p-6 sm:p-9 bg-white rounded-2xl border border-[#E2E8F0] shadow-sm flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-          <div className="flex items-start gap-4 sm:gap-5 max-w-2xl">
-            <div className="w-12 h-12 rounded-xl bg-[#EBF5FB] text-[#0082CA] flex items-center justify-center shrink-0">
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        {/* ================= 3. SUBLIMATED BOTTOM ENGAGEMENT BANNER ================= */}
+        <div className="mt-14 sm:mt-20 p-7 sm:p-10 bg-gradient-to-br from-white via-slate-50/80 to-sky-50/30 rounded-3xl border border-[#E2E8F0] shadow-md relative overflow-hidden flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 group">
+          {/* Ambient glow decoration inside banner */}
+          <div className="absolute top-0 right-0 w-80 h-80 bg-sky-100/50 rounded-full blur-3xl pointer-events-none -z-0" />
+
+          <div className="relative z-10 flex items-start gap-4 sm:gap-6 max-w-2xl">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#0082CA] to-[#00537A] text-white flex items-center justify-center shrink-0 shadow-md shadow-[#0082CA]/20 group-hover:scale-105 transition-transform duration-300">
+              <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
-            <div>
-              <h3 className="text-[17px] sm:text-[18px] font-bold text-[#111827]">
+            <div className="space-y-1.5">
+              <h3 className="text-[18.5px] sm:text-[20px] font-bold text-[#0F172A] font-display">
                 Prêt à démarrer l’étape 1 en quelques clics ?
               </h3>
-              <p className="mt-1 text-[14px] text-[#475569] leading-relaxed">
+              <p className="text-[14.5px] sm:text-[15.5px] text-[#475569] leading-relaxed">
                 Obtenez une proposition détaillée sous 24h ou contactez nos spécialistes pour une visite technique d’accès à Paris & en Île-de-France.
               </p>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto shrink-0">
+          <div className="relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto shrink-0">
             <Link
               href="/volume/"
-              className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl border border-[#CBD5E1] text-[13.5px] font-semibold text-[#1E293B] hover:border-[#0082CA] hover:text-[#0082CA] hover:bg-[#F8FAFC] transition-colors"
+              className="inline-flex items-center justify-center gap-2.5 h-12 px-6 rounded-2xl border border-[#CBD5E1] bg-white text-[14px] font-semibold text-[#1E293B] hover:border-[#0082CA] hover:text-[#0082CA] hover:bg-[#F8FAFC] hover:shadow-sm transition-all duration-300"
             >
-              <svg className="w-4 h-4 text-[#64748B]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4.5 h-4.5 text-[#0082CA]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
               <span>Calculateur de cubage</span>
@@ -253,11 +288,11 @@ export const ProcessSection: React.FC = () => {
 
             <Link
               href="/devis/"
-              className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-xl bg-[#0082CA] text-white text-[13.5px] font-semibold hover:bg-[#006FA8] transition-colors shadow-xs"
+              className="inline-flex items-center justify-center gap-2.5 h-12 px-7 rounded-2xl bg-gradient-to-r from-[#0082CA] to-[#006FA8] text-white text-[14px] font-bold hover:from-[#0074B5] hover:to-[#005B8C] transition-all duration-300 shadow-md shadow-[#0082CA]/20 hover:shadow-lg hover:shadow-[#0082CA]/30"
             >
               <span>Demander mon devis</span>
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 5l7 7-7 7" />
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
               </svg>
             </Link>
           </div>

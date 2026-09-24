@@ -52,7 +52,14 @@ export const RouterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return '/';
   });
 
-  const pathname = normalizePath(currentUrl);
+  const legacyArticle = parseQuery(currentUrl).article;
+  const pathname = legacyArticle && normalizePath(currentUrl) === '/blog/' ? `/blog/${encodeURIComponent(legacyArticle)}/` : normalizePath(currentUrl);
+  useEffect(() => {
+    if (legacyArticle && normalizePath(currentUrl) === '/blog/') {
+      window.history.replaceState({}, '', pathname);
+      setCurrentUrl(pathname);
+    }
+  }, [currentUrl, legacyArticle, pathname]);
   const query = parseQuery(currentUrl);
 
   useEffect(() => {
@@ -101,6 +108,7 @@ export const Link: React.FC<LinkProps> = ({
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (onClick) onClick(e);
+    if (e.defaultPrevented || rest.target === '_blank') return;
     // Don't intercept if modified click (cmd, ctrl, shift, or middle click)
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) {
       return;

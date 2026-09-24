@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -7,27 +8,35 @@ import { RouterProvider, useRouter, Link } from './router';
 import { Header } from './components/Header';
 import { Breadcrumb } from './components/Breadcrumb';
 import { Footer } from './components/Footer';
+import { MobileQuickBar } from './components/MobileQuickBar';
 
 // Pages
+import { RouteSeo } from './components/RouteSeo';
+import { BLOG_ARTICLES } from './data/articles';
+import { ArticlePage } from './pages/ArticlePage';
 import { HomePage } from './pages/HomePage';
-import { ServicesPage } from './pages/ServicesPage';
-import { ServiceParticuliersPage } from './pages/ServiceParticuliersPage';
-import { ServiceEntreprisesPage } from './pages/ServiceEntreprisesPage';
-import { ServiceStockagePage } from './pages/ServiceStockagePage';
-import { ServiceMonteMeublesPage } from './pages/ServiceMonteMeublesPage';
-import { AboutPage } from './pages/AboutPage';
-import { SectorsPage } from './pages/SectorsPage';
-import { BlogPage } from './pages/BlogPage';
-import { VolumePage } from './pages/VolumePage';
-import { QuotePage } from './pages/QuotePage';
-import { ContactPage } from './pages/ContactPage';
-import { LegalPage } from './pages/LegalPage';
-import { PrivacyPage } from './pages/PrivacyPage';
+const ServicesPage = lazy(() => import('./pages/ServicesPage').then(module => ({ default: module.ServicesPage })));
+const ServiceParticuliersPage = lazy(() => import('./pages/ServiceParticuliersPage').then(module => ({ default: module.ServiceParticuliersPage })));
+const ServiceEntreprisesPage = lazy(() => import('./pages/ServiceEntreprisesPage').then(module => ({ default: module.ServiceEntreprisesPage })));
+const ServiceStockagePage = lazy(() => import('./pages/ServiceStockagePage').then(module => ({ default: module.ServiceStockagePage })));
+const ServiceMonteMeublesPage = lazy(() => import('./pages/ServiceMonteMeublesPage').then(module => ({ default: module.ServiceMonteMeublesPage })));
+const AboutPage = lazy(() => import('./pages/AboutPage').then(module => ({ default: module.AboutPage })));
+const SectorsPage = lazy(() => import('./pages/SectorsPage').then(module => ({ default: module.SectorsPage })));
+const BlogPage = lazy(() => import('./pages/BlogPage').then(module => ({ default: module.BlogPage })));
+const VolumePage = lazy(() => import('./pages/VolumePage').then(module => ({ default: module.VolumePage })));
+const QuotePage = lazy(() => import('./pages/QuotePage').then(module => ({ default: module.QuotePage })));
+const ContactPage = lazy(() => import('./pages/ContactPage').then(module => ({ default: module.ContactPage })));
+const LegalPage = lazy(() => import('./pages/LegalPage').then(module => ({ default: module.LegalPage })));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage').then(module => ({ default: module.PrivacyPage })));
 
 function PageSwitch() {
   const { pathname } = useRouter();
 
   const renderCurrentPage = () => {
+    if (pathname.startsWith('/blog/') && pathname !== '/blog/') {
+      const article = BLOG_ARTICLES.find(item => pathname === `/blog/${item.slug}/`);
+      if (article) return <ArticlePage key={article.slug} article={article} />;
+    }
     switch (pathname) {
       case '/':
         return <HomePage />;
@@ -61,22 +70,22 @@ function PageSwitch() {
         return (
           <div className="py-24 px-6 text-center max-w-xl mx-auto space-y-5">
             <div className="text-[14px] font-mono text-[#0082CA]">Erreur 404</div>
-            <h1 className="text-[28px] font-semibold text-[#20252B]">
+            <h1 className="text-[28px] font-semibold text-[#0F172A]">
               Page introuvable
             </h1>
-            <p className="text-[15px] text-[#59616C]">
-              L'adresse <code className="bg-[#FAFAF8] px-2 py-0.5 border border-[#E6E8EB] rounded text-sm text-[#20252B]">{pathname}</code> n'existe pas ou a été déplacée.
+            <p className="text-[15px] text-[#475569]">
+              L'adresse <code className="bg-[#FAFAF8] px-2 py-0.5 border border-[#E2E8F0] rounded text-sm text-[#0F172A]">{pathname}</code> n'existe pas ou a été déplacée.
             </p>
             <div className="pt-4 flex justify-center gap-4">
               <Link
                 href="/"
-                className="px-6 h-11 rounded-md bg-[#0082CA] text-white text-[14px] font-medium hover:bg-[#006FA8] transition-colors flex items-center justify-center"
+                className="px-6 h-11 rounded-md bg-[#0082CA] text-white text-[14px] font-medium hover:bg-[#006FA8] transition-colors flex items-center justify-center shadow-sm"
               >
                 Retour à l'accueil
               </Link>
               <Link
                 href="/services/"
-                className="px-6 h-11 rounded-md border border-[#E6E8EB] bg-white text-[#20252B] text-[14px] font-medium hover:bg-[#FAFAF8] transition-colors flex items-center justify-center"
+                className="px-6 h-11 rounded-md border border-[#E2E8F0] bg-white text-[#0F172A] text-[14px] font-medium hover:bg-[#FAFAF8] transition-colors flex items-center justify-center"
               >
                 Voir les prestations
               </Link>
@@ -87,32 +96,24 @@ function PageSwitch() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white text-[#20252B] selection:bg-[#0082CA]/10 selection:text-[#0082CA]">
-      
-      {/* Discreet Navigation Helper Bar */}
-      <aside 
-        aria-label="Informations d'environnement" 
-        className="w-full bg-[#FAFAF8] border-b border-[#E6E8EB] py-1.5 px-4 text-center text-[12px] text-[#59616C]"
-      >
-        <span>
-          WE MOVE · Architecture multi-pages Next.js intégrée · Route active : <strong className="font-mono text-[#20252B]">{pathname}</strong>
-        </span>
-      </aside>
-
+    <div className="min-h-screen flex flex-col bg-white text-[#0F172A] selection:bg-[#0082CA]/15 selection:text-[#0082CA]">
       {/* Persistent Global Header */}
+      <RouteSeo />
       <Header />
 
       {/* Breadcrumb Navigation Bar directly under Header */}
       <Breadcrumb />
 
-      {/* Dynamic Page Content */}
-      <main className="flex-1">
-        {renderCurrentPage()}
+      {/* Dynamic Page Content with bottom padding on mobile for MobileQuickBar */}
+      <main id="main-content" tabIndex={-1} className={`flex-1 ${pathname === '/' ? '' : 'interior-page'}`}>
+        <Suspense fallback={<div className="wm-container py-20" role="status">Préparation de votre page…</div>}>{renderCurrentPage()}</Suspense>
       </main>
 
       {/* Persistent Global Footer */}
       <Footer />
 
+      {/* Mobile Sticky Action Bar */}
+      {pathname !== '/devis/' && <MobileQuickBar />}
     </div>
   );
 }
@@ -124,3 +125,6 @@ export default function App() {
     </RouterProvider>
   );
 }
+
+
+

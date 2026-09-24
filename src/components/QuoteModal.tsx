@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from 'react';
+import { AddressAutocompleteInput } from './AddressAutocompleteInput';
 
 interface QuoteModalProps {
   isOpen: boolean;
@@ -149,20 +150,19 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, initial
                 </div>
               </div>
 
-              {/* Villes départ et arrivée */}
+              {/* Villes départ et arrivée avec Autocomplete */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="dept-city" className="block text-[13px] font-medium text-[#20252B] mb-1">
                     Adresse ou ville de départ *
                   </label>
-                  <input
+                  <AddressAutocompleteInput
                     id="dept-city"
-                    type="text"
                     required
-                    placeholder="Ex: Paris 15e, Lyon..."
                     value={departureCity}
-                    onChange={(e) => setDepartureCity(e.target.value)}
-                    className="w-full h-10 px-3 rounded-md border border-[#E6E8EB] text-[14px] text-[#20252B] focus:border-[#0082CA] focus:outline-hidden"
+                    onChange={setDepartureCity}
+                    placeholder="Ex: Paris 15e, Lyon..."
+                    iconColor="#0082CA"
                   />
                   <div className="mt-1.5 flex items-center justify-between text-[12px] text-[#59616C]">
                     <span className="flex items-center gap-1.5">
@@ -192,14 +192,13 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, initial
                   <label htmlFor="arr-city" className="block text-[13px] font-medium text-[#20252B] mb-1">
                     Adresse ou ville d'arrivée *
                   </label>
-                  <input
+                  <AddressAutocompleteInput
                     id="arr-city"
-                    type="text"
                     required
-                    placeholder="Ex: Bordeaux, Nantes..."
                     value={arrivalCity}
-                    onChange={(e) => setArrivalCity(e.target.value)}
-                    className="w-full h-10 px-3 rounded-md border border-[#E6E8EB] text-[14px] text-[#20252B] focus:border-[#0082CA] focus:outline-hidden"
+                    onChange={setArrivalCity}
+                    placeholder="Ex: Bordeaux, Nantes..."
+                    iconColor="#10B981"
                   />
                   <div className="mt-1.5 flex items-center justify-between text-[12px] text-[#59616C]">
                     <span className="flex items-center gap-1.5">

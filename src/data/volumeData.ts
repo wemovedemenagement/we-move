@@ -10,6 +10,7 @@ export type FurnitureCategory =
   | 'Séjour'
   | 'Chambre'
   | 'Cuisine'
+  | 'Salle de bain'
   | 'Bureau'
   | 'Enfants'
   | 'Cartons'
@@ -454,6 +455,44 @@ export const INVENTORY_ITEMS: FurnitureItem[] = [
     category: 'Cuisine',
     m3: 1.2,
     iconType: 'wine-cellar',
+  },
+
+  // ================= MOBILIER : SALLE DE BAIN =================
+  {
+    id: 'meuble_sous_vasque',
+    name: 'Meuble sous-vasque',
+    subtitle: 'Meuble lavabo 2-4 tiroirs',
+    group: 'mobilier',
+    category: 'Salle de bain',
+    m3: 0.8,
+    iconType: 'bath',
+  },
+  {
+    id: 'colonne_sdb',
+    name: 'Colonne de salle de bain',
+    subtitle: 'Meuble haut rangement serviettes',
+    group: 'mobilier',
+    category: 'Salle de bain',
+    m3: 0.6,
+    iconType: 'cabinet',
+  },
+  {
+    id: 'miroir_sdb',
+    name: 'Miroir / Armoire de toilette',
+    subtitle: 'Miroir rétroéclairé ou armoire',
+    group: 'mobilier',
+    category: 'Salle de bain',
+    m3: 0.3,
+    iconType: 'frame',
+  },
+  {
+    id: 'panier_linge',
+    name: 'Panier à linge & Accessoires',
+    subtitle: 'Bac à linge, pèse-personne, étagère',
+    group: 'mobilier',
+    category: 'Salle de bain',
+    m3: 0.3,
+    iconType: 'boxes',
   },
   {
     id: 'table_cuisine',
