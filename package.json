@@ -11,7 +11,8 @@
     "lint": "tsc --noEmit",
     "test:seo": "node scripts/test-seo.mjs",
     "start": "node server.mjs",
-    "test:server": "node scripts/test-server.mjs"
+    "test:server": "node scripts/test-server.mjs",
+    "test:performance": "node scripts/test-performance.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

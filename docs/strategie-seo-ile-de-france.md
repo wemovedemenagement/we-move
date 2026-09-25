@@ -12,7 +12,8 @@ Le positionnement retenu est une préparation claire du déménagement : inventa
 
 - Avant : même title et description pour la plupart des pages, rendu HTML initial vide hors six articles, sitemap limité au blog. Après : référentiel SEO commun au navigateur et au pré-rendu, 21 pages HTML, sitemap global et robots.txt générés à la compilation.
 - Titles et descriptions distincts ; canoniques sans paramètres de formulaire ; Organization, WebSite, WebPage et Service sur les pages concernées. Les articles conservent BlogPosting et le fil d’Ariane visible produit son balisage. Aucun avis, prix ou date de publication inventés dans les nouveaux schémas.
-- Pages légales accessibles mais noindex,follow et absentes du sitemap ; pages inconnues noindex. Une vraie réponse HTTP 404 reste à configurer chez l’hébergeur.
+- Pages légales accessibles mais noindex,follow et absentes du sitemap ; avançons
+- pages inconnues noindex. Une vraie réponse HTTP 404 reste à configurer chez l’hébergeur.
 - H1 commerciaux explicites tout en conservant le style premium. Sept blocs pratiques distincts relient les pages de services, le calculateur et les guides.
 - Six titres d’articles clarifiés. Deux guides enrichis : checklist Paris et calcul du volume. Ressources officielles sur le stationnement et le changement d’adresse ; liens contextuels des six articles vers leur service pertinent.
 - Cinq images JPG principales converties en WebP sans changement de dimensions : 4 451 459 → 712 686 octets, soit 84 % de réduction pour cet ensemble. Cela ne constitue pas une mesure de Core Web Vitals.
@@ -89,3 +90,29 @@ Pour la fiche Google Business Profile : vérifier l’accès et la propriété, 
 - Ville de Paris, stationnement de déménagement : https://www.paris.fr/pages/faq-demenagements-4404
 - Service Public, changement d’adresse : https://www.service-public.gouv.fr/particuliers/vosdroits/R11193
 - Échantillon concurrentiel consulté le 25/09/2026, observation qualitative uniquement : https://www.bsmove.com/paris ; https://demenagementgauvin.com/ ; https://idevexpress.com/ . Aucun classement stable ni niveau de trafic déduit de cet échantillon.
+
+## Deuxième lot éditorial — 25 septembre 2026
+
+Quatre guides existants approfondis, URL conservées : monte-meubles (repérage, démarches, périmètre), bureaux (zonage, accès, reprise), stockage (accès, coût complet, restitution), objets fragiles (conditionnement et tâches). Chaque guide compte désormais six sections ordonnées par étape.
+
+Nouveau guide `/blog/prix-demenagement-paris-devis/` : intention budget et comparaison de devis, avec grille de lecture en six postes. Pas de tarifs ni de faux cas chiffrés ; les prix propres à We Move restent à documenter par des propositions réelles validées. Source officielle pour les informations générales du devis : https://www.service-public.gouv.fr/particuliers/vosdroits/F33997 .
+
+Liens entrants depuis le journal, la checklist et la page particuliers ; liens sortants vers le calculateur, les formules et la demande de devis. Catégorie « Budget & devis » dans le journal. Appels à l’action contextualisés pour les guides entreprises, stockage et monte-meubles avec reprise du service dans le formulaire. Sept articles et 22 pages au total dans le pré-rendu après compilation.
+
+Restent à ajouter après collecte : photos et cas réels autorisés, précisions contractuelles sur les prestations, exemples de devis anonymisés. La stratégie de mesure reste à connecter aux données Search Console et aux demandes reçues ; cet enrichissement ne prouve pas encore un gain de trafic ou de conversion.
+
+
+## Troisième lot éditorial — 25 septembre 2026
+
+Guide `/blog/demenagement-sans-ascenseur-paris/` : repérage des deux accès, inventaire des objets encombrants, répartition du démontage, étude du monte-meubles et informations à transmettre pour le devis. Intention distincte du guide équipement : organiser un appartement sans ascenseur, sans présumer que le monte-meubles est nécessaire. Aucun supplément par étage ni prix inventé.
+
+Liens entrants depuis particuliers, monte-meubles et le guide des passages difficiles. Liens vers les services, le guide budget et le calculateur. Les démarches parisiennes renvoient à la page officielle de la Ville, consultée le 25 septembre 2026. Huit guides, 23 pages pré-rendues ; temps de lecture des cartes du journal désormais calculé à partir du contenu plutôt que fixé à deux minutes.
+
+La réception directe des devis reste à connecter à un fournisseur d’envoi. Les contenus et corrections de ce lot sont locaux jusqu’à leur publication ; aucune progression de trafic n’est déduite de leur seule création.
+
+
+## Performance du chargement — 25 septembre 2026
+
+Les métadonnées des guides sont séparées de leurs textes. Le routage, le fil d’Ariane et les balises SEO utilisent le catalogue léger ; la page article et les textes sont chargés avec les pages du blog. Les huit contenus ont été comparés intégralement avant/après sans différence. Le HTML des 23 pages reste pré-rendu.
+
+Fichier JavaScript principal : 333,37 → 285,49 ko (−14,4 %), et 102,99 → 88,73 ko en gzip (−13,8 %), sur les deux builds locaux successifs. Ces mesures portent sur ce fichier, pas sur une mesure de temps de chargement ni de Core Web Vitals. Le test `npm run test:performance` parcourt les dépendances statiques du point d’entrée pour détecter un retour des textes dans le chargement initial. Navigation journal → article vérifiée dans le build de production local ; contrôles TypeScript, SEO et serveur réussis.

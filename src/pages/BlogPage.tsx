@@ -3,7 +3,7 @@ import { ArrowRight, ArrowUpRight, BookOpen, Box, Clock3, Search, X } from 'luci
 import { Link } from '../router';
 import { BLOG_ARTICLES } from '../data/articles';
 import { readTime } from '../data/blogSeo';
-const categories = ['Tous les conseils', 'Organisation', 'Emballage', 'Accès & équipement', 'Stockage', 'Entreprises'];
+const categories = ['Tous les conseils', 'Budget & devis', 'Organisation', 'Emballage', 'Accès & équipement', 'Stockage', 'Entreprises'];
 const normalize = (value:string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 export function BlogPage() {
 
@@ -20,5 +20,5 @@ export function BlogPage() {
     <section className="journal-contact"><div className="wm-container"><div><p className="eyebrow">UN CONSEIL PLUS PERSONNEL ?</p><h2>Votre projet mérite<br />qu’on en parle.</h2></div><div><p>Les guides donnent des repères. Notre équipe vous accompagne pour les adapter à votre déménagement.</p><Link href="/contact/" className="text-link">Échangeons sur votre projet <ArrowUpRight size={18} /></Link></div></div></section></div>;
 }
 export function ArticleCard({article}:{article:typeof BLOG_ARTICLES[number]}) {
-  return <Link href={`/blog/${article.slug}/`} className="journal-card"><div className="journal-card-image"><img src={article.image} alt={article.alt} width="1200" height="896" loading="lazy" /><span className="journal-card-arrow"><ArrowUpRight size={21} /></span></div><div className="journal-card-copy"><div className="journal-card-meta"><span>{article.category}</span><span><Clock3 size={12} />2 min</span></div><h3>{article.shortTitle}</h3><p>{article.excerpt}</p><span className="journal-card-link">Lire le guide <ArrowRight size={14} /></span></div></Link>;
+  return <Link href={`/blog/${article.slug}/`} className="journal-card"><div className="journal-card-image"><img src={article.image} alt={article.alt} width="1200" height="896" loading="lazy" /><span className="journal-card-arrow"><ArrowUpRight size={21} /></span></div><div className="journal-card-copy"><div className="journal-card-meta"><span>{article.category}</span><span><Clock3 size={12} />{readTime(article)} min</span></div><h3>{article.shortTitle}</h3><p>{article.excerpt}</p><span className="journal-card-link">Lire le guide <ArrowRight size={14} /></span></div></Link>;
 }

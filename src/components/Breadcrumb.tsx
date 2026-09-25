@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { BLOG_ARTICLES } from '../data/articles';
+import { ARTICLE_CATALOG } from '../data/articleCatalog';
 import { SITE_URL } from '../data/blogSeo';
 import { useRouter, Link } from '../router';
 
@@ -23,7 +23,7 @@ export const Breadcrumb: React.FC = () => {
 
   // Derive breadcrumbs trail based on the current pathname
   const getCrumbs = (): BreadcrumbCrumb[] => {
-    const article = BLOG_ARTICLES.find(item => pathname === `/blog/${item.slug}/`);
+    const article = ARTICLE_CATALOG.find(item => pathname === `/blog/${item.slug}/`);
     if (article) return [{ label: 'Accueil', href: '/' }, { label: 'Conseils', href: '/blog/' }, { label: article.shortTitle }];
     switch (pathname) {
       case '/services/':

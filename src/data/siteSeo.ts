@@ -1,4 +1,4 @@
-import { BLOG_ARTICLES } from './articles';
+import { ARTICLE_CATALOG } from './articleCatalog';
 import { articleSeo, SITE_URL } from './blogSeo';
 
 export const SITE_PAGES: Record<string, { title: string; description: string; name: string; service?: string; noindex?: boolean }> = {
@@ -20,7 +20,7 @@ export const SITE_PAGES: Record<string, { title: string; description: string; na
 };
 
 export function routeSeo(pathname: string, origin = SITE_URL) {
-  const article = BLOG_ARTICLES.find(item => pathname === `/blog/${item.slug}/`);
+  const article = ARTICLE_CATALOG.find(item => pathname === `/blog/${item.slug}/`);
   const page = SITE_PAGES[pathname];
   const missing = !article && !page;
   const entityId = origin + '/#organization';

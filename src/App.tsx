@@ -14,8 +14,8 @@ import { MobileQuickBar } from './components/MobileQuickBar';
 // Pages
 import { RouteSeo } from './components/RouteSeo';
 import { SeoContent } from './components/SeoContent';
-import { BLOG_ARTICLES } from './data/articles';
-import { ArticlePage } from './pages/ArticlePage';
+import { ARTICLE_CATALOG } from './data/articleCatalog';
+const ArticleRoute = lazy(() => import('./pages/ArticleRoute'));
 import { HomePage } from './pages/HomePage';
 const ServicesPage = lazy(() => import('./pages/ServicesPage').then(module => ({ default: module.ServicesPage })));
 const ServiceParticuliersPage = lazy(() => import('./pages/ServiceParticuliersPage').then(module => ({ default: module.ServiceParticuliersPage })));
@@ -38,8 +38,8 @@ function PageSwitch() {
 
   const renderCurrentPage = () => {
     if (pathname.startsWith('/blog/') && pathname !== '/blog/') {
-      const article = BLOG_ARTICLES.find(item => pathname === `/blog/${item.slug}/`);
-      if (article) return <ArticlePage key={article.slug} article={article} />;
+      const article = ARTICLE_CATALOG.find(item => pathname === `/blog/${item.slug}/`);
+      if (article) return <ArticleRoute key={article.slug} slug={article.slug} />;
     }
     switch (pathname) {
       case '/':
@@ -112,7 +112,7 @@ function PageSwitch() {
 
       {/* Dynamic Page Content with bottom padding on mobile for MobileQuickBar */}
       <main id="main-content" tabIndex={-1} className={`flex-1 ${pathname === '/' ? '' : 'interior-page'}`}>
-        <Suspense fallback={<div className="wm-container py-20" role="status">Préparation de votre page…</div>}>{renderCurrentPage()}</Suspense><SeoContent pathname={pathname}/>
+        <Suspense fallback={<div className="wm-container py-20" role="status">Préparation de votre page…</div>}>{renderCurrentPage()}</Suspense>{pathname !== '/' && <SeoContent pathname={pathname}/>}
       </main>
 
       {/* Persistent Global Footer */}

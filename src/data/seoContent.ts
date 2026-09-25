@@ -26,7 +26,7 @@ export const SEO_CONTENT: Record<string, SeoContentEntry> = {
       { title: 'Les informations qui font la différence', text: 'Recensez les meubles, l’électroménager et les cartons, sans oublier cave, balcon et garage. Précisez les étages, la taille de l’ascenseur et la distance de portage. Pour une armoire ou un canapé encombrant, indiquez les dimensions et les possibilités de démontage. Des photos des passages étroits facilitent l’étude du projet.' },
       { title: 'Comparer les formules à périmètre égal', text: 'Vérifiez qui prépare les cartons, protège les objets fragiles et démonte les meubles. Identifiez les prestations incluses et les options dans chaque devis. Si les dates de départ et de remise des clés diffèrent, signalez-le dès la demande : un stockage temporaire et une livraison différée peuvent être étudiés. La disponibilité et les conditions se confirment avec l’équipe.' },
     ],
-    links: [{ href: '/volume/', label: 'Calculer mon volume en m³' }, { href: '/blog/checklist-demenagement-paris/', label: 'La checklist de déménagement' }, { href: '/stockage-garde-meubles/', label: 'Stocker entre deux logements' }],
+    links: [{ href: '/volume/', label: 'Calculer mon volume en m³' }, { href: '/blog/prix-demenagement-paris-devis/', label: 'Comprendre le prix de mon déménagement' }, { href: '/blog/checklist-demenagement-paris/', label: 'La checklist de déménagement' }, { href: '/blog/demenagement-sans-ascenseur-paris/', label: 'Préparer un appartement sans ascenseur' }, { href: '/stockage-garde-meubles/', label: 'Stocker entre deux logements' }],
   },
   '/demenagement-entreprises/': {
     eyebrow: 'LES REPÈRES POUR VOS ÉQUIPES',
@@ -46,7 +46,7 @@ export const SEO_CONTENT: Record<string, SeoContentEntry> = {
       { title: 'Vérifier la faisabilité avant de réserver', text: 'Transmettez les dimensions et le poids connu des objets, ainsi que des photos de la façade et de l’ouverture envisagée. Signalez arbres, câbles, balcons, cour intérieure ou recul limité. La hauteur atteignable et la charge admise dépendent de l’appareil et de son installation : elles doivent être confirmées pour votre intervention.' },
       { title: 'Anticiper l’emplacement et la manutention', text: 'Précisez si l’installation est envisagée sur la rue ou dans un espace privé. Les conditions d’accès et les éventuelles démarches de stationnement doivent être clarifiées en amont auprès des interlocuteurs concernés. Vérifiez aussi dans le devis la durée retenue, les opérations prises en charge par le technicien et la manutention prévue de chaque côté de l’ouverture.' },
     ],
-    links: [{ href: '/blog/monte-meuble-passage-difficile/', label: 'Évaluer un passage difficile' }, { href: '/demenagement-particuliers/', label: 'Préparer un déménagement complet' }, { href: '/devis/?service=monte-meubles', label: 'Décrire mon besoin de monte-meubles' }],
+    links: [{ href: '/blog/demenagement-sans-ascenseur-paris/', label: 'Déménager sans ascenseur' }, { href: '/blog/monte-meuble-passage-difficile/', label: 'Évaluer un passage difficile' }, { href: '/demenagement-particuliers/', label: 'Préparer un déménagement complet' }, { href: '/devis/?service=monte-meubles', label: 'Décrire mon besoin de monte-meubles' }],
   },
   '/stockage-garde-meubles/': {
     eyebrow: 'LES REPÈRES POUR VOS BIENS',

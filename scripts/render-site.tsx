@@ -28,5 +28,5 @@ export function render(pathname: string) {
   const Page = pages[pathname as keyof typeof pages];
   const article = BLOG_ARTICLES.find(a => pathname === `/blog/${a.slug}/`);
   if (!Page && !article && pathname !== '/404/') throw new Error(`Page sans rendu : ${pathname}`);
-  return renderToString(<RouterProvider initialUrl={pathname}><Header/><Breadcrumb/><main id="main-content" tabIndex={-1} className={pathname === '/' ? '' : 'interior-page'}>{Page ? <Page/> : article ? <ArticlePage article={article}/> : <div className="wm-container py-20"><h1>Page introuvable</h1><p>Cette adresse n’existe pas ou a été déplacée.</p><a href="/services/">Retrouver nos services de déménagement</a></div>}<SeoContent pathname={pathname}/></main><Footer/></RouterProvider>);
+  return renderToString(<RouterProvider initialUrl={pathname}><Header/><Breadcrumb/><main id="main-content" tabIndex={-1} className={pathname === '/' ? '' : 'interior-page'}>{Page ? <Page/> : article ? <ArticlePage article={article}/> : <div className="wm-container py-20"><h1>Page introuvable</h1><p>Cette adresse n’existe pas ou a été déplacée.</p><a href="/services/">Retrouver nos services de déménagement</a></div>}{pathname !== '/' && <SeoContent pathname={pathname}/>}</main><Footer/></RouterProvider>);
 }
