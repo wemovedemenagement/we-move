@@ -8,10 +8,12 @@ import { RouterProvider, useRouter, Link } from './router';
 import { Header } from './components/Header';
 import { Breadcrumb } from './components/Breadcrumb';
 import { Footer } from './components/Footer';
+import { CookieConsent } from './components/CookieConsent';
 import { MobileQuickBar } from './components/MobileQuickBar';
 
 // Pages
 import { RouteSeo } from './components/RouteSeo';
+import { SeoContent } from './components/SeoContent';
 import { BLOG_ARTICLES } from './data/articles';
 import { ArticlePage } from './pages/ArticlePage';
 import { HomePage } from './pages/HomePage';
@@ -28,6 +30,8 @@ const QuotePage = lazy(() => import('./pages/QuotePage').then(module => ({ defau
 const ContactPage = lazy(() => import('./pages/ContactPage').then(module => ({ default: module.ContactPage })));
 const LegalPage = lazy(() => import('./pages/LegalPage').then(module => ({ default: module.LegalPage })));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage').then(module => ({ default: module.PrivacyPage })));
+
+const TermsPage = lazy(() => import('./pages/TermsPage').then(module => ({ default: module.TermsPage })));
 
 function PageSwitch() {
   const { pathname } = useRouter();
@@ -62,6 +66,8 @@ function PageSwitch() {
         return <QuotePage />;
       case '/contact/':
         return <ContactPage />;
+      case '/cgv/':
+        return <TermsPage />;
       case '/mentions-legales/':
         return <LegalPage />;
       case '/politique-confidentialite/':
@@ -106,14 +112,15 @@ function PageSwitch() {
 
       {/* Dynamic Page Content with bottom padding on mobile for MobileQuickBar */}
       <main id="main-content" tabIndex={-1} className={`flex-1 ${pathname === '/' ? '' : 'interior-page'}`}>
-        <Suspense fallback={<div className="wm-container py-20" role="status">Préparation de votre page…</div>}>{renderCurrentPage()}</Suspense>
+        <Suspense fallback={<div className="wm-container py-20" role="status">Préparation de votre page…</div>}>{renderCurrentPage()}</Suspense><SeoContent pathname={pathname}/>
       </main>
 
       {/* Persistent Global Footer */}
       <Footer />
+      <CookieConsent />
 
       {/* Mobile Sticky Action Bar */}
-      {pathname !== '/devis/' && <MobileQuickBar />}
+      {pathname !== '/devis/' && pathname !== '/volume/' && <MobileQuickBar />}
     </div>
   );
 }
@@ -125,6 +132,3 @@ export default function App() {
     </RouterProvider>
   );
 }
-
-
-

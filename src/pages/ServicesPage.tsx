@@ -1,125 +1,36 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
-import React from 'react';
+import { ArrowDown, ArrowUpRight, Box, Building2, Check, ChevronDown, HeartHandshake, House, MoveUpRight, PackageCheck, Phone } from 'lucide-react';
 import { SERVICES_DATA } from '../data/content';
 import { Link } from '../router';
-import craftImage from '../assets/images/service_craft_protection_1790153177359.jpg';
+import craftImage from '../assets/images/service_craft_protection_1790153177359.webp';
+import officeImage from '../assets/images/office_move_logistics_1790153527033.webp';
+import storageImage from '../assets/images/storage_warehouse_facility_1790153540073.webp';
+import liftImage from '../assets/images/furniture_lift_exterior_1790153551793.webp';
 
-export const ServicesPage: React.FC = () => {
-  return (
-    <div className="py-12 sm:py-20 bg-white">
-      <div className="max-w-[1240px] mx-auto px-5 sm:px-8">
-        
-        {/* Page Header */}
-        <div className="max-w-3xl mb-14">
-          <span className="text-[13px] font-semibold text-[#0082CA] tracking-wider uppercase">
-            Nos savoir-faire
-          </span>
-          <h1 className="text-[34px] sm:text-[44px] font-semibold text-[#20252B] tracking-tight mt-2 [text-wrap:balance]">
-            Des prestations pensées pour chaque situation.
-          </h1>
-          <p className="mt-4 text-[17px] text-[#59616C] leading-relaxed">
-            Déménagement d'un appartement, transfert de siège social, stockage temporaire ou levage par façade : nous mettons en œuvre les ressources adaptées pour une transition fluide.
-          </p>
-        </div>
+const identities = [
+  { label: 'Votre logement', title: 'Un nouveau chez-vous. Les mêmes précieux souvenirs.', image: craftImage, alt: 'Protection du mobilier avant son transport', icon: House, note: 'Appartement, maison ou studio' },
+  { label: 'Votre entreprise', title: 'Vos équipes avancent. Votre activité aussi.', image: officeImage, alt: 'Préparation du transfert de bureaux', icon: Building2, note: 'Bureaux, commerces et locaux professionnels' },
+  { label: 'Votre espace', title: 'Entre deux chapitres, vos affaires ont leur place.', image: storageImage, alt: 'Espaces dédiés au stockage de mobilier', icon: Box, note: 'Travaux, transition ou besoin de place' },
+  { label: 'Vos accès', title: 'Les passages se compliquent ? Prenons de la hauteur.', image: liftImage, alt: 'Monte-meubles devant la façade d’un immeuble', icon: MoveUpRight, note: 'Mobilier encombrant et accès difficiles' },
+];
+const questions = [
+  ['Puis-je combiner plusieurs services ?', 'Oui. Un déménagement peut être associé à du stockage temporaire ou à un monte-meubles. Décrivez votre situation : nous étudions les prestations ensemble dans votre devis.'],
+  ['Et si je ne connais pas encore mon volume ?', 'Notre calculateur vous aide à établir une première estimation, pièce par pièce. Vous pouvez aussi choisir « Je ne sais pas encore » dans le formulaire de devis pour le préciser avec notre équipe.'],
+  ['L’emballage est-il compris ?', 'Cela dépend de la formule choisie. Vous pouvez préparer vos cartons ou demander un accompagnement pour l’emballage et les objets fragiles. Le périmètre retenu est précisé dans le devis.'],
+  ['Comment choisir le bon service ?', 'Commencez par votre besoin principal : déménager votre logement, transférer vos bureaux, stocker du mobilier ou faciliter un passage difficile. Notre équipe vous aide ensuite à ajuster les moyens et les options.'],
+];
 
-        {/* Services List - Editorial layout */}
-        <div className="space-y-12">
-          {SERVICES_DATA.map((service, idx) => (
-            <div 
-              key={service.id}
-              className="p-8 sm:p-12 rounded-lg border border-[#E6E8EB] bg-[#FAFAF8] grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
-            >
-              <div className="lg:col-span-8 space-y-4">
-                <div className="flex items-center gap-3 text-[13px] text-[#59616C]">
-                  <span className="font-mono text-[#0082CA] font-semibold">0{idx + 1}</span>
-                  <span aria-hidden="true">·</span>
-                  <span className="text-xs">Un accompagnement sur mesure</span>
-                </div>
-
-                <h2 className="text-[24px] sm:text-[28px] font-semibold text-[#20252B] tracking-tight">
-                  {service.title}
-                </h2>
-
-                <p className="text-[16px] text-[#59616C] leading-relaxed">
-                  {service.summary}
-                </p>
-
-                <div className="pt-2">
-                  <div className="text-[13px] font-semibold text-[#20252B] mb-2 uppercase tracking-wide">
-                    Prestations incluses :
-                  </div>
-                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[14px] text-[#59616C]">
-                    {service.features.map((feat, fIdx) => (
-                      <li key={fIdx} className="flex items-start gap-2">
-                        <span className="text-[#0082CA] mt-1 text-xs">✔</span>
-                        <span>{feat}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="pt-4 flex flex-wrap items-center gap-4">
-                  <Link
-                    href={service.route}
-                    className="inline-flex items-center gap-2 px-5 h-11 rounded-md bg-[#20252B] text-white text-[14px] font-medium hover:bg-[#323942] transition-colors"
-                  >
-                    <span>Consulter la page détaillée</span>
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Link>
-
-                  <Link
-                    href={`/devis/?service=${service.id}`}
-                    className="inline-flex items-center gap-2 px-5 h-11 rounded-md border border-[#E6E8EB] bg-white text-[#20252B] text-[14px] font-medium hover:bg-[#FAFAF8] transition-colors"
-                  >
-                    Demander un devis pour ce service
-                  </Link>
-                </div>
-              </div>
-
-              {/* Complementary photo box */}
-              <div className="lg:col-span-4 rounded-lg overflow-hidden border border-[#E6E8EB] bg-white p-3">
-                <div className="aspect-[4/3] rounded overflow-hidden">
-                  <img 
-                    src={craftImage} 
-                    alt={`Équipements et soins apportés pour ${service.title}`}
-                    className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-                <div className="mt-3 text-[12px] text-[#59616C] text-center">
-                  Matériel et protection certifiés WE MOVE
-                </div>
-              </div>
-
-            </div>
-          ))}
-        </div>
-
-        {/* Bottom Banner */}
-        <div className="mt-16 p-8 bg-[#FFFFFF] border border-[#E6E8EB] rounded-lg flex flex-col md:flex-row items-center justify-between gap-6">
-          <div>
-            <h3 className="text-[18px] font-semibold text-[#20252B]">
-              Besoin de combiner plusieurs prestations ?
-            </h3>
-            <p className="mt-1 text-[14.5px] text-[#59616C]">
-              Par exemple un déménagement avec garde-meubles temporaire et monte-meubles : nos conseillers étudient une formule globale.
-            </p>
-          </div>
-          <Link
-            href="/contact/"
-            className="px-6 h-11 rounded-md bg-[#0082CA] text-white text-[14px] font-medium hover:bg-[#006FA8] transition-colors shrink-0"
-          >
-            Contacter un conseiller
-          </Link>
-        </div>
-
-      </div>
-    </div>
-  );
-};
+export function ServicesPage() {
+  return <div className="expertise-page">
+    <section className="expertise-hero wm-container">
+      <div className="expertise-hero-copy"><p className="eyebrow"><span /> NOS SAVOIR-FAIRE</p><h1>Nos services<br /><em>de déménagement.</em></h1><p>Un nouveau logement. Une entreprise qui évolue. De la place à retrouver. À chaque projet, le soin et les moyens qu’il mérite.</p><div className="expertise-actions"><Link className="wm-button" href="/devis/">Parlons de votre projet <ArrowUpRight size={18}/></Link><a className="text-link" href="#expertises">Explorer nos services <ArrowDown size={16}/></a></div><div className="expertise-signature"><HeartHandshake size={23} strokeWidth={1.4}/><span>Paris & Île-de-France<br/><strong>Une équipe, à chaque étape.</strong></span></div></div>
+      <div className="expertise-hero-visual"><img src={craftImage} alt="Préparation et protection soignée du mobilier" width="1200" height="896" fetchPriority="high"/><span className="expertise-photo-label">LE SOIN DU DÉTAIL, DÈS LE DÉPART.</span><div className="expertise-hero-note"><PackageCheck size={28} strokeWidth={1.3}/><div><strong>Vos projets changent.<br/>Notre attention reste.</strong><span>Le sens du service, signé We Move.</span></div></div></div>
+    </section>
+    <nav className="expertise-nav wm-container" aria-label="Choisir une expertise">{identities.map(({label,icon:Icon},index)=><a key={label} href={`#service-${SERVICES_DATA[index].id}`}><span className="expertise-nav-icon"><Icon size={22} strokeWidth={1.4}/></span><span><small>0{index+1}</small><strong>{label}</strong></span><ArrowDown size={16}/></a>)}</nav>
+    <section id="expertises" className="expertise-collection wm-container"><div className="expertise-section-heading"><div><p className="eyebrow">QUATRE EXPERTISES. UNE MÊME EXIGENCE.</p><h2>De quoi avez-vous besoin ?</h2></div><p>Des services à choisir seuls ou à combiner.<br/>Toujours adaptés à votre situation.</p></div>
+      {SERVICES_DATA.map((service,index)=>{const item=identities[index];const Icon=item.icon;return <article id={`service-${service.id}`} key={service.id} className={`expertise-service ${index%2?'is-reversed':''}`}><div className="expertise-service-image"><img src={item.image} alt={item.alt} width="1200" height="896" loading="lazy"/><span><Icon size={18}/>{item.note}</span></div><div className="expertise-service-copy"><div className="expertise-service-kicker"><span>0{index+1} /</span>{service.title}</div><h3>{item.title}</h3><p>{service.summary}</p><ul>{service.features.map(feature=><li key={feature}><Check size={16}/>{feature}</li>)}</ul><small className="expertise-scope">Prestations à confirmer selon votre projet et la formule retenue.</small><div className="expertise-service-links"><Link className="text-link" href={service.route}>Découvrir ce service <ArrowUpRight size={18}/></Link><Link href={`/devis/?service=${service.id}`}>Obtenir mon devis <ArrowUpRight size={14}/></Link></div></div></article>})}
+    </section>
+    <section className="expertise-combine"><div className="wm-container expertise-combine-inner"><div><p className="eyebrow">UN PROJET, PLUSIEURS BESOINS</p><h2>Tout s’articule.<br/><em>Autour de vous.</em></h2><p>Un déménagement, quelques semaines de stockage, un accès à anticiper… Nous réunissons les prestations utiles pour préparer votre départ.</p><Link className="wm-button" href="/devis/">Composer mon projet <ArrowUpRight size={18}/></Link></div><div className="expertise-combine-steps">{[{icon:House,title:'Votre point de départ',text:'Vos adresses, votre calendrier et ce qui compte pour vous.'},{icon:Box,title:'Les bons moyens',text:'Le volume, les accès et les services à prévoir ensemble.'},{icon:HeartHandshake,title:'Une proposition adaptée',text:'Un devis personnalisé pour avancer en toute clarté.'}].map(({icon:Icon,title,text},i)=><div key={title}><span><Icon size={25} strokeWidth={1.3}/></span><div><small>0{i+1}</small><h3>{title}</h3><p>{text}</p></div></div>)}</div></div></section>
+    <section className="expertise-faq wm-container"><div><p className="eyebrow">FAISONS SIMPLE</p><h2>Les bonnes questions,<br/>avant de se lancer.</h2><Link className="text-link" href="/volume/">Estimer mon volume <ArrowUpRight size={17}/></Link></div><div>{questions.map(([question,answer])=><details key={question}><summary>{question}<ChevronDown size={19}/></summary><p>{answer}</p></details>)}</div></section>
+    <section className="expertise-final wm-container"><div><p className="eyebrow">ON PRÉPARE LA SUITE ?</p><h2>Votre prochain chapitre<br/>commence par un échange.</h2><p>Quelques informations suffisent pour nous parler de votre projet.</p></div><div><Link className="wm-button" href="/devis/">Demander mon devis gratuit <ArrowUpRight size={18}/></Link><a className="expertise-phone" href="tel:0173743690"><Phone size={16}/>01 73 74 36 90</a><small>Gratuit · Sans engagement</small></div></section>
+  </div>;
+}

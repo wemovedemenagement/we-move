@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { ArrowRight, ArrowUpRight, Box, Check, ChevronDown, HeartHandshake, MapPin, MoveRight, PackageCheck, Phone, ShieldCheck } from 'lucide-react';
 import { Link, useRouter } from '../router';
 import { FAQ_DATA } from '../data/content';
-import craftImage from '../assets/images/service_craft_protection_1790153177359.jpg';
-import officeImage from '../assets/images/office_move_logistics_1790153527033.jpg';
-import storageImage from '../assets/images/storage_warehouse_facility_1790153540073.jpg';
-import liftImage from '../assets/images/furniture_lift_exterior_1790153551793.jpg';
+import craftImage from '../assets/images/service_craft_protection_1790153177359.webp';
+import officeImage from '../assets/images/office_move_logistics_1790153527033.webp';
+import storageImage from '../assets/images/storage_warehouse_facility_1790153540073.webp';
+import liftImage from '../assets/images/furniture_lift_exterior_1790153551793.webp';
 
 const services = [
   { name: 'Un nouveau chez-vous.', label: 'PARTICULIERS', text: 'Du premier carton à la dernière pièce, on prend soin de tout ce qui compte pour vous.', image: craftImage, href: '/demenagement-particuliers/', alt: 'Protection soignée du mobilier avant le déménagement' },
@@ -24,7 +24,7 @@ export function HomePage() {
     <section className="wm-hero">
       <div className="wm-container hero-layout">
         <div className="hero-copy"><p className="eyebrow"><span /> DÉMÉNAGEMENT À PARIS & EN ÎLE-DE-FRANCE</p>
-          <h1>Un nouveau départ.<br /><span>Le sourire</span><br />en plus<span className="coral-dot">.</span></h1>
+          <h1>Déménagez à Paris.<br /><span>Et en Île-de-France</span><span className="coral-dot">.</span></h1>
           <p className="hero-description">Vous changez d’adresse. Nous prenons soin du reste. Un déménagement bien pensé, une équipe attentionnée, et l’esprit léger.</p>
           <div className="hero-buttons"><Link href="/devis/" className="wm-button">Préparer mon déménagement <ArrowUpRight size={20} /></Link><a href="#services" className="text-link">Découvrir nos services <ArrowRight size={17} /></a></div>
           <div className="hero-assurance"><span><Check size={15} /> Devis gratuit, sans engagement</span><span><Check size={15} /> Accompagnement sur mesure</span></div>

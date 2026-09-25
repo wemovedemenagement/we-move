@@ -1,0 +1,4 @@
+# Vite generates static HTML; Express serves the build on Cloud Run's PORT.
+scripts:
+  buildCommand: npm run build
+  runCommand: npm start

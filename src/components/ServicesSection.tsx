@@ -6,10 +6,10 @@
 import React, { useState } from 'react';
 import { Link } from '../router';
 
-import craftImage from '../assets/images/service_craft_protection_1790153177359.jpg';
-import officeImage from '../assets/images/office_move_logistics_1790153527033.jpg';
-import storageImage from '../assets/images/storage_warehouse_facility_1790153540073.jpg';
-import liftImage from '../assets/images/furniture_lift_exterior_1790153551793.jpg';
+import craftImage from '../assets/images/service_craft_protection_1790153177359.webp';
+import officeImage from '../assets/images/office_move_logistics_1790153527033.webp';
+import storageImage from '../assets/images/storage_warehouse_facility_1790153540073.webp';
+import liftImage from '../assets/images/furniture_lift_exterior_1790153551793.webp';
 
 interface ServicesSectionProps {
   onSelectService?: (slug: string) => void;

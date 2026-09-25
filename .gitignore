@@ -8,3 +8,7 @@ coverage/
 !.env.example
 
 .prerender/
+
+# Generated document previews and local delivery copies
+tmp/
+output/

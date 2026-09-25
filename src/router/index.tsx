@@ -44,8 +44,9 @@ function parseQuery(url: string): Record<string, string> {
   return res;
 }
 
-export const RouterProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const RouterProvider: React.FC<{ children: React.ReactNode; initialUrl?: string }> = ({ children, initialUrl }) => {
   const [currentUrl, setCurrentUrl] = useState(() => {
+    if (initialUrl) return initialUrl;
     if (typeof window !== 'undefined') {
       return window.location.pathname + window.location.search;
     }

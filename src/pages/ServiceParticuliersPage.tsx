@@ -1,170 +1,28 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
-import React from 'react';
+import { ArrowDown, ArrowUpRight, Box, Check, ChevronDown, HeartHandshake, House, MoveUpRight, PackageCheck, Phone, Sparkles, Truck } from 'lucide-react';
 import { Link } from '../router';
-import heroImage from '../assets/images/hero_moving_service_1790153159353.jpg';
+import heroImage from '../assets/images/hero_moving_service_1790153159353.webp';
+import craftImage from '../assets/images/service_craft_protection_1790153177359.webp';
 
-export const ServiceParticuliersPage: React.FC = () => {
-  return (
-    <div className="py-12 sm:py-20 bg-white">
-      <div className="max-w-[1240px] mx-auto px-5 sm:px-8">
-        
-        {/* Hero split */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center pb-16 border-b border-[#E6E8EB]">
-          <div className="lg:col-span-7 space-y-6">
-            <span className="text-[13px] font-semibold text-[#0082CA] tracking-wider uppercase">
-              Prestation Résidentielle
-            </span>
-            <h1 className="text-[34px] sm:text-[44px] font-semibold text-[#20252B] tracking-tight leading-[1.15] [text-wrap:balance]">
-              Déménagement de particuliers, sans stress ni imprévu.
-            </h1>
-            <p className="text-[17px] text-[#59616C] leading-relaxed max-w-xl">
-              Changer de domicile est une étape importante. WE MOVE prend en charge la protection de votre mobilier, l'emballage de vos objets délicats et le transport sécurisé jusqu'à votre nouveau logement.
-            </p>
-            <div className="pt-2 flex flex-wrap items-center gap-4">
-              <Link
-                href="/devis/?service=particuliers"
-                className="px-6 h-12 rounded-md bg-[#0082CA] text-white text-[15px] font-medium hover:bg-[#006FA8] transition-colors flex items-center justify-center"
-              >
-                Demander un devis particulier
-              </Link>
-              <Link
-                href="/volume/"
-                className="px-5 h-12 rounded-md border border-[#E6E8EB] bg-white text-[#20252B] text-[15px] font-medium hover:bg-[#FAFAF8] transition-colors flex items-center justify-center"
-              >
-                Estimer mon volume en m³
-              </Link>
-            </div>
-          </div>
+const formulas = [
+  { id: 'economique', name: 'Économique', icon: Box, subtitle: 'Vous préparez. Nous transportons.', description: 'Pour garder la main sur vos cartons et nous confier le transport de votre mobilier.', you: 'Vous emballez et déballez vos effets personnels.', features: ['Protection du mobilier', 'Chargement et transport', 'Dépose dans les pièces choisies'] },
+  { id: 'standard', name: 'Standard', icon: PackageCheck, subtitle: 'L’essentiel, avec un coup de main.', description: 'Un accompagnement plus complet pour vos meubles et les objets qui demandent de l’attention.', you: 'Vous préparez les effets non fragiles.', features: ['Les prestations Économique', 'Démontage et remontage du mobilier prévu', 'Emballage des objets fragiles', 'Matériel d’emballage fourni selon devis'] },
+  { id: 'confort', name: 'Confort', icon: Sparkles, subtitle: 'Plus de temps pour votre nouvelle vie.', description: 'Confiez-nous les préparatifs pour vous concentrer sur votre installation.', you: 'Vous gardez avec vous vos documents et effets essentiels.', features: ['Les prestations Standard', 'Emballage complet des effets prévus', 'Déballage et installation selon devis', 'Reprise des emballages prévue au devis'] },
+];
+const faq = [
+  ['Comment choisir ma formule ?', 'La différence tient surtout à ce que vous souhaitez préparer vous-même. Économique pour gérer vos cartons, Standard pour déléguer les meubles et les objets fragiles, Confort pour un accompagnement plus complet. Nous précisons ensemble les prestations dans le devis.'],
+  ['Je ne connais pas mon volume. Puis-je demander un devis ?', 'Oui. Vous pouvez utiliser notre calculateur pour une première estimation ou sélectionner « Je ne sais pas encore » dans le formulaire. Un inventaire et les particularités de votre mobilier permettront ensuite d’affiner le volume.'],
+  ['Mon immeuble n’a pas d’ascenseur. Comment faire ?', 'Précisez l’étage, la largeur de l’escalier et les meubles volumineux dans votre demande. Nous étudions les moyens de manutention adaptés et, si la configuration le permet, l’utilisation d’un monte-meubles.'],
+  ['Mes deux logements ne sont pas disponibles aux mêmes dates.', 'Un garde-meubles peut faire le lien entre votre départ et votre installation. Indiquez les dates envisagées et le mobilier concerné pour intégrer cette étape à votre projet.'],
+];
 
-          <div className="lg:col-span-5">
-            <div className="rounded-lg overflow-hidden border border-[#E6E8EB] aspect-[4/3] bg-[#FAFAF8] shadow-xs">
-              <img 
-                src={heroImage} 
-                alt="Équipe WE MOVE assurant un déménagement résidentiel"
-                className="w-full h-full object-cover"
-                referrerPolicy="no-referrer"
-              />
-            </div>
-            <p className="mt-2 text-[12px] text-[#59616C]/80 text-right">
-              Équipement de portage adapté et couvertures matelassées
-            </p>
-          </div>
-        </div>
-
-        {/* 3 Formules d'accompagnement */}
-        <div className="py-16 border-b border-[#E6E8EB]">
-          <div className="max-w-2xl mb-12">
-            <h2 className="text-[26px] sm:text-[32px] font-semibold text-[#20252B] tracking-tight">
-              Nos formules d'accompagnement
-            </h2>
-            <p className="mt-2 text-[15.5px] text-[#59616C]">
-              Trois niveaux de service clairs pour s'adapter à votre budget et au temps que vous souhaitez consacrer aux préparatifs.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Formule 1 */}
-            <div className="p-8 rounded-lg border border-[#E6E8EB] bg-[#FAFAF8] flex flex-col justify-between">
-              <div>
-                <div className="text-[13px] font-mono text-[#0082CA] font-semibold uppercase">Formule 01</div>
-                <h3 className="text-[20px] font-semibold text-[#20252B] mt-1 mb-3">Économique</h3>
-                <p className="text-[14px] text-[#59616C] leading-relaxed mb-6">
-                  Vous emballez vos effets personnels dans vos cartons. Nos déménageurs s'occupent du chargement, du calage en camion et du déchargement.
-                </p>
-                <ul className="space-y-2.5 text-[13.5px] text-[#59616C]">
-                  <li className="flex items-start gap-2"><span>✔</span> Protection du mobilier sous couvertures</li>
-                  <li className="flex items-start gap-2"><span>✔</span> Transport sécurisé et assurance route</li>
-                  <li className="flex items-start gap-2"><span>✔</span> Dépôt des meubles dans les pièces choisies</li>
-                </ul>
-              </div>
-              <div className="mt-8 pt-4 border-t border-[#E6E8EB]">
-                <Link href="/devis/?formule=economique" className="text-[14px] font-medium text-[#0082CA] hover:underline">
-                  Choisir cette formule →
-                </Link>
-              </div>
-            </div>
-
-            {/* Formule 2 */}
-            <div className="p-8 rounded-lg border-2 border-[#0082CA] bg-white flex flex-col justify-between shadow-xs relative">
-              <div className="absolute -top-3 right-6 bg-[#0082CA] text-white text-[11px] font-semibold uppercase px-2.5 py-0.5 rounded">
-                La plus choisie
-              </div>
-              <div>
-                <div className="text-[13px] font-mono text-[#0082CA] font-semibold uppercase">Formule 02</div>
-                <h3 className="text-[20px] font-semibold text-[#20252B] mt-1 mb-3">Standard</h3>
-                <p className="text-[14px] text-[#59616C] leading-relaxed mb-6">
-                  Le juste équilibre : nous fournissons les cartons et prenons en charge le démontage et remontage de votre gros mobilier.
-                </p>
-                <ul className="space-y-2.5 text-[13.5px] text-[#59616C]">
-                  <li className="flex items-start gap-2"><span>✔</span> Tout le contenu de la formule Économique</li>
-                  <li className="flex items-start gap-2"><span>✔</span> Démontage et remontage du mobilier volumineux</li>
-                  <li className="flex items-start gap-2"><span>✔</span> Emballage de la vaisselle et des objets fragiles</li>
-                  <li className="flex items-start gap-2"><span>✔</span> Cartons et rouleaux d'adhésif fournis en amont</li>
-                </ul>
-              </div>
-              <div className="mt-8 pt-4 border-t border-[#E6E8EB]">
-                <Link href="/devis/?formule=standard" className="text-[14px] font-medium text-[#0082CA] hover:underline">
-                  Choisir cette formule →
-                </Link>
-              </div>
-            </div>
-
-            {/* Formule 3 */}
-            <div className="p-8 rounded-lg border border-[#E6E8EB] bg-[#FAFAF8] flex flex-col justify-between">
-              <div>
-                <div className="text-[13px] font-mono text-[#0082CA] font-semibold uppercase">Formule 03</div>
-                <h3 className="text-[20px] font-semibold text-[#20252B] mt-1 mb-3">Confort / Clé en main</h3>
-                <p className="text-[14px] text-[#59616C] leading-relaxed mb-6">
-                  Sérénité absolue : notre équipe prépare l'intégralité de vos cartons, protège chaque pièce et déballe vos affaires à l'arrivée.
-                </p>
-                <ul className="space-y-2.5 text-[13.5px] text-[#59616C]">
-                  <li className="flex items-start gap-2"><span>✔</span> Tout le contenu de la formule Standard</li>
-                  <li className="flex items-start gap-2"><span>✔</span> Emballage complet de tous les vêtements et livres</li>
-                  <li className="flex items-start gap-2"><span>✔</span> Déballage et remise en place à destination</li>
-                  <li className="flex items-start gap-2"><span>✔</span> Reprise de tous les cartons et emballages vides</li>
-                </ul>
-              </div>
-              <div className="mt-8 pt-4 border-t border-[#E6E8EB]">
-                <Link href="/devis/?formule=confort" className="text-[14px] font-medium text-[#0082CA] hover:underline">
-                  Choisir cette formule →
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Déroulement de la journée */}
-        <div className="py-16">
-          <div className="max-w-2xl mb-10">
-            <h2 className="text-[26px] sm:text-[32px] font-semibold text-[#20252B] tracking-tight">
-              Le déroulement de votre journée de déménagement
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="p-5 border border-[#E6E8EB] rounded-md bg-white">
-              <div className="text-sm font-mono text-[#0082CA] font-medium">01. Arrivée & Briefing</div>
-              <p className="mt-2 text-[13.5px] text-[#59616C]">L'équipe arrive à l'heure convenue, effectue le tour des pièces et valide les priorités de chargement.</p>
-            </div>
-            <div className="p-5 border border-[#E6E8EB] rounded-md bg-white">
-              <div className="text-sm font-mono text-[#0082CA] font-medium">02. Protection & Port</div>
-              <p className="mt-2 text-[13.5px] text-[#59616C]">Chaque meuble est emballé sous housse ou couverture avant d'être arrimé méthodiquement dans le camion.</p>
-            </div>
-            <div className="p-5 border border-[#E6E8EB] rounded-md bg-white">
-              <div className="text-sm font-mono text-[#0082CA] font-medium">03. Acheminement</div>
-              <p className="mt-2 text-[13.5px] text-[#59616C]">Trajet sécurisé par nos chauffeurs expérimentés sous lettre de voiture réglementaire.</p>
-            </div>
-            <div className="p-5 border border-[#E6E8EB] rounded-md bg-white">
-              <div className="text-sm font-mono text-[#0082CA] font-medium">04. Dépose & Contrôle</div>
-              <p className="mt-2 text-[13.5px] text-[#59616C]">Chaque meuble et carton est déposé dans la pièce correspondante selon vos indications.</p>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  );
-};
+export function ServiceParticuliersPage() {
+  return <div className="residential-page expertise-page">
+    <section className="residential-hero wm-container"><div className="residential-hero-heading"><div><p className="eyebrow"><span/> DÉMÉNAGEMENT DE PARTICULIERS</p><h1>Déménagement<br/>de particuliers.<br/><em>À Paris et en Île-de-France.</em></h1></div><div><p>Ce n’est pas seulement du mobilier. C’est votre quotidien, vos souvenirs, votre prochain départ. Nous les accompagnons avec soin, à Paris et en Île-de-France.</p><Link className="wm-button" href="/devis/?service=particuliers">Préparer mon déménagement <ArrowUpRight size={18}/></Link><small>Devis gratuit · Sans engagement</small></div></div><div className="residential-cover"><img src={heroImage} alt="Transport soigneux du mobilier dans un logement lumineux" width="1200" height="896" fetchPriority="high"/><div className="residential-cover-note"><House size={28} strokeWidth={1.3}/><span>Un nouveau chez-vous.<br/><strong>Le même soin pour vos affaires.</strong></span></div><a href="#formules" className="residential-cover-link">Votre déménagement, votre formule <ArrowDown size={18}/></a></div><div className="residential-reassurance">{[{icon:HeartHandshake,text:'Un accompagnement humain'},{icon:PackageCheck,text:'Une protection adaptée'},{icon:Truck,text:'Des moyens selon vos accès'}].map(({icon:Icon,text})=><span key={text}><Icon size={22} strokeWidth={1.4}/>{text}</span>)}</div></section>
+    <section className="residential-care wm-container"><div><p className="eyebrow">LE SOIN DE CE QUI COMPTE</p><h2>Vos affaires ont une histoire.<br/><em>On en prend soin.</em></h2></div><div><p>Du studio à la maison familiale, chaque déménagement a ses particularités. Nous préparons le transport autour de votre mobilier, de vos accès et du niveau d’aide souhaité.</p><div className="residential-care-points"><span><Check size={16}/>Vos contraintes prises en compte</span><span><Check size={16}/>Des prestations précisées dans le devis</span><span><Check size={16}/>Une installation préparée avec vous</span></div></div></section>
+    <section id="formules" className="residential-formulas"><div className="wm-container"><div className="expertise-section-heading"><div><p className="eyebrow">À CHACUN SA FAÇON DE DÉMÉNAGER</p><h2>Le bon niveau d’aide.<br/>Tout simplement.</h2></div><p>Vous choisissez ce que vous gardez en main.<br/>Nous préparons le reste avec vous.</p></div><div className="residential-formula-grid">{formulas.map(({id,name,icon:Icon,subtitle,description,you,features},i)=><article key={id} className={`residential-formula ${id==='standard'?'is-featured':''}`}><div className="residential-formula-top"><Icon size={27} strokeWidth={1.3}/><span>0{i+1}</span></div><h3>{name}</h3><strong>{subtitle}</strong><p>{description}</p><ul>{features.map(feature=><li key={feature}><Check size={15}/>{feature}</li>)}</ul><div className="residential-your-part"><span>DE VOTRE CÔTÉ</span><p>{you}</p></div><Link className="wm-button" href={`/devis/?service=particuliers&formule=${id}`}>Choisir {name.toLowerCase()} <ArrowUpRight size={17}/></Link></article>)}</div><div className="residential-formula-help"><p>Le contenu exact et les options sont confirmés dans votre devis personnalisé.</p><Link className="text-link" href="/devis/?service=particuliers">J’aimerais être conseillé <ArrowUpRight size={16}/></Link></div></div></section>
+    <section className="residential-day wm-container"><div className="residential-day-photo"><img src={craftImage} alt="Mobilier enveloppé de couvertures de protection" width="1200" height="896" loading="lazy"/><span>Chaque geste compte.</span></div><div><p className="eyebrow">DU PREMIER CONTACT AUX DERNIERS CARTONS</p><h2>Un départ préparé.<br/><em>Une arrivée accompagnée.</em></h2><ol>{[['On fait le point.','Vos adresses, votre volume, vos dates et les accès : nous dessinons les contours de votre projet.'],['On prépare le départ.','Les prestations sont précisées dans le devis. Vous savez quoi préparer et ce que nous prenons en charge.'],['On prend le relais.','Le jour convenu, l’équipe protège le mobilier et organise le chargement puis le transport.'],['Vous prenez vos marques.','Les meubles sont déposés dans les pièces prévues. Nous vérifions l’installation avec vous.']].map(([title,text],i)=><li key={title}><span>0{i+1}</span><div><h3>{title}</h3><p>{text}</p></div></li>)}</ol></div></section>
+    <section className="residential-options wm-container"><div className="expertise-section-heading"><div><p className="eyebrow">ET POUR LES PETITS DÉTOURS</p><h2>Votre projet a ses particularités.</h2></div><p>Des solutions complémentaires à étudier ensemble.</p></div><div className="residential-option-grid">{[{icon:Box,title:'Un peu de place entre deux adresses.',text:'Un stockage temporaire pour faire le lien entre votre départ et votre installation.',href:'/stockage-garde-meubles/',label:'Découvrir le garde-meubles'},{icon:MoveUpRight,title:'Un accès qui demande de la hauteur.',text:'Une solution de levage à étudier pour les meubles encombrants et les passages difficiles.',href:'/location-monte-meubles/',label:'Découvrir le monte-meubles'},{icon:House,title:'Un volume encore difficile à imaginer.',text:'Un inventaire pièce par pièce pour poser les premières bases de votre déménagement.',href:'/volume/',label:'Estimer mon volume'}].map(({icon:Icon,title,text,href,label})=><Link key={href} href={href}><Icon size={27} strokeWidth={1.3}/><h3>{title}</h3><p>{text}</p><span>{label}<ArrowUpRight size={17}/></span></Link>)}</div></section>
+    <section className="expertise-faq wm-container"><div><p className="eyebrow">ON VOUS RÉPOND</p><h2>Avant de fermer<br/>le premier carton.</h2><Link className="text-link" href="/blog/checklist-demenagement-paris/">Consulter la checklist <ArrowUpRight size={17}/></Link></div><div>{faq.map(([question,answer])=><details key={question}><summary>{question}<ChevronDown size={19}/></summary><p>{answer}</p></details>)}</div></section>
+    <section className="residential-final"><div className="wm-container"><p className="eyebrow">VOTRE PROCHAIN CHAPITRE</p><h2>Vous imaginez la suite.<br/><em>Préparons le départ.</em></h2><p>Parlez-nous de votre déménagement. Nous vous aidons à définir la bonne formule.</p><div><Link className="wm-button" href="/devis/?service=particuliers">Demander mon devis gratuit <ArrowUpRight size={18}/></Link><a href="tel:0173743690"><Phone size={17}/>01 73 74 36 90</a></div><small>Devis personnalisé · Sans engagement</small></div></section>
+  </div>;
+}

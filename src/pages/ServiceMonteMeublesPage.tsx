@@ -1,131 +1,29 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
-import React from 'react';
+import { ArrowDown, ArrowUpRight, Armchair, Building2, Check, ChevronDown, Clock3, MapPin, MoveUpRight, Phone, Ruler, ShieldCheck, UserRoundCheck } from 'lucide-react';
 import { Link } from '../router';
-import liftImage from '../assets/images/furniture_lift_exterior_1790153551793.jpg';
+import liftImage from '../assets/images/furniture_lift_exterior_1790153551793.webp';
 
-export const ServiceMonteMeublesPage: React.FC = () => {
-  return (
-    <div className="py-12 sm:py-20 bg-white">
-      <div className="max-w-[1240px] mx-auto px-5 sm:px-8">
-        
-        {/* Hero split */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center pb-16 border-b border-[#E6E8EB]">
-          <div className="lg:col-span-7 space-y-6">
-            <span className="text-[13px] font-semibold text-[#0082CA] tracking-wider uppercase">
-              Élévation & Accès Difficiles
-            </span>
-            <h1 className="text-[34px] sm:text-[44px] font-semibold text-[#20252B] tracking-tight leading-[1.15] [text-wrap:balance]">
-              Location de monte-meubles avec technicien qualifié.
-            </h1>
-            <p className="text-[17px] text-[#59616C] leading-relaxed max-w-xl">
-              Cage d'escalier trop étroite, meuble monobloc ne passant pas dans l'ascenseur, ou étage élevé sans ascenseur : notre échelle élévatrice permet de monter et descendre vos biens par la fenêtre en toute sécurité.
-            </p>
-            <div className="pt-2 flex flex-wrap items-center gap-4">
-              <Link
-                href="/devis/?service=monte-meubles"
-                className="px-6 h-12 rounded-md bg-[#0082CA] text-white text-[15px] font-medium hover:bg-[#006FA8] transition-colors flex items-center justify-center"
-              >
-                Réserver un monte-meubles
-              </Link>
-              <Link
-                href="/contact/"
-                className="px-5 h-12 rounded-md border border-[#E6E8EB] bg-white text-[#20252B] text-[15px] font-medium hover:bg-[#FAFAF8] transition-colors flex items-center justify-center"
-              >
-                Vérifier la faisabilité d'accès
-              </Link>
-            </div>
-          </div>
-
-          <div className="lg:col-span-5">
-            <div className="rounded-lg overflow-hidden border border-[#E6E8EB] aspect-[4/3] bg-[#FAFAF8] shadow-xs">
-              <img 
-                src={liftImage} 
-                alt="Monte-meubles extérieur déployé le long d'une façade d'immeuble"
-                className="w-full h-full object-cover"
-                referrerPolicy="no-referrer"
-              />
-            </div>
-            <p className="mt-2 text-[12px] text-[#59616C]/80 text-right">
-              Mise en place avec balisage de sécurité sur voie publique ou cour intérieure
-            </p>
-          </div>
-        </div>
-
-        {/* Pourquoi louer un monte-meubles ? */}
-        <div className="py-16 border-b border-[#E6E8EB]">
-          <div className="max-w-2xl mb-12">
-            <h2 className="text-[26px] sm:text-[32px] font-semibold text-[#20252B] tracking-tight">
-              Dans quels cas recourir au monte-meubles ?
-            </h2>
-            <p className="mt-2 text-[15.5px] text-[#59616C]">
-              Une solution technique qui protège à la fois votre mobilier et les parties communes de l'immeuble.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-8 rounded-lg border border-[#E6E8EB] bg-[#FAFAF8]">
-              <div className="text-[13px] font-mono text-[#0082CA] font-semibold">01</div>
-              <h3 className="text-[19px] font-semibold text-[#20252B] mt-2 mb-3">Objets volumineux & indivisibles</h3>
-              <p className="text-[14px] text-[#59616C] leading-relaxed">
-                Canapés d'angle, pianos droits, réfrigérateurs américains, tables en marbre ou vitrines anciennes impossibles à démonter.
-              </p>
-            </div>
-
-            <div className="p-8 rounded-lg border border-[#E6E8EB] bg-[#FAFAF8]">
-              <div className="text-[13px] font-mono text-[#0082CA] font-semibold">02</div>
-              <h3 className="text-[19px] font-semibold text-[#20252B] mt-2 mb-3">Étages élevés & cages étroites</h3>
-              <p className="text-[14px] text-[#59616C] leading-relaxed">
-                Immeubles anciens sans ascenseur, escaliers hélicoïdaux en colimaçon ou paliers étroits risquant d'endommager les murs.
-              </p>
-            </div>
-
-            <div className="p-8 rounded-lg border border-[#E6E8EB] bg-[#FAFAF8]">
-              <div className="text-[13px] font-mono text-[#0082CA] font-semibold">03</div>
-              <h3 className="text-[19px] font-semibold text-[#20252B] mt-2 mb-3">Gain de temps considérable</h3>
-              <p className="text-[14px] text-[#59616C] leading-relaxed">
-                Le transfert direct du camion à votre fenêtre divise le temps de manutention par trois et évite l'encombrement du hall d'entrée.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Forfaits & caractéristiques techniques */}
-        <div className="py-16">
-          <div className="max-w-2xl mb-8">
-            <h2 className="text-[26px] sm:text-[32px] font-semibold text-[#20252B] tracking-tight">
-              Modalités et forfaits disponibles
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 border border-[#E6E8EB] rounded-lg bg-white">
-              <div className="text-[17px] font-semibold text-[#20252B]">Passage éclair (1 à 3 objets)</div>
-              <div className="text-[13px] text-[#0082CA] font-medium mt-1">Intervention ciblée (durée ~1h)</div>
-              <p className="mt-2 text-[13.5px] text-[#59616C] leading-relaxed">
-                Pour faire monter un canapé venant d'être livré ou descendre une pièce lourde spécifique. Technicien inclus.
-              </p>
-            </div>
-            <div className="p-6 border border-[#E6E8EB] rounded-lg bg-white">
-              <div className="text-[17px] font-semibold text-[#20252B]">Demi-journée (4 heures)</div>
-              <div className="text-[13px] text-[#0082CA] font-medium mt-1">Idéal appartement 2 à 3 pièces</div>
-              <p className="mt-2 text-[13.5px] text-[#59616C] leading-relaxed">
-                Mise à disposition pour charger ou décharger la totalité de vos meubles et cartons avec opérateur permanent.
-              </p>
-            </div>
-            <div className="p-6 border border-[#E6E8EB] rounded-lg bg-white">
-              <div className="text-[17px] font-semibold text-[#20252B]">Journée complète (8 heures)</div>
-              <div className="text-[13px] text-[#0082CA] font-medium mt-1">Grand volume / Déménagement total</div>
-              <p className="mt-2 text-[13.5px] text-[#59616C] leading-relaxed">
-                Accompagnement continu sur la journée pour les opérations complètes de chargement et déchargement.
-              </p>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  );
-};
+const situations = [
+  {icon:Armchair,title:'Le meuble ne passe pas.',text:'Un canapé, une armoire ou une pièce non démontable : un passage par l’extérieur peut être étudié selon les dimensions et le poids.'},
+  {icon:Building2,title:'L’escalier complique tout.',text:'Paliers étroits, virages serrés ou absence d’ascenseur : nous examinons les accès pour trouver une solution adaptée.'},
+  {icon:MoveUpRight,title:'Le volume demande un autre accès.',text:'Lors d’un déménagement, le levage peut faciliter les passages et limiter les allers-retours dans les parties communes.'},
+];
+const checks = [['La façade','L’étage, la hauteur à atteindre et les obstacles devant le bâtiment.'],['L’ouverture','Les dimensions de la fenêtre ou du balcon et le passage du mobilier.'],['L’installation','L’espace au sol, le recul disponible et l’accès du véhicule.'],['Les biens','Le nombre d’objets, leurs dimensions et leur poids estimé.']];
+const faq = [
+  ['Le technicien est-il inclus ?', 'La prestation est proposée avec un technicien pour l’installation et la conduite de l’appareil. Les besoins de manutention au départ et à l’arrivée sont précisés dans le devis.'],
+  ['Peut-on installer un monte-meubles devant tous les immeubles ?', 'Non, cela dépend notamment du recul, de la hauteur, des obstacles, de l’espace d’installation et des ouvertures. Décrivez les lieux et partagez des photos avec notre équipe pour une première étude. Une vérification sur place peut être nécessaire.'],
+  ['Faut-il prévoir une autorisation de stationnement ?', 'Selon l’emplacement et les règles locales, une réservation ou une autorisation peut être nécessaire. Les démarches à prévoir et leur prise en charge sont à définir avant l’intervention.'],
+  ['Quel est le prix d’une intervention ?', 'Le devis dépend de l’adresse, des accès, du matériel nécessaire, des objets à déplacer et de la durée prévue. Nous précisons ces éléments avec vous avant de proposer un tarif.'],
+  ['Puis-je l’associer à mon déménagement ?', 'Oui. Le monte-meubles peut être étudié en complément du transport et de la manutention. Indiquez votre besoin dans le formulaire de devis pour préparer une prestation cohérente.'],
+];
+export function ServiceMonteMeublesPage() {
+  return <div className="lift-page expertise-page">
+    <section className="lift-hero wm-container"><div className="lift-hero-copy"><p className="eyebrow"><span/> MONTE-MEUBLES AVEC TECHNICIEN</p><h1>Location de<br/>monte-meubles.<br/><em>À Paris et en Île-de-France.</em></h1><p>Quand l’escalier ne suffit plus, prenons de la hauteur. Nous étudions le passage de votre mobilier par l’extérieur, à Paris et en Île-de-France.</p><div className="lift-hero-actions"><Link className="wm-button" href="/devis/?service=monte-meubles">Étudier mon besoin <ArrowUpRight size={18}/></Link><a className="text-link" href="#faisabilite">Mon accès est-il adapté ? <ArrowDown size={16}/></a></div><div className="lift-hero-signature"><UserRoundCheck size={25} strokeWidth={1.4}/><span>Un équipement adapté.<br/><strong>Un professionnel à vos côtés.</strong></span></div></div><div className="lift-hero-photo"><img src={liftImage} alt="Monte-meubles déployé devant la façade d’un immeuble" width="1200" height="896" fetchPriority="high"/><div className="lift-vertical-label">UNE SOLUTION À LA HAUTEUR DE VOTRE PROJET</div><div className="lift-photo-note"><MoveUpRight size={30} strokeWidth={1.3}/><div><strong>Le bon accès.<br/>Le bon accompagnement.</strong><span>Faisabilité étudiée avant l’intervention.</span></div></div></div></section>
+    <div className="lift-promise-band"><div className="business-principles wm-container">{[{icon:MapPin,title:'Paris & Île-de-France',text:'Votre adresse, notre point de départ'},{icon:UserRoundCheck,title:'Avec technicien',text:'Installation et conduite de l’appareil'},{icon:ShieldCheck,title:'Une intervention préparée',text:'Accès et moyens étudiés ensemble'}].map(({icon:Icon,title,text})=><div key={title}><Icon size={25} strokeWidth={1.4}/><span><strong>{title}</strong><small>{text}</small></span></div>)}</div></div>
+    <section className="lift-situations wm-container"><div className="expertise-section-heading"><div><p className="eyebrow">QUAND PRENDRE DE LA HAUTEUR ?</p><h2>Trois situations.<br/><em>Une solution à étudier.</em></h2></div><p>Le monte-meubles s’adapte au projet,<br/>après vérification de sa faisabilité.</p></div><div className="lift-situation-grid">{situations.map(({icon:Icon,title,text},i)=><article key={title}><div><Icon size={29} strokeWidth={1.3}/><span>0{i+1}</span></div><h3>{title}</h3><p>{text}</p></article>)}</div></section>
+    <section id="faisabilite" className="lift-feasibility"><div className="wm-container lift-feasibility-inner"><div><p className="eyebrow">AVANT DE DÉPLOYER L’APPAREIL</p><h2>Tout commence<br/><em>par un regard sur vos accès.</em></h2><p>Une adresse et quelques précisions permettent de préparer un premier échange. Notre équipe confirme ensuite les moyens adaptés à la configuration.</p><Link className="wm-button" href="/contact/">Échanger sur mes accès <ArrowUpRight size={18}/></Link><small>Hauteur, charge et conditions d’installation à confirmer selon le matériel et le site.</small></div><div className="lift-checks">{checks.map(([title,text],i)=><div key={title}><span>0{i+1}</span><div><h3>{title}</h3><p>{text}</p></div><Check size={18}/></div>)}</div></div></section>
+    <section className="lift-formats wm-container"><div className="expertise-section-heading"><div><p className="eyebrow">LE TEMPS QU’IL VOUS FAUT</p><h2>Un objet. Un logement.<br/>Un projet complet.</h2></div><p>La durée est ajustée au volume et aux accès.<br/>Le périmètre est précisé dans votre devis.</p></div><div className="lift-format-grid">{[{title:'Intervention ciblée',tag:'QUELQUES OBJETS',text:'Pour un meuble livré, un objet encombrant ou un passage ponctuel à organiser.',icon:Armchair},{title:'Demi-journée',tag:'UN BESOIN REGROUPÉ',text:'Pour réunir plusieurs opérations de levage sur un créneau préparé avec notre équipe.',icon:Clock3},{title:'Journée complète',tag:'UN PROJET PLUS LARGE',text:'Pour accompagner une opération de déménagement nécessitant davantage de temps.',icon:Building2}].map(({title,tag,text,icon:Icon})=><article key={title}><Icon size={26} strokeWidth={1.3}/><p className="eyebrow">{tag}</p><h3>{title}</h3><p>{text}</p><Link className="text-link" href="/devis/?service=monte-meubles">Demander une estimation <ArrowUpRight size={17}/></Link></article>)}</div></section>
+    <section className="lift-preparation"><div className="wm-container"><div><Ruler size={33} strokeWidth={1.3}/><p className="eyebrow">LES BONS REPÈRES, DÈS LE DÉPART</p><h2>Préparer votre demande<br/>devient plus simple.</h2><p>Pas besoin de connaître le modèle d’appareil. Décrivez votre situation : nous étudierons les moyens nécessaires.</p></div><ol>{[['Votre adresse et votre étage','Précisez la cour, la rue ou l’accès envisagé.'],['Le mobilier concerné','Listez les pièces avec leurs dimensions, si vous les connaissez.'],['Votre créneau souhaité','Indiquez la date et les éventuelles contraintes horaires.']].map(([title,text],i)=><li key={title}><span>0{i+1}</span><div><h3>{title}</h3><p>{text}</p></div></li>)}</ol></div></section>
+    <section className="expertise-faq wm-container"><div><p className="eyebrow">VOS QUESTIONS, NOS REPÈRES</p><h2>Prenons le temps<br/>de tout clarifier.</h2><Link className="text-link" href="/blog/monte-meuble-passage-difficile/">Lire notre guide monte-meubles <ArrowUpRight size={17}/></Link></div><div>{faq.map(([question,answer])=><details key={question}><summary>{question}<ChevronDown size={19}/></summary><p>{answer}</p></details>)}</div></section>
+    <section className="lift-final"><div className="wm-container"><MoveUpRight size={40} strokeWidth={1}/><p className="eyebrow">DONNONS UNE AUTRE DIMENSION À VOTRE DÉPART</p><h2>Votre mobilier mérite<br/><em>le bon passage.</em></h2><div><Link className="wm-button" href="/devis/?service=monte-meubles">Demander mon devis gratuit <ArrowUpRight size={18}/></Link><a href="tel:0173743690"><Phone size={17}/>01 73 74 36 90</a></div><small>Devis personnalisé · Sans engagement</small></div></section>
+  </div>;
+}

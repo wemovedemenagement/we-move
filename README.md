@@ -18,3 +18,11 @@ View your app in AI Studio: https://ai.studio/apps/dd45d9ec-9791-45d8-95f5-a8699
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+
+## SEO et publication
+
+Le build génère les pages HTML pré-rendues, `robots.txt` et `sitemap.xml`. Configurer `VITE_SITE_URL` avant compilation.
+
+- Stratégie et calendrier : [docs/strategie-seo-ile-de-france.md](docs/strategie-seo-ile-de-france.md)
+- Déploiement, statuts HTTP et recette : [docs/publication-seo.md](docs/publication-seo.md)
+- Validation du résultat : `npm run build` puis `npm run test:seo`

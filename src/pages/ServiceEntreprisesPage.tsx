@@ -1,122 +1,35 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
-import React from 'react';
+import { ArrowDown, ArrowUpRight, Archive, Building2, CalendarClock, Check, ChevronDown, ClipboardList, Monitor, MoveUpRight, Phone, Users } from 'lucide-react';
 import { Link } from '../router';
-import officeImage from '../assets/images/office_move_logistics_1790153527033.jpg';
+import officeImage from '../assets/images/office_move_logistics_1790153527033.webp';
 
-export const ServiceEntreprisesPage: React.FC = () => {
-  return (
-    <div className="py-12 sm:py-20 bg-white">
-      <div className="max-w-[1240px] mx-auto px-5 sm:px-8">
-        
-        {/* Hero split */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center pb-16 border-b border-[#E6E8EB]">
-          <div className="lg:col-span-7 space-y-6">
-            <span className="text-[13px] font-semibold text-[#0082CA] tracking-wider uppercase">
-              Transfert Professionnel & Tertiaire
-            </span>
-            <h1 className="text-[34px] sm:text-[44px] font-semibold text-[#20252B] tracking-tight leading-[1.15] [text-wrap:balance]">
-              Déménagement d’entreprises, de bureaux et de parcs informatiques.
-            </h1>
-            <p className="text-[17px] text-[#59616C] leading-relaxed max-w-xl">
-              Une méthodologie rigoureuse pour limiter au maximum l'interruption de votre activité. Nos coordinateurs planifient chaque phase en étroite collaboration avec vos équipes de direction et responsables généraux.
-            </p>
-            <div className="pt-2 flex flex-wrap items-center gap-4">
-              <Link
-                href="/devis/?service=entreprises"
-                className="px-6 h-12 rounded-md bg-[#0082CA] text-white text-[15px] font-medium hover:bg-[#006FA8] transition-colors flex items-center justify-center"
-              >
-                Demander un devis entreprise
-              </Link>
-              <Link
-                href="/contact/"
-                className="px-5 h-12 rounded-md border border-[#E6E8EB] bg-white text-[#20252B] text-[15px] font-medium hover:bg-[#FAFAF8] transition-colors flex items-center justify-center"
-              >
-                Organiser une visite de repérage
-              </Link>
-            </div>
-          </div>
+const scopes = [
+  {icon:Building2,title:'Vos espaces de travail.',label:'MOBILIER & AMÉNAGEMENT',text:'Bureaux, salles de réunion, accueil et espaces partagés : le transfert se prépare selon votre future implantation.',points:['Inventaire du mobilier à transférer','Démontage et remontage prévus au devis','Repérage des zones à destination']},
+  {icon:Monitor,title:'Vos outils du quotidien.',label:'MATÉRIEL INFORMATIQUE',text:'Des postes identifiés et un conditionnement adapté pour organiser le transport de vos équipements avec votre référent informatique.',points:['Repérage par poste ou collaborateur','Protection adaptée aux équipements','Périmètre défini avec votre équipe IT']},
+  {icon:Archive,title:'Vos dossiers, à leur place.',label:'ARCHIVES & DOCUMENTS',text:'Un classement préparé en amont pour retrouver vos dossiers et organiser leur remise en place dans les nouveaux locaux.',points:['Étiquetage selon votre classement','Conditionnement des dossiers','Ordre de dépose défini ensemble']},
+];
+const phases = [
+  ['Cadrer','Comprendre votre organisation.','Sites concernés, volume, effectifs et contraintes : nous identifions les points à anticiper avec vos équipes.'],
+  ['Planifier','Préparer chaque mouvement.','Accès, créneaux, priorités de transfert et implantation à destination sont réunis dans un planning partagé.'],
+  ['Transférer','Coordonner le jour J.','Les biens sont repérés, protégés puis acheminés selon les étapes et les moyens convenus.'],
+  ['Installer','Préparer la reprise.','Le mobilier est déposé dans les zones prévues. Un point de contrôle permet de vérifier le transfert avec votre référent.'],
+];
+const faq = [
+  ['Peut-on prévoir le transfert en dehors des heures de bureau ?', 'Des horaires décalés ou une intervention le week-end peuvent être étudiés selon vos contraintes et les disponibilités. Les créneaux sont convenus lors de la préparation et précisés dans le devis.'],
+  ['Comment préparer le matériel informatique ?', 'Désignez un référent informatique et identifiez les équipements à déplacer. Les sauvegardes, la déconnexion et la remise en service sont à organiser avec votre équipe IT ; les responsabilités et le périmètre de notre intervention sont définis avant le transfert.'],
+  ['Quelles informations préparer pour le devis ?', 'Indiquez les adresses, les dates envisagées, le nombre de postes et le mobilier concerné. Ajoutez les étages, les accès de livraison et, si vous l’avez, le plan des nouveaux locaux. Le volume et les moyens seront affinés ensemble.'],
+  ['Peut-on transférer les équipes en plusieurs étapes ?', 'Un transfert par service, zone ou site peut être étudié pour tenir compte de votre organisation. Partagez vos priorités afin de construire un calendrier adapté.'],
+];
 
-          <div className="lg:col-span-5">
-            <div className="rounded-lg overflow-hidden border border-[#E6E8EB] aspect-[4/3] bg-[#FAFAF8] shadow-xs">
-              <img 
-                src={officeImage} 
-                alt="Déménagement professionnel de bureaux d'entreprise par WE MOVE"
-                className="w-full h-full object-cover"
-                referrerPolicy="no-referrer"
-              />
-            </div>
-            <p className="mt-2 text-[12px] text-[#59616C]/80 text-right">
-              Bacs sécurisés et manutention soignée des postes de travail
-            </p>
-          </div>
-        </div>
-
-        {/* Domaines d'intervention pro */}
-        <div className="py-16 border-b border-[#E6E8EB]">
-          <div className="max-w-2xl mb-12">
-            <h2 className="text-[26px] sm:text-[32px] font-semibold text-[#20252B] tracking-tight">
-              Nos domaines d'intervention pour les professionnels
-            </h2>
-            <p className="mt-2 text-[15.5px] text-[#59616C]">
-              Du cabinet libéral au siège social de plusieurs dizaines de collaborateurs.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-8 rounded-lg border border-[#E6E8EB] bg-[#FAFAF8]">
-              <div className="text-[13px] font-mono text-[#0082CA] font-semibold">01</div>
-              <h3 className="text-[19px] font-semibold text-[#20252B] mt-2 mb-3">Mobilier de bureaux & espaces partagés</h3>
-              <p className="text-[14px] text-[#59616C] leading-relaxed">
-                Démontage méthodique des banques d'accueil, cloisons amovibles, bureaux bench, salles de réunion et fauteuils ergonomiques.
-              </p>
-            </div>
-
-            <div className="p-8 rounded-lg border border-[#E6E8EB] bg-[#FAFAF8]">
-              <div className="text-[13px] font-mono text-[#0082CA] font-semibold">02</div>
-              <h3 className="text-[19px] font-semibold text-[#20252B] mt-2 mb-3">Parc informatique & serveurs</h3>
-              <p className="text-[14px] text-[#59616C] leading-relaxed">
-                Conditionnement sous housses antistatiques, chariots suspendus pour les baies serveurs et bacs individuels étiquetés par collaborateur.
-              </p>
-            </div>
-
-            <div className="p-8 rounded-lg border border-[#E6E8EB] bg-[#FAFAF8]">
-              <div className="text-[13px] font-mono text-[#0082CA] font-semibold">03</div>
-              <h3 className="text-[19px] font-semibold text-[#20252B] mt-2 mb-3">Archives & dossiers confidentiels</h3>
-              <p className="text-[14px] text-[#59616C] leading-relaxed">
-                Mise en caisses scellées avec respect rigoureux du classement alphabétique ou numérique et réinstallation exacte sur rayonnage.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Garanties continuité de service */}
-        <div className="py-16">
-          <div className="max-w-2xl mb-8">
-            <h2 className="text-[26px] sm:text-[32px] font-semibold text-[#20252B] tracking-tight">
-              Continuité d'activité garantie
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="p-6 border border-[#E6E8EB] rounded-lg bg-white">
-              <h4 className="text-[16px] font-semibold text-[#20252B]">Interventions en horaires décalés</h4>
-              <p className="mt-2 text-[14px] text-[#59616C] leading-relaxed">
-                Possibilité d'intervenir le vendredi soir, le samedi ou le dimanche pour que vos collaborateurs reprennent leur poste le lundi matin dans leurs nouveaux locaux sans interruption.
-              </p>
-            </div>
-            <div className="p-6 border border-[#E6E8EB] rounded-lg bg-white">
-              <h4 className="text-[16px] font-semibold text-[#20252B]">Coordinateur de projet dédié</h4>
-              <p className="mt-2 text-[14px] text-[#59616C] leading-relaxed">
-                Un interlocuteur unique WE MOVE coordonne les équipes, organise les accès quai de livraison, les demandes d'ascenseurs privatifs et le plan d'implantation.
-              </p>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  );
-};
+export function ServiceEntreprisesPage() {
+  return <div className="business-page expertise-page">
+    <section className="business-hero"><div className="wm-container business-hero-grid"><div><p className="eyebrow">TRANSFERT D’ENTREPRISES · PARIS & ÎLE-DE-FRANCE</p><h1>Déménagement<br/>d’entreprises.<br/><em>Votre transfert en Île-de-France.</em></h1><p>Un transfert se prépare autour de votre activité. Mobilier, équipements, archives : nous coordonnons le déménagement avec vos équipes, du repérage à l’installation.</p><div className="business-hero-actions"><Link className="wm-button" href="/devis/?service=entreprises">Préparer mon transfert <ArrowUpRight size={18}/></Link><a href="#methode">Découvrir notre méthode <ArrowDown size={16}/></a></div><span className="business-hero-small">Devis personnalisé · Sans engagement</span></div><div className="business-visual"><img src={officeImage} alt="Préparation du transfert de mobilier et d’équipements de bureaux" width="1200" height="896" fetchPriority="high"/><div className="business-visual-caption"><span>LE PROCHAIN CHAPITRE DE VOTRE ENTREPRISE</span><strong>Bien préparé.<br/>Bien accompagné.</strong></div><div className="business-visual-tag"><CalendarClock size={20}/><span>Votre calendrier.<br/><strong>Notre point de départ.</strong></span></div></div></div></section>
+    <div className="business-principles wm-container">{[{icon:ClipboardList,title:'Un projet cadré',text:'Périmètre et priorités définis'},{icon:Users,title:'Des équipes coordonnées',text:'Un échange avec vos référents'},{icon:CalendarClock,title:'Un planning adapté',text:'Des créneaux étudiés ensemble'}].map(({icon:Icon,title,text})=><div key={title}><Icon size={25} strokeWidth={1.4}/><span><strong>{title}</strong><small>{text}</small></span></div>)}</div>
+    <section className="business-scopes wm-container"><div className="expertise-section-heading"><div><p className="eyebrow">TOUT CE QUI FAIT VOTRE ENTREPRISE</p><h2>Chaque poste compte.<br/><em>Chaque détail aussi.</em></h2></div><p>Du cabinet professionnel aux bureaux partagés,<br/>des moyens adaptés à votre organisation.</p></div><div className="business-scope-grid">{scopes.map(({icon:Icon,title,label,text,points},i)=><article key={title}><div className="business-scope-top"><Icon size={28} strokeWidth={1.3}/><span>0{i+1}</span></div><p className="eyebrow">{label}</p><h3>{title}</h3><p>{text}</p><ul>{points.map(point=><li key={point}><Check size={14}/>{point}</li>)}</ul></article>)}</div></section>
+    <section id="methode" className="business-method"><div className="wm-container"><div className="expertise-section-heading"><div><p className="eyebrow">UNE MÉTHODE, DU DÉBUT À LA FIN</p><h2>Le transfert se joue<br/>avant le premier carton.</h2></div><Link className="text-link" href="/contact/">Échanger sur un repérage <ArrowUpRight size={17}/></Link></div><ol>{phases.map(([label,title,text],i)=><li key={label}><div className="business-phase"><span>0{i+1}</span><strong>{label}</strong></div><h3>{title}</h3><p>{text}</p></li>)}</ol></div></section>
+    <section className="business-continuity wm-container"><div><p className="eyebrow">VOTRE ACTIVITÉ DONNE LE RYTHME</p><h2>Anticiper le mouvement.<br/><em>Faciliter la reprise.</em></h2><p>Un changement de bureaux implique des équipes, des clients et des échéances. Nous étudions le déroulement du transfert pour limiter son impact sur votre organisation.</p><Link className="wm-button" href="/devis/?service=entreprises">Parlons de vos contraintes <ArrowUpRight size={18}/></Link></div><div className="business-continuity-list">{[{icon:CalendarClock,title:'Des créneaux à étudier',text:'Horaires décalés ou week-end selon vos besoins et les disponibilités.'},{icon:Users,title:'Des priorités partagées',text:'Vos référents nous aident à identifier les équipes et les équipements à transférer en priorité.'},{icon:ClipboardList,title:'Une implantation préparée',text:'Un repérage des zones et des postes pour guider la dépose dans vos nouveaux locaux.'}].map(({icon:Icon,title,text})=><div key={title}><Icon size={24} strokeWidth={1.4}/><div><h3>{title}</h3><p>{text}</p></div></div>)}</div></section>
+    <div className="business-brief-band"><section className="business-brief wm-container"><div className="business-brief-heading"><ClipboardList size={32} strokeWidth={1.3}/><p className="eyebrow">POUR UN PREMIER ÉCHANGE UTILE</p><h2>Votre projet,<br/>en quatre repères.</h2><Link className="text-link" href="/devis/?service=entreprises">Commencer ma demande <ArrowUpRight size={17}/></Link></div><div className="business-brief-grid">{[['Les lieux','Adresses, étages, ascenseurs et accès de livraison.'],['Le calendrier','Dates souhaitées, contraintes horaires et étapes envisagées.'],['Ce qui déménage','Nombre de postes, mobilier, équipements et archives.'],['La destination','Plan des locaux et organisation des espaces à l’arrivée.']].map(([title,text],i)=><div key={title}><span>0{i+1}</span><h3>{title}</h3><p>{text}</p></div>)}</div></section></div>
+    <section className="expertise-faq wm-container"><div><p className="eyebrow">ANTICIPER, C’EST AUSSI POSER LES QUESTIONS</p><h2>Votre transfert,<br/>en toute clarté.</h2><Link className="text-link" href="/blog/transfert-entreprise-continuite-activite/">Lire notre guide entreprise <ArrowUpRight size={17}/></Link></div><div>{faq.map(([question,answer])=><details key={question}><summary>{question}<ChevronDown size={19}/></summary><p>{answer}</p></details>)}</div></section>
+    <section className="business-final"><div className="wm-container"><div><p className="eyebrow">DE NOUVEAUX LOCAUX. DE NOUVELLES PERSPECTIVES.</p><h2>Donnons une date<br/><em>à votre prochain départ.</em></h2></div><div><Link className="wm-button" href="/devis/?service=entreprises">Demander mon devis entreprise <ArrowUpRight size={18}/></Link><a href="tel:0173743690"><Phone size={17}/>01 73 74 36 90</a><small>Un projet particulier ? Échangeons directement.</small></div></div></section>
+    <div className="business-related wm-container"><Link href="/stockage-garde-meubles/">Besoin de stockage temporaire ? <ArrowUpRight size={17}/></Link><Link href="/location-monte-meubles/">Des accès difficiles à anticiper ? <MoveUpRight size={17}/></Link></div>
+  </div>;
+}

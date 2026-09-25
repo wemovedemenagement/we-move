@@ -1,0 +1,31 @@
+import { build } from 'esbuild';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { loadEnv } from 'vite';
+const root = process.cwd();
+const env = loadEnv('production', root, 'VITE_');
+const origin = (process.env.VITE_SITE_URL || env.VITE_SITE_URL || 'https://wemove.fr').replace(/\/$/, '');
+const parsedOrigin = new URL(origin);
+if (!['http:', 'https:'].includes(parsedOrigin.protocol) || parsedOrigin.origin !== origin) throw new Error('VITE_SITE_URL doit être une origine HTTP(S), sans chemin.');
+const manifest = JSON.parse(await readFile('dist/.vite/manifest.json', 'utf8'));
+await mkdir('.prerender', { recursive: true });
+await build({ entryPoints: ['scripts/render-site.tsx'], outfile: '.prerender/site.mjs', bundle: true, platform: 'node', format: 'esm', packages: 'external', jsx: 'automatic', define: { 'import.meta.env': JSON.stringify({ VITE_SITE_URL: origin }) }, plugins: [{ name: 'built-images', setup(api) { api.onLoad({ filter: /\.(jpg|webp|png)$/ }, args => { const key = path.relative(root, args.path).replaceAll('\\', '/'); const asset = manifest[key]; if (!asset) throw new Error(`Missing built asset: ${key}`); return { contents: `export default ${JSON.stringify('/' + asset.file)}`, loader: 'js' }; }); } }] });
+const { BLOG_ARTICLES, SITE_PAGES, routeSeo, render } = await import(pathToFileURL(path.join(root, '.prerender/site.mjs')).href);
+const template = await readFile('dist/index.html', 'utf8');
+const escape = value => String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+const json = value => JSON.stringify(value).replaceAll('<', '\\u003c');
+const routes = [...Object.keys(SITE_PAGES), ...BLOG_ARTICLES.map(a => `/blog/${a.slug}/`)];
+for (const route of [...routes, '/404/']) {
+  const seo = routeSeo(route, origin);
+  let html = template.replace(/<title>[\s\S]*?<\/title>/, '').replace(/<meta\s+(?:name|property)="(?:description|og:[^"]+|twitter:[^"]+|robots)"[^>]*>/g, '').replace(/<link\s+rel="canonical"[^>]*>/g, '');
+  const head = `<title>${escape(seo.title)}</title><meta name="description" content="${escape(seo.description)}"><link rel="canonical" href="${escape(seo.url)}"><meta name="robots" content="${seo.robots}"><meta property="og:type" content="${seo.type}"><meta property="og:locale" content="fr_FR"><meta property="og:title" content="${escape(seo.title)}"><meta property="og:description" content="${escape(seo.description)}"><meta property="og:url" content="${escape(seo.url)}"><meta property="og:image" content="${escape(seo.image)}"><meta property="og:image:alt" content="${escape(seo.imageAlt)}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escape(seo.title)}"><meta name="twitter:description" content="${escape(seo.description)}"><meta name="twitter:image" content="${escape(seo.image)}">${seo.missing ? '' : `<script id="route-schema" type="application/ld+json">${json(seo.schema)}</script>`}`;
+  html = html.replace('</head>', head + '</head>').replace('<div id="root"></div>', () => `<div id="root">${render(route)}</div>`);
+  const folder = path.join('dist', route.slice(1)); await mkdir(folder, { recursive: true }); await writeFile(path.join(folder, 'index.html'), html);
+  if (route === '/404/') await writeFile('dist/404.html', html);
+}
+const sitemap = paths => `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${paths.map(route => `  <url><loc>${escape(origin + route)}</loc></url>`).join('\n')}\n</urlset>\n`;
+await writeFile('dist/sitemap.xml', sitemap(routes.filter(route => routeSeo(route, origin).robots === 'index,follow')));
+await writeFile('dist/sitemap-blog.xml', sitemap(BLOG_ARTICLES.map(a => `/blog/${a.slug}/`)));
+await writeFile('dist/robots.txt', `User-agent: *\nAllow: /\n\nSitemap: ${origin}/sitemap.xml\n`);
+console.log(`${routes.length} pages pré-rendues, page 404, sitemap.xml et robots.txt (${origin})`);

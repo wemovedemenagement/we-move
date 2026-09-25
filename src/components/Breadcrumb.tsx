@@ -79,6 +79,8 @@ export const Breadcrumb: React.FC = () => {
           { label: 'Accueil', href: '/' },
           { label: 'Contact' },
         ];
+      case '/cgv/':
+        return [{ label: 'Accueil', href: '/' }, { label: 'Conditions générales de vente' }];
       case '/mentions-legales/':
         return [
           { label: 'Accueil', href: '/' },

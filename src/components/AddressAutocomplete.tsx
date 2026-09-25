@@ -1,3 +1,4 @@
+import { useGooglePlacesConsent, openCookiePreferences } from '../data/consent';
 import { useEffect, useRef, useState } from 'react';
 
 type AddressWidget = HTMLElement & { value: string; disabled: boolean; placeholder: string };
@@ -31,6 +32,7 @@ function loadPlaces() {
 type Props = { id: string; label: string; value: string; onChange: (value: string) => void; disabled?: boolean; required?: boolean; invalid?: boolean; describedBy?: string; placeholder: string };
 
 export function AddressAutocomplete(props: Props) {
+  const consent = useGooglePlacesConsent();
   const host = useRef<HTMLDivElement>(null);
   const widget = useRef<AddressWidget | null>(null);
   const latest = useRef(props);
@@ -40,7 +42,8 @@ export function AddressAutocomplete(props: Props) {
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    if (manual) return;
+    setReady(false);
+    if (manual || !consent) return;
     let active = true;
     let revision = 0;
     const fallback = () => { if (active) { setFailed(true); setManual(true); } };
@@ -74,7 +77,7 @@ export function AddressAutocomplete(props: Props) {
       setReady(true);
     }).catch(fallback);
     return () => { active = false; widget.current?.remove(); widget.current = null; };
-  }, [manual]);
+  }, [manual, consent]);
 
   useEffect(() => {
     if (!widget.current) return;
@@ -87,9 +90,10 @@ export function AddressAutocomplete(props: Props) {
   }, [props.value, props.disabled, props.invalid, props.required, props.describedBy]);
 
   return <div className="address-autocomplete">
-    <div ref={host} hidden={manual || !ready} />
-    {(manual || !ready) && <input id={props.id} aria-label={props.label} value={props.value} onChange={event => props.onChange(event.target.value)} placeholder={props.placeholder} autoComplete="street-address" maxLength={300} disabled={props.disabled} required={props.required} aria-invalid={props.invalid} aria-describedby={props.describedBy} />}
+    <div ref={host} hidden={manual || !ready || !consent} />
+    {(manual || !ready || !consent) && <input id={props.id} aria-label={props.label} value={props.value} onChange={event => props.onChange(event.target.value)} placeholder={props.placeholder} autoComplete="street-address" maxLength={300} disabled={props.disabled} required={props.required} aria-invalid={props.invalid} aria-describedby={props.describedBy} />}
     {failed && <small role="status">Les suggestions sont indisponibles. Saisissez votre adresse directement.</small>}
-    {!manual && ready && <button className="address-manual" type="button" disabled={props.disabled} onClick={() => setManual(true)}>Saisir mon adresse manuellement</button>}
+    {!consent && !!import.meta.env.VITE_GOOGLE_MAPS_API_KEY && <button className="address-manual" type="button" disabled={props.disabled} onClick={openCookiePreferences}>Activer les suggestions Google</button>}
+    {!manual && ready && consent && <button className="address-manual" type="button" disabled={props.disabled} onClick={() => setManual(true)}>Saisir mon adresse manuellement</button>}
   </div>;
 }

@@ -1,9 +1,9 @@
 import { ArrowDown, ArrowRight, ArrowUpRight, CalendarCheck2, Check, HeartHandshake, MapPin, MessageCircle, MoveUpRight, PackageCheck, Phone, ShieldCheck, Truck } from 'lucide-react';
 import { Link } from '../router';
 import { LogoMark } from '../components/Logo';
-import teamImage from '../assets/images/hero_moving_service_1790153159353.jpg';
-import careImage from '../assets/images/service_craft_protection_1790153177359.jpg';
-import liftImage from '../assets/images/furniture_lift_exterior_1790153551793.jpg';
+import teamImage from '../assets/images/hero_moving_service_1790153159353.webp';
+import careImage from '../assets/images/service_craft_protection_1790153177359.webp';
+import liftImage from '../assets/images/furniture_lift_exterior_1790153551793.webp';
 
 const commitments = [
   { icon: ShieldCheck, title: 'Du soin dans chaque geste.', tag: 'VOS BIENS, RESPECTÉS', text: 'Housses, couvertures épaisses et emballages adaptés : la protection du mobilier fait partie du déménagement, du départ jusqu’à l’installation.', detail: 'Protection & manutention', tone: 'blue' },

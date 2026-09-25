@@ -1,130 +1,27 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
-import React from 'react';
+import { useState } from 'react';
+import { ArrowDown, ArrowUpRight, Box, CalendarDays, Check, ChevronDown, ClipboardList, House, LockKeyhole, PackageCheck, Paintbrush, Phone, Truck } from 'lucide-react';
 import { Link } from '../router';
-import storageImage from '../assets/images/storage_warehouse_facility_1790153540073.jpg';
+import storageImage from '../assets/images/storage_warehouse_facility_1790153540073.webp';
 
-export const ServiceStockagePage: React.FC = () => {
-  return (
-    <div className="py-12 sm:py-20 bg-white">
-      <div className="max-w-[1240px] mx-auto px-5 sm:px-8">
-        
-        {/* Hero split */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center pb-16 border-b border-[#E6E8EB]">
-          <div className="lg:col-span-7 space-y-6">
-            <span className="text-[13px] font-semibold text-[#0082CA] tracking-wider uppercase">
-              Stockage Sécurisé & Entreposage
-            </span>
-            <h1 className="text-[34px] sm:text-[44px] font-semibold text-[#20252B] tracking-tight leading-[1.15] [text-wrap:balance]">
-              Garde-meubles sécurisé, propre et ventilé.
-            </h1>
-            <p className="text-[17px] text-[#59616C] leading-relaxed max-w-xl">
-              Entre deux baux, lors de travaux de rénovation ou pour stocker des archives : vos biens sont placés dans des conteneurs individuels fermés sous scellés, abrités de l'humidité et sous vidéosurveillance permanente.
-            </p>
-            <div className="pt-2 flex flex-wrap items-center gap-4">
-              <Link
-                href="/devis/?service=stockage"
-                className="px-6 h-12 rounded-md bg-[#0082CA] text-white text-[15px] font-medium hover:bg-[#006FA8] transition-colors flex items-center justify-center"
-              >
-                Demander un devis stockage
-              </Link>
-              <Link
-                href="/volume/"
-                className="px-5 h-12 rounded-md border border-[#E6E8EB] bg-white text-[#20252B] text-[15px] font-medium hover:bg-[#FAFAF8] transition-colors flex items-center justify-center"
-              >
-                Calculer le volume de box nécessaire
-              </Link>
-            </div>
-          </div>
-
-          <div className="lg:col-span-5">
-            <div className="rounded-lg overflow-hidden border border-[#E6E8EB] aspect-[4/3] bg-[#FAFAF8] shadow-xs">
-              <img 
-                src={storageImage} 
-                alt="Entrepôt de stockage et conteneurs garde-meubles sécurisés WE MOVE"
-                className="w-full h-full object-cover"
-                referrerPolicy="no-referrer"
-              />
-            </div>
-            <p className="mt-2 text-[12px] text-[#59616C]/80 text-right">
-              Conteneurs individuels en bois ventilé et bâtiment sous alarme 24/7
-            </p>
-          </div>
-        </div>
-
-        {/* Caractéristiques de l'entrepôt */}
-        <div className="py-16 border-b border-[#E6E8EB]">
-          <div className="max-w-2xl mb-12">
-            <h2 className="text-[26px] sm:text-[32px] font-semibold text-[#20252B] tracking-tight">
-              Une conservation optimale de vos meubles
-            </h2>
-            <p className="mt-2 text-[15.5px] text-[#59616C]">
-              Contrairement à un garage ou une cave humide, notre garde-meubles répond aux normes professionnelles de préservation.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-8 rounded-lg border border-[#E6E8EB] bg-[#FAFAF8]">
-              <div className="text-[13px] font-mono text-[#0082CA] font-semibold">01</div>
-              <h3 className="text-[19px] font-semibold text-[#20252B] mt-2 mb-3">Hygrométrie & Température régulées</h3>
-              <p className="text-[14px] text-[#59616C] leading-relaxed">
-                Conteneurs en bois aéré évitant toute condensation, protégeant vos meubles vernis, tissus, literie et instruments de musique.
-              </p>
-            </div>
-
-            <div className="p-8 rounded-lg border border-[#E6E8EB] bg-[#FAFAF8]">
-              <div className="text-[13px] font-mono text-[#0082CA] font-semibold">02</div>
-              <h3 className="text-[19px] font-semibold text-[#20252B] mt-2 mb-3">Sécurité anti-intrusion & Incendie</h3>
-              <p className="text-[14px] text-[#59616C] leading-relaxed">
-                Vidéosurveillance continue reliée à une société de télésurveillance certifiée, détecteurs de fumée et contrôle d'accès nominatif.
-              </p>
-            </div>
-
-            <div className="p-8 rounded-lg border border-[#E6E8EB] bg-[#FAFAF8]">
-              <div className="text-[13px] font-mono text-[#0082CA] font-semibold">03</div>
-              <h3 className="text-[19px] font-semibold text-[#20252B] mt-2 mb-3">Mise sous scellés en votre présence</h3>
-              <p className="text-[14px] text-[#59616C] leading-relaxed">
-                Inventaire contradictoire à l'entrée et scellés numérotés posés sur votre box, dont vous conservez les références jusqu'au déchargement.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Tailles de conteneurs */}
-        <div className="py-16">
-          <div className="max-w-2xl mb-8">
-            <h2 className="text-[26px] sm:text-[32px] font-semibold text-[#20252B] tracking-tight">
-              Volumes de conteneurs disponibles
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="p-6 border border-[#E6E8EB] rounded-lg bg-white">
-              <div className="text-[18px] font-semibold font-mono text-[#20252B]">8 m³</div>
-              <div className="text-[13px] text-[#0082CA] font-medium mt-1">Box Studio</div>
-              <p className="mt-2 text-[13px] text-[#59616C]">Équivalent d'un studio d'étudiant ou 20 à 30 cartons avec petit électroménager.</p>
-            </div>
-            <div className="p-6 border border-[#E6E8EB] rounded-lg bg-white">
-              <div className="text-[18px] font-semibold font-mono text-[#20252B]">12 m³</div>
-              <div className="text-[13px] text-[#0082CA] font-medium mt-1">Box 2 pièces</div>
-              <p className="mt-2 text-[13px] text-[#59616C]">Mobilier complet d'un appartement 2 pièces, canapé, lit double et cartons.</p>
-            </div>
-            <div className="p-6 border border-[#E6E8EB] rounded-lg bg-white">
-              <div className="text-[18px] font-semibold font-mono text-[#20252B]">20 m³</div>
-              <div className="text-[13px] text-[#0082CA] font-medium mt-1">Box 3-4 pièces</div>
-              <p className="mt-2 text-[13px] text-[#59616C]">Volume moyen d'un logement familial avec plusieurs chambres et électroménager.</p>
-            </div>
-            <div className="p-6 border border-[#E6E8EB] rounded-lg bg-white">
-              <div className="text-[18px] font-semibold font-mono text-[#20252B]">30 m³ et +</div>
-              <div className="text-[13px] text-[#0082CA] font-medium mt-1">Grand volume / Maison</div>
-              <p className="mt-2 text-[13px] text-[#59616C]">Conteneurs multiples combinés pour grandes demeures ou stocks d'entreprise.</p>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  );
-};
+const volumes = [{value:8,label:'L’essentiel',text:'Quelques meubles, des cartons et des affaires à mettre de côté.'},{value:12,label:'Un peu plus de place',text:'Un ensemble de meubles et de cartons à inventorier pièce par pièce.'},{value:20,label:'Un projet plus large',text:'Plusieurs pièces de mobilier, de l’électroménager et vos effets personnels.'},{value:30,label:'Le grand départ',text:'Un volume important à organiser avec notre équipe, éventuellement en plusieurs espaces.'}];
+const faq = [
+ ['Quelle durée de stockage prévoir ?', 'Indiquez la durée envisagée, même approximative. Les conditions de location et de prolongation sont précisées dans votre proposition. Prévenez notre équipe si votre calendrier évolue.'],
+ ['Puis-je récupérer des affaires pendant le stockage ?', 'Les modalités d’accès et de retrait sont à convenir avant la mise en stockage. Signalez si vous prévoyez de récupérer régulièrement certains objets afin de choisir une organisation adaptée.'],
+ ['Comment choisir le bon volume ?', 'Le volume dépend du mobilier réellement stocké, des cartons et de la manière dont ils peuvent être disposés. Les repères proposés ici sont indicatifs : notre calculateur et un inventaire permettent d’affiner votre besoin.'],
+ ['Le transport peut-il être inclus ?', 'L’enlèvement et la livraison peuvent être étudiés avec le stockage. Précisez vos adresses, les accès et vos dates pour préparer une proposition qui rassemble les prestations utiles.'],
+ ['Comment mes biens sont-ils couverts ?', 'Les garanties, plafonds et éventuelles exclusions sont à vérifier dans les conditions proposées avant la signature. Signalez les objets de valeur pour préciser la couverture adaptée à votre situation.'],
+];
+export function ServiceStockagePage() {
+ const [selected,setSelected] = useState(1);
+ const volume = volumes[selected];
+ return <div className="storage-page expertise-page">
+  <section className="storage-hero"><div className="wm-container storage-hero-grid"><div><p className="eyebrow"><span/> STOCKAGE & GARDE-MEUBLES</p><h1>Stockage & garde-meubles.<br/><em>Votre solution en Île-de-France.</em></h1><p>Entre deux adresses, pendant des travaux ou le temps d’un nouveau projet, confiez-nous votre besoin de stockage. Nous préparons une solution autour de votre mobilier et de votre calendrier.</p><div className="storage-hero-actions"><Link className="wm-button" href="/devis/?service=stockage">Préparer mon stockage <ArrowUpRight size={18}/></Link><a className="text-link" href="#volume-stockage">Quel volume prévoir ? <ArrowDown size={16}/></a></div><small>Paris & Île-de-France · Devis personnalisé, sans engagement</small></div><div className="storage-hero-image"><img src={storageImage} alt="Espaces individuels de garde-meubles dans un entrepôt" width="1200" height="896" fetchPriority="high"/><div className="storage-image-note"><LockKeyhole size={27} strokeWidth={1.3}/><span>Vos affaires patientent.<br/><strong>Vos projets avancent.</strong></span></div><span className="storage-image-label">LE SOIN DE CE QUE VOUS GARDEZ</span></div></div></section>
+  <div className="business-principles wm-container">{[{icon:Box,title:'Un volume adapté',text:'À partir de votre inventaire'},{icon:CalendarDays,title:'Un calendrier à définir',text:'Selon les étapes de votre projet'},{icon:Truck,title:'Un transport à prévoir',text:'Enlèvement et livraison à étudier'}].map(({icon:Icon,title,text})=><div key={title}><Icon size={25} strokeWidth={1.4}/><span><strong>{title}</strong><small>{text}</small></span></div>)}</div>
+  <section className="storage-situations wm-container"><div className="expertise-section-heading"><div><p className="eyebrow">LA VIE BOUGE. VOS AFFAIRES ONT LEUR PLACE.</p><h2>Un espace en plus,<br/><em>au bon moment.</em></h2></div><p>Quelques meubles ou tout un intérieur :<br/>partons de ce dont vous avez besoin.</p></div><div className="storage-situation-grid">{[{icon:House,title:'Entre deux logements',text:'Les clés de votre nouveau chez-vous se font attendre ? Préparons la transition de votre mobilier.'},{icon:Paintbrush,title:'Pendant vos travaux',text:'Libérez les pièces à rénover et organisez le retour de vos affaires quand votre intérieur sera prêt.'},{icon:Box,title:'Pour retrouver de la place',text:'Un départ temporaire ou des locaux à réorganiser : mettez de côté ce que vous souhaitez conserver.'}].map(({icon:Icon,title,text},i)=><article key={title}><div><Icon size={28} strokeWidth={1.3}/><span>0{i+1}</span></div><h3>{title}</h3><p>{text}</p></article>)}</div></section>
+  <section id="volume-stockage" className="storage-volume"><div className="wm-container storage-volume-grid"><div><p className="eyebrow">UN PREMIER REPÈRE, EN QUELQUES CLICS</p><h2>La bonne place.<br/>Pour les bonnes affaires.</h2><p>Sélectionnez une première estimation. Nous affinerons le volume avec votre inventaire, les dimensions du mobilier et les conditions de stockage.</p><div className="storage-volume-tabs" role="group" aria-label="Estimation du volume à stocker">{volumes.map((item,i)=><button type="button" key={item.value} aria-pressed={selected===i} onClick={()=>setSelected(i)}>{item.value}{i===3?' +':''} <span>m³</span></button>)}</div><Link className="text-link" href="/volume/">Je préfère calculer pièce par pièce <ArrowUpRight size={17}/></Link></div><div className="storage-volume-card"><div className="storage-volume-visual" aria-hidden="true"><Box size={90} strokeWidth={.7}/><span>{volume.value}<small>{selected===3?' + ':''} m³</small></span></div><div aria-live="polite" aria-atomic="true"><p className="eyebrow">VOTRE ESTIMATION : {volume.value}{selected===3?' +':''} M³</p><h3>{volume.label}</h3><p>{volume.text}</p></div><Link className="wm-button" href={`/devis/?service=stockage&volume=${volume.value}`}>Étudier ce volume <ArrowUpRight size={17}/></Link><small>Repère indicatif, sans réservation. Capacité et disponibilité à confirmer.</small></div></div></section>
+  <section className="storage-care wm-container"><div><p className="eyebrow">UN STOCKAGE QUI SE PRÉPARE</p><h2>Bien protéger.<br/><em>Bien retrouver.</em></h2><p>Le soin commence avant la mise en stockage. Nous définissons avec vous les prestations utiles et les modalités de conservation et de restitution de vos biens.</p><Link className="text-link" href="/contact/">Échanger avec notre équipe <ArrowUpRight size={17}/></Link></div><div>{[{icon:ClipboardList,title:'Un inventaire pour garder le fil',text:'Identifiez les meubles et les cartons confiés pour organiser leur prise en charge et leur retour.'},{icon:PackageCheck,title:'Une préparation adaptée',text:'Protections du mobilier, cartons identifiés et objets fragiles signalés : les besoins sont précisés ensemble.'},{icon:LockKeyhole,title:'Des modalités claires',text:'Accès, garanties, durée et conditions de retrait sont à valider avant la mise en stockage.'}].map(({icon:Icon,title,text})=><article key={title}><Icon size={25} strokeWidth={1.3}/><div><h3>{title}</h3><p>{text}</p></div></article>)}</div></section>
+  <section className="storage-journey"><div className="wm-container"><div className="expertise-section-heading"><div><p className="eyebrow">DU DÉPART AU RETOUR</p><h2>Une parenthèse,<br/>bien organisée.</h2></div><Link className="text-link" href="/devis/?service=stockage">Parlons de mon projet <ArrowUpRight size={17}/></Link></div><ol>{[['On fait le point','Votre volume, vos dates, les accès et le transport éventuel.'],['On prépare les biens','L’inventaire et les protections sont organisés selon les prestations retenues.'],['On prévoit le stockage','L’espace et les conditions de conservation sont définis dans votre proposition.'],['On organise le retour','La restitution ou la livraison se prépare avec notre équipe.']].map(([title,text],i)=><li key={title}><span>0{i+1}</span><h3>{title}</h3><p>{text}</p></li>)}</ol></div></section>
+  <section className="expertise-faq wm-container"><div><p className="eyebrow">POUR CHOISIR SEREINEMENT</p><h2>Tout ce que vous<br/>souhaitez savoir.</h2><Link className="text-link" href="/blog/garder-meubles-securise-paris/">Lire notre guide stockage <ArrowUpRight size={17}/></Link></div><div>{faq.map(([question,answer])=><details key={question}><summary>{question}<ChevronDown size={19}/></summary><p>{answer}</p></details>)}</div></section>
+  <section className="storage-final"><div className="wm-container"><div><p className="eyebrow">VOTRE PROCHAIN CHAPITRE PEUT PRENDRE SON TEMPS</p><h2>Faites de la place.<br/><em>On prépare la suite.</em></h2><p>Parlez-nous de ce que vous souhaitez stocker et du calendrier envisagé.</p></div><div><Link className="wm-button" href="/devis/?service=stockage">Demander mon devis stockage <ArrowUpRight size={18}/></Link><a href="tel:0173743690"><Phone size={17}/>01 73 74 36 90</a><small>Devis gratuit · Sans engagement</small></div></div></section>
+ </div>;
+}
