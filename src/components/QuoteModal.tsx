@@ -5,6 +5,8 @@
 
 import React, { useState } from 'react';
 import { AddressAutocompleteInput } from './AddressAutocompleteInput';
+import { submitQuoteLead } from '../services/crmService';
+import { QuoteLead } from '../types/crm';
 
 interface QuoteModalProps {
   isOpen: boolean;
@@ -28,12 +30,14 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, initial
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createdLead, setCreatedLead] = useState<QuoteLead | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!departureCity.trim() || !arrivalCity.trim()) {
       setErrorMessage('Veuillez renseigner les villes de départ et d’arrivée.');
@@ -44,11 +48,38 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, initial
       return;
     }
     setErrorMessage('');
-    setSubmitted(true);
+    setIsSubmitting(true);
+
+    try {
+      const lead = await submitQuoteLead({
+        projectType,
+        departureAddress: departureCity,
+        departureFloor,
+        departureElevator,
+        arrivalAddress: arrivalCity,
+        arrivalFloor,
+        arrivalElevator,
+        volume,
+        moveDate,
+        fullName,
+        email,
+        phone,
+        notes,
+        source: 'modal_devis_rapide'
+      });
+      setCreatedLead(lead);
+      setSubmitted(true);
+    } catch (err) {
+      console.error('Erreur lors de la synchronisation du devis:', err);
+      setErrorMessage('Une erreur est survenue lors du traitement. Veuillez réessayer.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleReset = () => {
     setSubmitted(false);
+    setCreatedLead(null);
     onClose();
   };
 
@@ -70,7 +101,7 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, initial
               Demande de devis sans engagement
             </h3>
             <p className="text-[13px] text-[#59616C] mt-0.5">
-              Étude gratuite et personnalisée de votre projet
+              Étude gratuite et synchronisée avec l'équipe commerciale We Move
             </p>
           </div>
           <button
@@ -88,18 +119,26 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, initial
         {/* Content */}
         <div className="p-6">
           {submitted ? (
-            <div className="py-8 text-center space-y-4">
+            <div className="py-6 text-center space-y-4">
               <div className="w-12 h-12 mx-auto rounded-full bg-[#0082CA]/10 text-[#0082CA] flex items-center justify-center">
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
               <h4 className="text-[20px] font-semibold text-[#20252B]">
-                Demande transmise avec succès
+                Demande enregistrée & synchronisée
               </h4>
               <p className="text-[14.5px] text-[#59616C] max-w-md mx-auto leading-relaxed">
-                Merci {fullName}. Un conseiller WE MOVE analyse vos contraintes d'accès pour {departureCity} → {arrivalCity} (~{volume} m³) et vous contactera sous 24 à 48 heures ouvrées.
+                Merci <strong>{fullName}</strong>. Votre dossier a été enregistré dans notre base sous la référence <span className="font-mono font-semibold text-[#0082CA] bg-[#0082CA]/10 px-2 py-0.5 rounded">{createdLead?.id}</span>.
               </p>
+              <div className="bg-[#FAFAF8] p-4 rounded-lg border border-[#E6E8EB] max-w-md mx-auto text-left text-[13px] space-y-1.5 text-[#59616C]">
+                <div><strong className="text-[#20252B]">Trajet :</strong> {departureCity} → {arrivalCity}</div>
+                <div><strong className="text-[#20252B]">Volume estimé :</strong> ~{volume} m³</div>
+                {createdLead?.estimatedPrice && (
+                  <div><strong className="text-[#20252B]">Estimation indicative :</strong> <span className="font-semibold text-[#0082CA]">{createdLead.estimatedPrice} € TTC</span></div>
+                )}
+                <div><strong className="text-[#20252B]">Statut :</strong> Transmis au pôle devis (réponse sous 24h)</div>
+              </div>
               <div className="pt-4">
                 <button
                   type="button"

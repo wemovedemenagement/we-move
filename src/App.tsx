@@ -32,6 +32,7 @@ const LegalPage = lazy(() => import('./pages/LegalPage').then(module => ({ defau
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage').then(module => ({ default: module.PrivacyPage })));
 
 const TermsPage = lazy(() => import('./pages/TermsPage').then(module => ({ default: module.TermsPage })));
+const CrmPage = lazy(() => import('./pages/CrmPage').then(module => ({ default: module.CrmPage })));
 
 function PageSwitch() {
   const { pathname } = useRouter();
@@ -66,6 +67,8 @@ function PageSwitch() {
         return <QuotePage />;
       case '/contact/':
         return <ContactPage />;
+      case '/crm/':
+        return <CrmPage />;
       case '/cgv/':
         return <TermsPage />;
       case '/mentions-legales/':
