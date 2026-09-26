@@ -840,7 +840,7 @@ export function CrmPage() {
         <div className="flex items-center gap-2 text-xs">
           <span className="font-semibold text-slate-400">CRM Operations</span>
           <ChevronRight size={14} className="text-slate-400" />
-          <span className={`font-bold text-sm tracking-tight ${textTitle}`}>
+          <h1 className={`font-bold text-sm tracking-tight ${textTitle}`}>
             {activeTab === 'pipeline' && 'Demandes & Pipeline'}
             {activeTab === 'dashboard' && 'Tableau de Bord'}
             {activeTab === 'commercial' && 'Commercial & Visites'}
@@ -849,7 +849,7 @@ export function CrmPage() {
             {activeTab === 'logistics' && 'Planning & Flotte'}
             {activeTab === 'customers' && 'Fichier Clients'}
             {activeTab === 'settings' && 'Paramètres'}
-          </span>
+          </h1>
           <span className="ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-[#0082CA]/10 text-[#0082CA] border border-[#0082CA]/25">
             v2.6
           </span>
@@ -1994,7 +1994,7 @@ export function CrmPage() {
                                   onClick={() => {
                                     const matchLead = leads.find(l => l.fullName.toLowerCase().includes(visit.client.split(' ')[0].toLowerCase())) || leads[0];
                                     setSelectedLead(matchLead);
-                                    setShowVisitModal(true);
+                                    setShowVisitModal(matchLead);
                                   }}
                                   className={`p-2.5 rounded-xl border transition-all cursor-pointer hover:scale-[1.02] shadow-2xs space-y-1.5 ${
                                     isDark ? 'bg-slate-900/90 border-slate-800 hover:border-[#0082CA]/50' : 'bg-white border-slate-200/90 hover:border-[#0082CA]/50'
@@ -2120,7 +2120,7 @@ export function CrmPage() {
                                   onClick={() => {
                                     const matchLead = leads.find(l => l.fullName.toLowerCase().includes(rdv.client.split(' ')[0].toLowerCase())) || leads[0];
                                     setSelectedLead(matchLead);
-                                    setShowVisitModal(true);
+                                    setShowVisitModal(matchLead);
                                   }}
                                   className={`px-2.5 py-1 rounded-lg border text-[11px] font-medium transition-colors cursor-pointer ${
                                     isDark ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
@@ -3348,7 +3348,7 @@ export function CrmPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {showInvoiceModal.items.map((item, idx) => (
+                  {(showInvoiceModal.items || []).map((item, idx) => (
                     <tr key={idx}>
                       <td className="p-2">{item.description}</td>
                       <td className="p-2 text-center">{item.quantity}</td>
@@ -3363,7 +3363,7 @@ export function CrmPage() {
                   <div className="flex justify-between text-slate-600"><span>Total HT :</span><span>{showInvoiceModal.amountHT.toFixed(2)} €</span></div>
                   <div className="flex justify-between text-slate-600"><span>TVA 20% :</span><span>{showInvoiceModal.tvaAmount.toFixed(2)} €</span></div>
                   <div className="flex justify-between font-bold text-sm text-slate-900 pt-1 border-t"><span>Total TTC :</span><span>{showInvoiceModal.amountTTC.toFixed(2)} €</span></div>
-                  <div className="flex justify-between text-emerald-600 font-semibold text-xs"><span>Acompte 30% :</span><span>{showInvoiceModal.depositAmount.toFixed(2)} €</span></div>
+                  <div className="flex justify-between text-emerald-600 font-semibold text-xs"><span>Acompte 30% :</span><span>{(showInvoiceModal.depositAmount ?? (showInvoiceModal.amountTTC * 0.3)).toFixed(2)} €</span></div>
                 </div>
               </div>
             </div>

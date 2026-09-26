@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { QuoteLead, CrmStats, QuoteStatus } from '../types/crm';
+import { QuoteLead, CrmStats, QuoteStatus, QuoteDocument, InvoiceDocument, CustomerProfile, TruckResource } from '../types/crm';
 
 const LOCAL_STORAGE_KEY = 'wemove_crm_quotes_v1';
 

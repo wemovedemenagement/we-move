@@ -159,6 +159,7 @@ export interface InvoiceDocument {
   issueDate: string;
   dueDate: string;
   amountHT: number;
+  tvaRate?: number;
   tvaAmount: number;
   amountTTC: number;
   depositAmount?: number;

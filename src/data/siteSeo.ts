@@ -16,6 +16,9 @@ export const SITE_PAGES: Record<string, { title: string; description: string; na
   '/contact/': { name: 'Contact', title: 'Contacter We Move pour votre déménagement en IDF', description: 'Une question sur votre déménagement à Paris ou en Île-de-France ? Contactez We Move au 01 73 74 36 90 ou préparez votre demande de devis en ligne.' },
   '/crm/': { name: 'CRM Executive', title: 'We Move CRM | Espace Gestion & Operations', description: 'Plateforme CRM executive We Move.', noindex: true },
   '/demandes/': { name: 'Demandes de devis', title: 'Gestion des demandes de devis | We Move CRM', description: 'Espace de traitement et de gestion des demandes du site web We Move.', noindex: true },
+  '/mentions-legales/': { name: 'Mentions légales', title: 'Mentions légales | We Move', description: 'Consultez les mentions légales du site We Move : éditeur, hébergeur et conditions d’utilisation.' },
+  '/politique-confidentialite/': { name: 'Politique de confidentialité', title: 'Politique de confidentialité et RGPD | We Move', description: 'Découvrez la politique de confidentialité et de protection des données personnelles de We Move.' },
+  '/cgv/': { name: 'Conditions Générales de Vente', title: 'Conditions Générales de Vente (CGV) | We Move', description: 'Consultez les conditions générales de vente des prestations de déménagement We Move.' },
 };
 
 export function routeSeo(pathname: string, origin = SITE_URL) {
