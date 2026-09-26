@@ -6,11 +6,6 @@
 import React, { useState } from 'react';
 import { Link } from '../router';
 
-import craftImage from '../assets/images/service_craft_protection_1790153177359.webp';
-import officeImage from '../assets/images/office_move_logistics_1790153527033.webp';
-import storageImage from '../assets/images/storage_warehouse_facility_1790153540073.webp';
-import liftImage from '../assets/images/furniture_lift_exterior_1790153551793.webp';
-
 interface ServicesSectionProps {
   onSelectService?: (slug: string) => void;
 }
@@ -49,8 +44,8 @@ const SERVICES_CARDS: ServiceCardData[] = [
       'Manutention adaptée aux escaliers étroits et cours',
     ],
     route: '/demenagement-particuliers/',
-    image: craftImage,
-    imageAlt: 'Déménageur WE MOVE protégeant méticuleusement un meuble avec une couverture capitonnée',
+    image: '/images/demenagement-paris.webp',
+    imageAlt: 'Déménagement de particuliers à Paris et Île-de-France - Protection et transport du mobilier We Move',
     tagColor: 'text-[#0082CA] bg-[#EBF5FB]',
     iconBg: 'bg-[#EBF5FB]',
     iconColor: 'text-[#0082CA]',
@@ -80,8 +75,8 @@ const SERVICES_CARDS: ServiceCardData[] = [
       'Interventions en horaires décalés & week-end',
     ],
     route: '/demenagement-entreprises/',
-    image: officeImage,
-    imageAlt: 'Déménagement d’entreprise et transfert logistique d’espace de bureaux à Paris',
+    image: '/images/demenagement-entreprises.webp',
+    imageAlt: 'Transfert d’entreprise et déménagement de bureaux professionnels à Paris par We Move',
     tagColor: 'text-[#1D4ED8] bg-[#EFF6FF]',
     iconBg: 'bg-[#EFF6FF]',
     iconColor: 'text-[#1D4ED8]',
@@ -111,8 +106,8 @@ const SERVICES_CARDS: ServiceCardData[] = [
       'Contrats flexibles sans durée d’engagement contraignante',
     ],
     route: '/stockage-garde-meubles/',
-    image: storageImage,
-    imageAlt: 'Entrepôt moderne de garde-meubles sécurisé avec box individuels propres',
+    image: '/images/garde-meubles.webp',
+    imageAlt: 'Garde-meubles et stockage sécurisé de mobilier en box individuel à Paris et Île-de-France',
     tagColor: 'text-[#059669] bg-[#ECFDF5]',
     iconBg: 'bg-[#ECFDF5]',
     iconColor: 'text-[#059669]',
@@ -142,8 +137,8 @@ const SERVICES_CARDS: ServiceCardData[] = [
       'Prise en charge des démarches de voirie à Paris',
     ],
     route: '/location-monte-meubles/',
-    image: liftImage,
-    imageAlt: 'Monte-meuble déployé en façade d’un immeuble parisien pour passage par fenêtre',
+    image: '/images/demenagement-monte-meubles.webp',
+    imageAlt: 'Location de monte-meubles avec technicien qualifié pour déménagement en étage à Paris',
     tagColor: 'text-[#D97706] bg-[#FFFBEB]',
     iconBg: 'bg-[#FFFBEB]',
     iconColor: 'text-[#D97706]',
@@ -320,6 +315,11 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({ onSelectServic
                     <img
                       src={service.image}
                       alt={service.imageAlt}
+                      title={service.imageAlt}
+                      loading="lazy"
+                      decoding="async"
+                      width="640"
+                      height="360"
                       referrerPolicy="no-referrer"
                       onLoad={() => handleImageLoad(service.id)}
                       className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${

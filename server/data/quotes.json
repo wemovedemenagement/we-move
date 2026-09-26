@@ -1,0 +1,155 @@
+[
+  {
+    "id": "WM-2026-1001",
+    "createdAt": "2026-09-25T11:42:28.690Z",
+    "updatedAt": "2026-09-25T16:25:03.852Z",
+    "status": "confirme",
+    "projectType": "particulier",
+    "fullName": "Alexandre Mercier",
+    "email": "a.mercier@example.com",
+    "phone": "06 12 34 56 78",
+    "departureAddress": "12 Rue de la Paix, 75002 Paris",
+    "departureFloor": "3",
+    "departureElevator": true,
+    "arrivalAddress": "45 Avenue Jean Jaurès, 92100 Boulogne-Billancourt",
+    "arrivalFloor": "1",
+    "arrivalElevator": false,
+    "volume": 32,
+    "unknownVolume": false,
+    "moveDate": "2026-10-15",
+    "flexibleDate": true,
+    "formula": "standard",
+    "liftRequired": false,
+    "storageRequired": false,
+    "notes": "Canapé convertible 3 places et piano numérique.",
+    "estimatedPrice": 1760,
+    "assignedAgent": "Équipe We Move",
+    "internalNotes": [
+      {
+        "id": "note-1790353503852",
+        "author": "Jean Dupont",
+        "content": "🎉 Devis accepté et signé par le client ! Ouverture de l'étape de planification logistique du déménagement.",
+        "createdAt": "2026-09-25T16:25:03.852Z"
+      },
+      {
+        "id": "note-1",
+        "author": "Système",
+        "content": "Demande enregistrée via le formulaire en ligne.",
+        "createdAt": "2026-09-25T11:42:28.691Z"
+      }
+    ],
+    "source": "modal_devis",
+    "devisStatus": "accepte"
+  },
+  {
+    "id": "WM-2026-1002",
+    "createdAt": "2026-09-25T07:42:28.691Z",
+    "updatedAt": "2026-09-25T16:12:15.221Z",
+    "status": "devis_envoye",
+    "projectType": "entreprise",
+    "fullName": "Sophie Durand (TechCorp SAS)",
+    "email": "sdurand@techcorp.fr",
+    "phone": "01 45 67 89 00",
+    "departureAddress": "88 Boulevard Haussmann, 75008 Paris",
+    "departureFloor": "4",
+    "departureElevator": true,
+    "arrivalAddress": "15 Rue de Vaugirard, 75006 Paris",
+    "arrivalFloor": "2",
+    "arrivalElevator": true,
+    "volume": 85,
+    "unknownVolume": false,
+    "moveDate": "2026-11-02",
+    "flexibleDate": false,
+    "formula": "confort",
+    "liftRequired": true,
+    "storageRequired": true,
+    "notes": "Transfert de 25 postes de travail et baie informatique.",
+    "estimatedPrice": 6925,
+    "assignedAgent": "Jean Dupont",
+    "internalNotes": [
+      {
+        "id": "note-1790352735221",
+        "author": "Jean Dupont",
+        "content": "Statut mis à jour vers \"Devis Transmis\".",
+        "createdAt": "2026-09-25T16:12:15.221Z"
+      },
+      {
+        "id": "note-2",
+        "author": "Jean Dupont",
+        "content": "Prise de contact téléphonique effectuée. Visite technique programmée jeudi 10h.",
+        "createdAt": "2026-09-25T10:42:28.691Z"
+      }
+    ],
+    "source": "page_devis"
+  },
+  {
+    "id": "WM-2026-1003",
+    "createdAt": "2026-09-24T13:42:28.691Z",
+    "updatedAt": "2026-09-25T01:42:28.691Z",
+    "status": "devis_envoye",
+    "projectType": "particulier",
+    "fullName": "Thomas Bernard",
+    "email": "thomas.b@gmail.com",
+    "phone": "07 89 12 34 56",
+    "departureAddress": "4 Place de la Bastille, 75011 Paris",
+    "departureFloor": "5",
+    "departureElevator": false,
+    "arrivalAddress": "18 Rue de Lyon, 75012 Paris",
+    "arrivalFloor": "2",
+    "arrivalElevator": true,
+    "volume": 22,
+    "unknownVolume": false,
+    "moveDate": "2026-10-20",
+    "flexibleDate": true,
+    "formula": "economique",
+    "liftRequired": true,
+    "storageRequired": false,
+    "notes": "5e étage sans ascenseur au départ, monte-meubles indispensable.",
+    "estimatedPrice": 1274,
+    "assignedAgent": "Marc Lambert",
+    "internalNotes": [
+      {
+        "id": "note-3",
+        "author": "Marc Lambert",
+        "content": "Devis officiel #WM-2026-1003 transmis par email (1274 € TTC).",
+        "createdAt": "2026-09-25T01:42:28.691Z"
+      }
+    ],
+    "source": "modal_devis"
+  },
+  {
+    "id": "WM-2026-1004",
+    "createdAt": "2026-09-23T13:42:28.691Z",
+    "updatedAt": "2026-09-24T17:42:28.691Z",
+    "status": "confirme",
+    "projectType": "particulier",
+    "fullName": "Camille & Antoine Morel",
+    "email": "morel.famille@outlook.com",
+    "phone": "06 55 44 33 22",
+    "departureAddress": "10 Rue de la République, 93100 Montreuil",
+    "departureFloor": "0",
+    "departureElevator": true,
+    "arrivalAddress": "24 Allée des Roses, 94300 Vincennes",
+    "arrivalFloor": "1",
+    "arrivalElevator": true,
+    "volume": 45,
+    "unknownVolume": false,
+    "moveDate": "2026-10-08",
+    "flexibleDate": false,
+    "formula": "standard",
+    "liftRequired": false,
+    "storageRequired": false,
+    "notes": "Acompte versé. Déménagement confirmé pour le 8 octobre.",
+    "estimatedPrice": 2475,
+    "assignedAgent": "Jean Dupont",
+    "internalNotes": [
+      {
+        "id": "note-4",
+        "author": "Jean Dupont",
+        "content": "Acompte de 30% reçu. Équipe de 3 déménageurs et camion 30m3 réservés.",
+        "createdAt": "2026-09-24T17:42:28.691Z"
+      }
+    ],
+    "source": "page_devis"
+  }
+]

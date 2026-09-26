@@ -68,6 +68,9 @@ function PageSwitch() {
       case '/contact/':
         return <ContactPage />;
       case '/crm/':
+      case '/crm':
+      case '/demandes/':
+      case '/demandes':
         return <CrmPage />;
       case '/cgv/':
         return <TermsPage />;
@@ -103,6 +106,19 @@ function PageSwitch() {
         );
     }
   };
+
+  const isCrm = pathname.startsWith('/crm') || pathname.startsWith('/demandes');
+
+  if (isCrm) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-[#0F172A] selection:bg-[#0082CA]/20 selection:text-[#0082CA]">
+        <RouteSeo />
+        <Suspense fallback={<div className="min-h-screen bg-slate-950 text-white flex items-center justify-center font-mono">Chargement du CRM We Move Premium...</div>}>
+          <CrmPage />
+        </Suspense>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-[#0F172A] selection:bg-[#0082CA]/15 selection:text-[#0082CA]">

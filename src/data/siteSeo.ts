@@ -14,9 +14,8 @@ export const SITE_PAGES: Record<string, { title: string; description: string; na
   '/volume/': { name: 'Calculateur de volume', title: 'Calculateur de volume de déménagement gratuit (m³) | We Move', description: 'Estimez votre volume de déménagement pièce par pièce : meubles, électroménager et cartons. Enregistrez votre inventaire et préparez votre devis We Move.' },
   '/devis/': { name: 'Devis de déménagement', title: 'Devis de déménagement à Paris et en IDF | We Move', description: 'Préparez votre demande de devis de déménagement : adresses, date, volume et prestations. Un parcours simple pour préciser votre projet, sans engagement.' },
   '/contact/': { name: 'Contact', title: 'Contacter We Move pour votre déménagement en IDF', description: 'Une question sur votre déménagement à Paris ou en Île-de-France ? Contactez We Move au 01 73 74 36 90 ou préparez votre demande de devis en ligne.' },
-  '/mentions-legales/': { name: 'Mentions légales', title: 'Mentions légales | We Move', description: 'Informations relatives à l’éditeur du site We Move, aux contenus et aux responsabilités.', noindex: true },
-  '/politique-confidentialite/': { name: 'Confidentialité', title: 'Politique de confidentialité et RGPD | We Move', description: 'Consultez les informations relatives au traitement de vos données personnelles, aux cookies et à l’exercice de vos droits auprès de We Move.', noindex: true },
-  '/cgv/': { name: 'Conditions générales de vente', title: 'Conditions générales de vente du déménagement | We Move', description: 'Consultez les conditions générales de vente du contrat de déménagement We Move : prix, prestations, responsabilités et livraison.', noindex: true },
+  '/crm/': { name: 'CRM Executive', title: 'We Move CRM | Espace Gestion & Operations', description: 'Plateforme CRM executive We Move.', noindex: true },
+  '/demandes/': { name: 'Demandes de devis', title: 'Gestion des demandes de devis | We Move CRM', description: 'Espace de traitement et de gestion des demandes du site web We Move.', noindex: true },
 };
 
 export function routeSeo(pathname: string, origin = SITE_URL) {

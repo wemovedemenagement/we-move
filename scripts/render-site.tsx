@@ -19,11 +19,12 @@ import { ContactPage } from '../src/pages/ContactPage';
 import { LegalPage } from '../src/pages/LegalPage';
 import { TermsPage } from '../src/pages/TermsPage';
 import { PrivacyPage } from '../src/pages/PrivacyPage';
+import { CrmPage } from '../src/pages/CrmPage';
 import { ArticlePage } from '../src/pages/ArticlePage';
 import { BLOG_ARTICLES } from '../src/data/articles';
 export { BLOG_ARTICLES };
 export { routeSeo, SITE_PAGES } from '../src/data/siteSeo';
-const pages = { '/': HomePage, '/services/': ServicesPage, '/demenagement-particuliers/': ServiceParticuliersPage, '/demenagement-entreprises/': ServiceEntreprisesPage, '/location-monte-meubles/': ServiceMonteMeublesPage, '/stockage-garde-meubles/': ServiceStockagePage, '/qui-sommes-nous/': AboutPage, '/secteurs/': SectorsPage, '/blog/': BlogPage, '/volume/': VolumePage, '/devis/': QuotePage, '/contact/': ContactPage, '/mentions-legales/': LegalPage, '/cgv/': TermsPage, '/politique-confidentialite/': PrivacyPage };
+const pages = { '/': HomePage, '/services/': ServicesPage, '/demenagement-particuliers/': ServiceParticuliersPage, '/demenagement-entreprises/': ServiceEntreprisesPage, '/location-monte-meubles/': ServiceMonteMeublesPage, '/stockage-garde-meubles/': ServiceStockagePage, '/qui-sommes-nous/': AboutPage, '/secteurs/': SectorsPage, '/blog/': BlogPage, '/volume/': VolumePage, '/devis/': QuotePage, '/contact/': ContactPage, '/mentions-legales/': LegalPage, '/cgv/': TermsPage, '/politique-confidentialite/': PrivacyPage, '/crm/': CrmPage, '/demandes/': CrmPage };
 export function render(pathname: string) {
   const Page = pages[pathname as keyof typeof pages];
   const article = BLOG_ARTICLES.find(a => pathname === `/blog/${a.slug}/`);
