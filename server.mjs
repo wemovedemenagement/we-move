@@ -21,6 +21,12 @@ export function createApp() {
   // Serve Static Assets & SPA Client
   if (existsSync(path.join(dist, 'index.html'))) {
     app.use('/assets', express.static(path.join(dist, 'assets'), { immutable: true, maxAge: '1y', fallthrough: false }));
+    // HTML must never reuse a size/mtime validator across App Hosting builds.
+    // Hashed assets retain their immutable caching above.
+    app.get(['/crm', '/crm/', '/crm/index.html'], (_req,res)=>{
+      res.set({'Cache-Control':'private, no-store, max-age=0','CDN-Cache-Control':'no-store'});
+      res.sendFile(path.join(dist,'crm','index.html'),{etag:false,lastModified:false,cacheControl:false});
+    });
     app.use(express.static(dist, { index: 'index.html', dotfiles: 'deny', maxAge: 0 }));
     app.use((req, res) => {
       res.status(404).set('Cache-Control', 'no-store');

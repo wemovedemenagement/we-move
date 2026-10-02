@@ -1,0 +1,4 @@
+import assert from 'node:assert/strict';
+import {createApp} from '../server.mjs';
+const server=createApp().listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));
+try{for(const path of ['/crm','/crm/','/crm/index.html','/crm/?v=old']){const r=await fetch('http://127.0.0.1:'+server.address().port+path,{headers:{'If-None-Match':'W/"3241-49773873e8"','If-Modified-Since':'Wed, 01 Jan 2099 00:00:00 GMT'}});assert.equal(r.status,200);assert.match(r.headers.get('cache-control'),/no-store/);assert.equal(r.headers.get('etag'),null);assert.equal(r.headers.get('last-modified'),null);assert.match(await r.text(),/assets\/index-/);}console.log('CRM : HTML toujours renouvelé, anciens validateurs ignorés, cache privé no-store.');}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
