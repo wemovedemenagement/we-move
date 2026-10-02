@@ -5,7 +5,7 @@ import { Link } from '../router';
 type InformationSection = { id: string; title: string; content: ReactNode };
 type Props = { kind: 'legal' | 'privacy' | 'terms'; intro?: ReactNode; contactEmail?: string; title: string; description: string; sections: InformationSection[] };
 
-export function InformationPage({ kind, title, description, sections, intro, contactEmail = 'contact@wemove.fr' }: Props) {
+export function InformationPage({ kind, title, description, sections, intro, contactEmail = 'contact@we-move.fr' }: Props) {
   const privacy = kind === 'privacy';
   const Icon = privacy ? LockKeyhole : FileText;
   return <div className="information-page">

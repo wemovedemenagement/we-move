@@ -1,0 +1,15 @@
+# Génération PDF CRM
+
+Dans l’éditeur du devis enregistré, le bloc Documents PDF télécharge : devis avec annexes, ordre de mission, lettre de voiture, déclaration de valeur vierge, CGV/RGPD, pro forma. Les changements non enregistrés désactivent le téléchargement.
+
+Route privée GET /api/crm/quote-drafts/:id/pdf/:type : authentification CRM existante, réponse PDF en pièce jointe, cache private/no-store. Calculs relus depuis le brouillon serveur ; aucun montant envoyé par le navigateur n’est accepté. Les documents générés ne sont pas stockés dans public et ne sont pas envoyés aux clients.
+
+Le générateur Node utilise pdf-lib. Aucun navigateur, Python ni accès Internet n’est nécessaire à l’exécution en production. Les annexes vierges dans server/pdfAssets ont été préparées à partir du devis fourni 2601949/1 : contenus et mise en page conservés, coordonnées client/commercial et date d’exemple supprimées réellement, sans masquage. La déclaration conserve son plafond contractuel de 1 500 € ; un devis mentionnant un autre plafond est bloqué pour éviter une annexe contradictoire.
+
+Les références restent celles des brouillons. Les fichiers sont marqués brouillon/préparatoire. L’ordre de mission reprend les affectations connues ; le montant à encaisser reste à confirmer tant que le registre de paiements manque. La pro forma n’est ni une facture comptable ni une facture acquittée. L’émission définitive, les numéros de mission et facture, les versions immuables acceptées, les signatures et les encaissements restent à implémenter.
+
+Le devis courant produit deux pages de contenu puis CGV, RGPD et déclaration de valeur ; les textes longs peuvent ajouter des pages. La lettre produit quatre exemplaires (chargement/entreprise, chargement/client, livraison/entreprise, livraison/client), chacun avec les CGV. Les données manquantes sont signalées, sans valeurs inventées. Les caractères hors de l’alphabet pris en charge par Helvetica PDF sont remplacés par un point d’interrogation : vérifier les noms utilisant d’autres alphabets avant utilisation.
+
+La mise en page du devis est désormais rendue par `server/crmQuoteReference.mjs`, à partir du modèle 2601440/1 : lettre commerciale, matrice des responsabilités selon la formule, récapitulatif encadré, chargement/livraison, détail du prix et accord du client. Le logo du site et son slogan sont conservés. Les numéros, coordonnées, dates et montants du dossier exemple ne sont jamais repris. Le lieu de signature vient du dossier et la date de signature reste vierge. Les annexes restent celles précédemment préparées ; seuls le logo et le slogan de la déclaration de valeur sont actualisés. Les quatre formules courantes ont été contrôlées sur cinq pages (deux pages dynamiques, trois annexes), avec pagination supplémentaire pour les contenus longs.
+
+Validation : tests API dans scripts/test-crm-drafts.mjs (accès anonyme interdit, types invalides, dossier absent, six fichiers PDF lisibles, cache et annexes), tests de sauvegarde existants et rendus A4 de contrôle sur données isolées.

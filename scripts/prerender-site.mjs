@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { loadEnv } from 'vite';
 const root = process.cwd();
 const env = loadEnv('production', root, 'VITE_');
-const origin = (process.env.VITE_SITE_URL || env.VITE_SITE_URL || 'https://wemove.fr').replace(/\/$/, '');
+const origin = (process.env.VITE_SITE_URL || env.VITE_SITE_URL || 'https://we-move.fr').replace(/\/$/, '');
 const parsedOrigin = new URL(origin);
 if (!['http:', 'https:'].includes(parsedOrigin.protocol) || parsedOrigin.origin !== origin) throw new Error('VITE_SITE_URL doit être une origine HTTP(S), sans chemin.');
 const manifest = JSON.parse(await readFile('dist/.vite/manifest.json', 'utf8'));

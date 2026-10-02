@@ -162,8 +162,8 @@ export const ContactPage: React.FC = () => {
               <div className="space-y-4 text-[14px] text-[#59616C]">
                 <div>
                   <div className="font-semibold text-[#20252B]">Courriel d'information :</div>
-                  <a href="mailto:contact@wemove.fr" className="text-[#0082CA] hover:underline">
-                    contact@wemove.fr
+                  <a href="mailto:contact@we-move.fr" className="text-[#0082CA] hover:underline">
+                    contact@we-move.fr
                   </a>
                 </div>
 

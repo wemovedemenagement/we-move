@@ -1,3 +1,5 @@
+import { SpecificMovePage } from '../src/pages/SpecificMovePage';
+import { specificMove } from '../src/data/specificMoves';
 import { renderToString } from 'react-dom/server';
 import { RouterProvider } from '../src/router';
 import { Header } from '../src/components/Header';
@@ -26,7 +28,7 @@ export { BLOG_ARTICLES };
 export { routeSeo, SITE_PAGES } from '../src/data/siteSeo';
 const pages = { '/': HomePage, '/services/': ServicesPage, '/demenagement-particuliers/': ServiceParticuliersPage, '/demenagement-entreprises/': ServiceEntreprisesPage, '/location-monte-meubles/': ServiceMonteMeublesPage, '/stockage-garde-meubles/': ServiceStockagePage, '/qui-sommes-nous/': AboutPage, '/secteurs/': SectorsPage, '/blog/': BlogPage, '/volume/': VolumePage, '/devis/': QuotePage, '/contact/': ContactPage, '/mentions-legales/': LegalPage, '/cgv/': TermsPage, '/politique-confidentialite/': PrivacyPage, '/crm/': CrmPage, '/demandes/': CrmPage };
 export function render(pathname: string) {
-  const Page = pages[pathname as keyof typeof pages];
+  const Page = specificMove(pathname) ? SpecificMovePage : pages[pathname as keyof typeof pages];
   const article = BLOG_ARTICLES.find(a => pathname === `/blog/${a.slug}/`);
   if (!Page && !article && pathname !== '/404/') throw new Error(`Page sans rendu : ${pathname}`);
   return renderToString(<RouterProvider initialUrl={pathname}><Header/><Breadcrumb/><main id="main-content" tabIndex={-1} className={pathname === '/' ? '' : 'interior-page'}>{Page ? <Page/> : article ? <ArticlePage article={article}/> : <div className="wm-container py-20"><h1>Page introuvable</h1><p>Cette adresse n’existe pas ou a été déplacée.</p><a href="/services/">Retrouver nos services de déménagement</a></div>}{pathname !== '/' && <SeoContent pathname={pathname}/>}</main><Footer/></RouterProvider>);

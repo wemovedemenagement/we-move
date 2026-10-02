@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {searchCrmLeads} from '../shared/crmSearch.mjs';
+const leads=[{id:'WM-001',fullName:'Élodie Martin',phone:'06 12 34 56 78',email:'elodie@example.invalid',departureAddress:'Paris',arrivalAddress:'Versailles',updatedAt:'2026-09-01'},...Array.from({length:20},(_,i)=>({id:'WM-'+(i+2),fullName:'Autre client '+i,updatedAt:'2026-10-01'}))];
+assert.equal(searchCrmLeads(leads,'elodie')[0].id,'WM-001');
+assert.equal(searchCrmLeads(leads,'martin paris')[0].id,'WM-001');
+assert.equal(searchCrmLeads(leads,'0612345678')[0].id,'WM-001');
+assert.equal(searchCrmLeads(leads,'34 56 78')[0].id,'WM-001');
+assert.equal(searchCrmLeads(leads,'elodie@example.invalid')[0].id,'WM-001');
+assert.equal(searchCrmLeads(leads,'wm-001')[0].id,'WM-001');
+assert.equal(searchCrmLeads(leads,'introuvable').length,0);
+assert.equal(searchCrmLeads(leads,'').length,8);
+assert.equal(searchCrmLeads(leads,'client',3).length,3);
+assert.equal(searchCrmLeads([{...leads[0],fullName:'Martin Élodie'},{...leads[0],id:'exact',fullName:'Martin'}],'martin')[0].id,'exact');
+console.log('Recherche rapide : accents, plusieurs mots, téléphone, e-mail, référence, pertinence et limite validés.');

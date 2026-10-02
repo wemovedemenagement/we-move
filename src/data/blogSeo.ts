@@ -1,6 +1,6 @@
 import type { ARTICLE_CATALOG } from './articleCatalog';
 import type { BLOG_ARTICLES } from './articles';
-export const SITE_URL = (import.meta.env?.VITE_SITE_URL || 'https://wemove.fr').replace(/\/$/, '');
+export const SITE_URL = (import.meta.env?.VITE_SITE_URL || 'https://we-move.fr').replace(/\/$/, '');
 export type BlogArticle = typeof BLOG_ARTICLES[number];
 type ArticleMetadata = typeof ARTICLE_CATALOG[number];
 export const articlePath = (article: ArticleMetadata) => `/blog/${article.slug}/`;

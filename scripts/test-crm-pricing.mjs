@@ -1,0 +1,24 @@
+import assert from 'node:assert/strict';
+import {mkdtempSync} from 'node:fs';import {tmpdir} from 'node:os';import path from 'node:path';
+import {emptyPricing,revisePricing,estimatePricing} from '../server/crmPricing.mjs';
+const actor={role:'gerant',email:'test@example.invalid'};
+const initial=emptyPricing();assert.equal(initial.enabled,false);assert.ok(initial.formulas.every(f=>f.base===null));
+assert.throws(()=>revisePricing(initial,initial,{role:'commercial'}),e=>e.status===403);
+assert.throws(()=>estimatePricing(initial,{}),/gérant/);
+let input={...initial,enabled:true,formulas:initial.formulas.map((f,i)=>({...f,enabled:i===0,base:100,perM3:10,perKm:2,minimum:500})),extras:{lift:100,stairs:10,storage:null,heavy:0}};
+const settings=revisePricing(initial,input,actor);assert.equal(settings.revision,1);
+assert.throws(()=>revisePricing(settings,input,actor),e=>e.status===409);
+assert.throws(()=>revisePricing(initial,{...input,formulas:input.formulas.map(f=>({...f,perM3:-1}))},actor),e=>e.status===400);
+assert.throws(()=>revisePricing(initial,{...input,formulas:input.formulas.map(f=>({...f,base:0.001}))},actor),e=>e.status===400);
+assert.throws(()=>revisePricing(initial,{...input,formulas:input.formulas.map(f=>({...f,base:null}))},actor),e=>e.status===400);
+const payload={formula:'MOVE Économique',volume:'10',distance:'20',extras:{lift:1,stairs:2}};
+const estimate=estimatePricing(settings,payload);assert.equal(estimate.amountHT,620);assert.equal(estimate.items.find(i=>i.description.includes('minimum')).unitPriceHT,260);
+assert.throws(()=>estimatePricing(settings,{...payload,volume:''}),/Volume/);assert.throws(()=>estimatePricing(settings,{...payload,distance:''}),/Distance/);
+assert.throws(()=>estimatePricing(settings,{...payload,formula:'MOVE Premium'}),/grille active/);assert.throws(()=>estimatePricing(settings,{...payload,extras:{storage:1}}),/configuré/);
+const rounding=estimatePricing({...settings,formulas:settings.formulas.map(f=>({...f,base:0,perM3:0.01,perKm:0,minimum:0}))},{...payload,volume:'1.5',distance:'0',extras:{}});assert.equal(rounding.amountHT,0.02);
+process.env.CRM_STORAGE='sqlite';process.env.CRM_LOCAL_ACCESS='true';process.env.NODE_ENV='test';process.env.CRM_DATA_DIR=mkdtempSync(path.join(tmpdir(),'wemove-pricing-'));process.env.CRM_LEAD_NOTIFICATIONS='false';process.env.CRM_CUSTOMER_RECEIPTS='false';process.env.CRM_BILLING_LIVE_ENABLED='false';
+const store=await import('../server/crmStore.mjs');assert.equal((await store.getPricingSettings()).revision,0);await store.savePricingSettings(input,actor);assert.equal((await store.getPricingSettings()).revision,1);await assert.rejects(()=>store.savePricingSettings(input,actor),e=>e.status===409);
+await assert.rejects(()=>store.savePricingSettings({...input,revision:1},{role:'secretaire'}),e=>e.status===403);
+const {createApp}=await import('../server.mjs');const server=createApp().listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));const base='http://127.0.0.1:'+server.address().port;
+try{let r=await fetch(base+'/api/crm/pricing');assert.equal(r.status,200);r=await fetch(base+'/api/crm/pricing/estimate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});assert.equal(r.status,200);assert.equal((await r.json()).estimate.amountHT,620);process.env.CRM_LOCAL_ACCESS='false';for(const endpoint of ['/api/crm/pricing','/api/crm/pricing/estimate']){r=await fetch(base+endpoint,endpoint.endsWith('estimate')?{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}:{});assert.equal(r.status,401);}}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
+console.log('Tarification : calculs, minimum, arrondis, données manquantes, droits, versions, persistance et authentification validés.');

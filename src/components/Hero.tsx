@@ -221,12 +221,12 @@ export const Hero: React.FC<HeroProps> = ({ onOpenQuote, onScrollToVolume }) => 
                 {/* Departure City with Autocomplete */}
                 <div>
                   <label className="block text-[12px] font-semibold text-[#475569] mb-1">
-                    Ville de départ (ou CP)
+                    Adresse de départ
                   </label>
                   <AddressAutocompleteInput
                     value={heroDeparture}
                     onChange={setHeroDeparture}
-                    placeholder="ex: Paris 15e, Lyon..."
+                    placeholder="Numéro, rue, code postal, ville"
                     iconColor="#0082CA"
                   />
                 </div>
@@ -234,12 +234,12 @@ export const Hero: React.FC<HeroProps> = ({ onOpenQuote, onScrollToVolume }) => 
                 {/* Arrival City with Autocomplete */}
                 <div>
                   <label className="block text-[12px] font-semibold text-[#475569] mb-1">
-                    Ville d’arrivée (ou CP)
+                    Adresse d’arrivée
                   </label>
                   <AddressAutocompleteInput
                     value={heroArrival}
                     onChange={setHeroArrival}
-                    placeholder="ex: Boulogne-Billancourt, Bordeaux..."
+                    placeholder="Numéro, rue, code postal, ville"
                     iconColor="#10B981"
                   />
                 </div>

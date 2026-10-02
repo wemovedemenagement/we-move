@@ -51,7 +51,7 @@ export const RoutePreviewModal: React.FC<RoutePreviewModalProps> = ({
               <div className="space-y-2 border-t border-[#E6E8EB] pt-3 text-[14px]">
                 <div className="flex items-center justify-between">
                   <span className="font-medium text-[#20252B]">Courriel d'information :</span>
-                  <a href="mailto:contact@wemove.fr" className="text-[#0082CA] hover:underline">contact@wemove.fr</a>
+                  <a href="mailto:contact@we-move.fr" className="text-[#0082CA] hover:underline">contact@we-move.fr</a>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="font-medium text-[#20252B]">Horaires d'accueil :</span>

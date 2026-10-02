@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';import {mkdtempSync} from 'node:fs';import {tmpdir} from 'node:os';import path from 'node:path';
+process.env.CRM_STORAGE='sqlite';process.env.CRM_DATA_DIR=mkdtempSync(path.join(tmpdir(),'wm-receipt-'));
+const {createQuoteLead,getAllQuotes}=await import('../server/crmStore.mjs');const {notifyCustomerLead,notifyWebsiteLead}=await import('../server/crmLeadNotification.mjs');
+const lead=await createQuoteLead({fullName:'<script>malicious</script>',email:'customer@example.test',source:'page_devis',notes:'UNTRUSTED MESSAGE\nSECOND LINE'});let calls=0;
+const send=async m=>{calls++;assert.equal(m.to.address,lead.email);assert.ok(m.html.includes('we-move-logo-email.png'));assert.ok(!m.html.includes('<script>'));assert.ok(!m.html.includes('/crm/'));assert.ok(!m.text.includes('/crm/'));assert.ok(!m.text.includes('SECOND LINE'));return {messageId:'fake'};};
+await Promise.all([notifyCustomerLead(lead,{enabled:true,send}),notifyCustomerLead(lead,{enabled:true,send})]);assert.equal(calls,1);
+const duplicate=await createQuoteLead({fullName:'Repeated',email:'CUSTOMER@example.test',source:'page_devis'});await notifyCustomerLead(duplicate,{enabled:true,send});assert.equal(calls,1);assert.equal((await getAllQuotes()).find(x=>x.id===duplicate.id).customerNotification.state,'suppressed');
+const phone=await createQuoteLead({fullName:'Phone',phone:'0100000000',source:'page_devis'});await notifyCustomerLead(phone,{enabled:true,send});assert.equal(calls,1);
+const fail=await createQuoteLead({fullName:'Fail',email:'failure@example.test',source:'page_devis'});await notifyCustomerLead(fail,{enabled:true,send:async()=>{throw Error('timeout');}});assert.equal((await getAllQuotes()).find(x=>x.id===fail.id).customerNotification.state,'uncertain');
+let internal=0;await notifyWebsiteLead(fail,{enabled:true,send:async()=>{internal++;return {messageId:'internal'};}});assert.equal(internal,1);
+console.log('Accusés clients : destinataire, logo, échappement, absence de CRM/message libre, doublons concurrents, limite destinataire, téléphone seul et indépendance des envois vérifiés. Aucun e-mail réel.');

@@ -1,10 +1,37 @@
-import { ArrowUpRight, Building2, House, MapPin, PackageCheck, Route } from 'lucide-react';
+import { ArrowUpRight, Building2, House, MapPin, PackageCheck, Route, Boxes, Calculator, ClipboardCheck, KeyRound, MoveUp, Wallet } from 'lucide-react';
 import { SEO_CONTENT } from '../data/seoContent';
 import { Link } from '../router';
 
 export function SeoContent({ pathname }: { pathname: string }) {
   const content = SEO_CONTENT[pathname];
   if (!content) return null;
+
+  if (pathname === '/demenagement-particuliers/') return (
+    <section className="housing-guide" aria-labelledby="seo-content-title">
+      <div className="wm-container">
+        <header className="housing-guide-heading">
+          <div><p className="eyebrow">{content.eyebrow}</p><h2 id="seo-content-title">Préparer son déménagement<br />de particulier <em>en Île-de-France.</em></h2></div>
+          <div className="housing-guide-intro"><span><House size={21} strokeWidth={1.4} aria-hidden="true" /> Studio, appartement ou maison</span><p>{content.intro}</p></div>
+        </header>
+        <div className="housing-guide-cards">
+          {content.sections.map((section, index) => {
+            const Icon = index === 0 ? Boxes : PackageCheck;
+            return <article className="housing-guide-card" key={section.title}>
+              <div className="housing-guide-card-top"><span className="housing-guide-icon"><Icon size={27} strokeWidth={1.3} aria-hidden="true" /></span><span className="housing-guide-step">0{index + 1} <i /> {index === 0 ? 'FAIRE LE POINT' : 'CHOISIR SEREINEMENT'}</span></div>
+              <h3>{section.title}</h3><p>{section.text}</p>
+              <div className="housing-guide-takeaway"><KeyRound size={19} strokeWidth={1.4} aria-hidden="true" /><span>{index === 0 ? 'Le bon réflexe' : 'À garder en tête'}<strong>{index === 0 ? 'Photographiez les meubles et les accès délicats.' : 'Comparez ce qui est inclus, autant que le prix.'}</strong></span></div>
+            </article>;
+          })}
+        </div>
+        <div className="housing-guide-resources"><div className="housing-guide-resources-heading"><p className="eyebrow">POUR AVANCER À VOTRE RYTHME</p><h3>Les bons outils.<br /><span>Au bon moment.</span></h3><p>Un volume à estimer, une question à éclaircir ? Retrouvez vos repères pour la suite.</p></div>
+          <nav aria-label="Les outils pour préparer votre déménagement">{content.links.map((link, index) => {
+            const Icon = [Calculator, Wallet, ClipboardCheck, MoveUp, Boxes][index] || ArrowUpRight;
+            return <Link href={link.href} key={link.href}><span className="housing-guide-resource-icon"><Icon size={21} strokeWidth={1.4} aria-hidden="true" /></span><span><small>{['ESTIMER', 'COMPRENDRE', 'ORGANISER', 'ANTICIPER', 'PRÉVOIR'][index]}</small><strong>{link.label}</strong></span><ArrowUpRight size={19} aria-hidden="true" /></Link>;
+          })}</nav>
+        </div>
+      </div>
+    </section>
+  );
 
   if (pathname === '/') return (
     <section className="project-guide" aria-labelledby="seo-content-title">

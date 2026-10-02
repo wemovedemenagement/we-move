@@ -57,7 +57,7 @@ export const VolumePage = () => {
   const showSelection = () => { setSearch(''); setSelectedOnly(true); document.getElementById('volume-catalogue')?.scrollIntoView({ behavior: 'instant', block: 'start' }); };
   const quote = () => push(`/devis/?volume=${total}`);
   const download = () => {
-    const text = ['WE MOVE · INVENTAIRE DE DÉMÉNAGEMENT', `Volume indicatif : ${formatVolume(total)} m³`, '', ...selected.map(item => `${inventory[item.id]} × ${item.name} (${item.category}) : ${formatVolume(item.m3 * inventory[item.id])} m³`), '', 'Estimation indicative à confirmer avec un conseiller selon les dimensions, l’emballage et les accès.', 'We Move · 01 73 74 36 90 · contact@wemove.fr'].join('\n');
+    const text = ['WE MOVE · INVENTAIRE DE DÉMÉNAGEMENT', `Volume indicatif : ${formatVolume(total)} m³`, '', ...selected.map(item => `${inventory[item.id]} × ${item.name} (${item.category}) : ${formatVolume(item.m3 * inventory[item.id])} m³`), '', 'Estimation indicative à confirmer avec un conseiller selon les dimensions, l’emballage et les accès.', 'We Move · 01 73 74 36 90 · contact@we-move.fr'].join('\n');
     const url = URL.createObjectURL(new Blob(['\uFEFF', text], { type: 'text/plain;charset=utf-8' }));
     const anchor = document.createElement('a'); anchor.href = url; anchor.download = 'mon-inventaire-we-move.txt'; anchor.hidden = true; document.body.append(anchor); anchor.click(); anchor.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
     setNotice('Votre inventaire a été préparé pour le téléchargement.');

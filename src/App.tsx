@@ -1,3 +1,4 @@
+import { specificMove } from './data/specificMoves';
 import { lazy, Suspense } from 'react';
 /**
  * @license
@@ -15,6 +16,7 @@ import { MobileQuickBar } from './components/MobileQuickBar';
 import { RouteSeo } from './components/RouteSeo';
 import { SeoContent } from './components/SeoContent';
 import { ARTICLE_CATALOG } from './data/articleCatalog';
+const SpecificMovePage = lazy(() => import('./pages/SpecificMovePage').then(module => ({ default: module.SpecificMovePage })));
 const ArticleRoute = lazy(() => import('./pages/ArticleRoute'));
 import { HomePage } from './pages/HomePage';
 const ServicesPage = lazy(() => import('./pages/ServicesPage').then(module => ({ default: module.ServicesPage })));
@@ -37,7 +39,7 @@ const CrmPage = lazy(() => import('./pages/CrmPage').then(module => ({ default: 
 function PageSwitch() {
   const { pathname } = useRouter();
 
-  const renderCurrentPage = () => {
+  const renderCurrentPage = () => { if (specificMove(pathname)) return <SpecificMovePage />;
     if (pathname.startsWith('/blog/') && pathname !== '/blog/') {
       const article = ARTICLE_CATALOG.find(item => pathname === `/blog/${item.slug}/`);
       if (article) return <ArticleRoute key={article.slug} slug={article.slug} />;

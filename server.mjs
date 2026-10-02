@@ -2,13 +2,7 @@ import express from 'express';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { existsSync } from 'node:fs';
-import {
-  getAllQuotes,
-  createQuoteLead,
-  updateQuoteLead,
-  deleteQuoteLead,
-  getCrmStats
-} from './server/crmStore.mjs';
+import { crmRouter } from './server/crmApi.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const dist = path.join(root, 'dist');
@@ -16,73 +10,13 @@ const dist = path.join(root, 'dist');
 export function createApp() {
   const app = express();
   app.disable('x-powered-by');
-  app.use(express.json());
-
-  // API Endpoints for CRM & Quotes
-  app.get('/api/quotes', (req, res) => {
-    try {
-      let quotes = getAllQuotes();
-      const search = req.query.search?.toString().toLowerCase();
-      const status = req.query.status?.toString();
-
-      if (status && status !== 'all') {
-        quotes = quotes.filter(q => q.status === status);
-      }
-
-      if (search) {
-        quotes = quotes.filter(q =>
-          q.fullName?.toLowerCase().includes(search) ||
-          q.email?.toLowerCase().includes(search) ||
-          q.phone?.includes(search) ||
-          q.id?.toLowerCase().includes(search) ||
-          q.departureAddress?.toLowerCase().includes(search) ||
-          q.arrivalAddress?.toLowerCase().includes(search)
-        );
-      }
-
-      res.json({ success: true, count: quotes.length, quotes });
-    } catch (err) {
-      res.status(500).json({ success: false, error: err.message });
-    }
+  app.use((_req,res,next)=>{
+    res.set({'X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY','Referrer-Policy':'strict-origin-when-cross-origin'});
+    next();
   });
+  app.use(express.json({ limit: '32kb' }));
 
-  app.post('/api/quotes', (req, res) => {
-    try {
-      const quote = createQuoteLead(req.body);
-      res.status(201).json({ success: true, quote });
-    } catch (err) {
-      res.status(400).json({ success: false, error: err.message });
-    }
-  });
-
-  app.patch('/api/quotes/:id', (req, res) => {
-    try {
-      const updated = updateQuoteLead(req.params.id, req.body);
-      if (!updated) return res.status(404).json({ success: false, error: 'Quote not found' });
-      res.json({ success: true, quote: updated });
-    } catch (err) {
-      res.status(400).json({ success: false, error: err.message });
-    }
-  });
-
-  app.delete('/api/quotes/:id', (req, res) => {
-    try {
-      const deleted = deleteQuoteLead(req.params.id);
-      if (!deleted) return res.status(404).json({ success: false, error: 'Quote not found' });
-      res.json({ success: true });
-    } catch (err) {
-      res.status(500).json({ success: false, error: err.message });
-    }
-  });
-
-  app.get('/api/crm/stats', (req, res) => {
-    try {
-      const stats = getCrmStats();
-      res.json({ success: true, stats });
-    } catch (err) {
-      res.status(500).json({ success: false, error: err.message });
-    }
-  });
+  app.use(crmRouter());
 
   // Serve Static Assets & SPA Client
   if (existsSync(path.join(dist, 'index.html'))) {
@@ -97,6 +31,9 @@ export function createApp() {
 
   app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
+    if (['entity.parse.failed','entity.too.large'].includes(error.type)) {
+      return res.status(error.type==='entity.too.large'?413:400).set('Cache-Control','no-store').json({success:false,error:error.type==='entity.too.large'?'Le formulaire est trop volumineux. Réduisez les précisions saisies.':'Le formulaire transmis est invalide. Veuillez réessayer.'});
+    }
     res.status(error.status === 404 ? 404 : 500).type('text').send(error.status === 404 ? 'Not found' : 'Server error');
   });
 

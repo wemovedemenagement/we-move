@@ -1,0 +1,21 @@
+import {useEffect,useRef,useState,type FormEvent} from 'react';
+import {Check,CalendarDays} from 'lucide-react';
+import type {CrmMember,QuoteLead,FollowUpUpdate,RequestAction} from '../types/crm';
+import {fetchCrmMembers} from '../services/crmService';
+import {actionLabels} from '../../shared/followUp.mjs';
+export default function CrmFollowUp({lead,onSave,onDirtyChange,onBusyChange}:{lead:QuoteLead;onSave:(payload:FollowUpUpdate)=>Promise<void>;onDirtyChange:(dirty:boolean)=>void;onBusyChange:(busy:boolean)=>void}){
+  const [membersLoading,setMembersLoading]=useState(true);
+  const [members,setMembers]=useState<CrmMember[]>([]),[membersError,setMembersError]=useState('');
+  const [owner,setOwner]=useState(lead.assigneeId||''),[type,setType]=useState(lead.nextAction?.type||''),[dueDate,setDueDate]=useState(lead.nextAction?.dueDate||''),[note,setNote]=useState(lead.nextAction?.note||'');
+  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[saved,setSaved]=useState(false);const lock=useRef(false);
+  useEffect(()=>{let alive=true;fetchCrmMembers().then(data=>{if(alive)setMembers(data);}).catch(()=>{if(alive)setMembersError('Liste des responsables indisponible. Fermez puis rouvrez la fiche.');}).finally(()=>{if(alive)setMembersLoading(false);});return()=>{alive=false;};},[]);
+  useEffect(()=>{setOwner(lead.assigneeId||'');setType(lead.nextAction?.type||'');setDueDate(lead.nextAction?.dueDate||'');setNote(lead.nextAction?.note||'');},[lead.followUpRevision]);
+  const dirty=owner!==(lead.assigneeId||'')||type!==(lead.nextAction?.type||'')||dueDate!==(lead.nextAction?.dueDate||'')||note!==(lead.nextAction?.note||'');
+  const persist=async(complete=false)=>{
+    if(lock.current)return;setError('');setSaved(false);
+    if(!complete&&type&&!dueDate){setError('Choisissez une date pour cette action.');return;}
+    lock.current=true;setBusy(true);onBusyChange(true);
+    try{await onSave(complete?{revision:lead.followUpRevision||0,complete:true}:{revision:lead.followUpRevision||0,assigneeId:owner,action:type?{type:type as RequestAction['type'],dueDate,note}:null});onDirtyChange(false);setSaved(true);}catch(e){setError(e instanceof Error?e.message:'Le suivi n’a pas été enregistré.');}finally{setBusy(false);onBusyChange(false);lock.current=false;}
+  };
+  return <section className="request-follow-up"><h3>Responsable et prochaine action</h3><form onSubmit={(event:FormEvent)=>{event.preventDefault();void persist();}} onChange={()=>{onDirtyChange(true);setSaved(false);}}><fieldset disabled={busy||membersLoading||!!membersError}><label>Responsable<select value={owner} onChange={e=>setOwner(e.target.value)}><option value="">Non attribué</option>{owner&&!members.some(m=>m.id===owner)&&<option value={owner}>{membersLoading?'Chargement…':'Compte désactivé — réattribuer'}</option>}{members.map(member=><option key={member.id} value={member.id}>{member.name}</option>)}</select></label><div className="follow-up-fields"><label>Prochaine action<select value={type} onChange={e=>setType(e.target.value as typeof type)}><option value="">À définir</option>{Object.entries(actionLabels).map(([id,label])=><option key={id} value={id}>{label as string}</option>)}</select></label><label>Échéance<input type="date" required={!!type} disabled={!type} value={dueDate} onChange={e=>setDueDate(e.target.value)}/></label></div>{type&&<label>Précision <span>(facultatif)</span><input maxLength={1000} value={note} onChange={e=>setNote(e.target.value)} placeholder="Ex. rappeler en fin de journée"/></label>}<div className="follow-up-buttons"><button disabled={busy} className="requests-primary">{busy?'Enregistrement…':'Enregistrer le suivi'}</button>{lead.nextAction&&<button type="button" disabled={busy||dirty} title={dirty?'Enregistrez vos modifications avant de terminer l’action':undefined} className="requests-text-action" onClick={()=>void persist(true)}><Check size={15}/>Action terminée</button>}</div></fieldset>{(error||membersError)&&<p role="alert" className="mt-3 text-xs text-rose-700">{error||membersError}</p>}{saved&&<p role="status" className="mt-3 text-xs text-emerald-700">Suivi enregistré.</p>}<p className="follow-up-hint"><CalendarDays size={13}/>Échéances affichées à la date de Paris.</p></form></section>;
+}

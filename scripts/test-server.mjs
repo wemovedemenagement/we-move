@@ -23,6 +23,13 @@ try {
   assert.equal(asset.status, 200);
   assert.match(asset.headers.get('cache-control'), /immutable/);
   const head = await fetch(origin + '/volume/', { method: 'HEAD' });
+  assert.equal(head.headers.get('x-content-type-options'),'nosniff');
+  assert.equal(head.headers.get('x-frame-options'),'DENY');
+  for (const [body,status] of [['{"broken":',400],[JSON.stringify({notes:'x'.repeat(34000)}),413]]) {
+    const response=await fetch(origin+'/api/quotes',{method:'POST',headers:{'Content-Type':'application/json'},body});
+    assert.equal(response.status,status);
+    assert.equal((await response.json()).success,false);
+  }
   assert.equal(head.status, 200);
   assert.equal(await head.text(), '');
   console.log('Production server: routes, query-preserving redirects, true 404s, assets, cache and HEAD passed.');

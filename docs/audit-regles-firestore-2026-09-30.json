@@ -1,0 +1,15 @@
+{
+  "date": "2026-09-30",
+  "scope": "Règles d’accès direct Firestore uniquement — base (default), projet wemove-b0057",
+  "score": 5,
+  "summary": "Les règles déployées refusent toutes les lectures et écritures depuis les SDK clients. Le CRM utilise son serveur authentifié et le SDK Admin. Aucun contournement create/update, rôle fourni par le client ou accès public n’a été identifié dans ce jeu de règles. Les permissions IAM et l’ensemble des validations du serveur ne sont pas couverts par cette note.",
+  "findings": [],
+  "checklist": {
+    "update_bypass": "create et update refusés côté client",
+    "authority_source": "aucune autorité issue des données client dans les règles",
+    "business_logic": "compatible avec une architecture via serveur Admin",
+    "storage_abuse": "aucune écriture client autorisée ; protection des routes publiques serveur à auditer séparément",
+    "type_safety": "aucune écriture client autorisée ; validation métier côté serveur",
+    "identity_level_security": "refus global indépendant de l’identité côté client"
+  }
+}

@@ -5,7 +5,7 @@
 
 export type QuoteStatus = 'nouveau' | 'prise_contact' | 'visite_technique' | 'devis_brouillon' | 'devis_envoye' | 'confirme' | 'refuse' | 'termine';
 
-export type FormulaType = 'conseil' | 'economique' | 'standard' | 'confort';
+export type FormulaType = 'conseil' | 'economique' | 'economique-plus' | 'standard' | 'confort' | 'premium';
 
 export type ProjectType = 'particulier' | 'entreprise';
 
@@ -28,6 +28,7 @@ export interface InternalNote {
 }
 
 export interface QuoteLead {
+  expectedUpdatedAt?:string;
   id: string; // e.g. WM-2026-4892
   createdAt: string; // ISO string
   updatedAt: string; // ISO string
@@ -81,7 +82,12 @@ export interface QuoteLead {
   // Commercial & CRM tracking
   estimatedPrice: number; // in Euros
   assignedAgent: string;
+  assigneeId?: string;
+  assigneeName?: string;
+  nextAction?: RequestAction | null;
+  followUpRevision?: number;
   internalNotes: InternalNote[];
+  sourceDetail?: string;
   source: string; // e.g., 'page_devis', 'modal_devis', 'estimation_volume', 'telephone', 'recommandation', 'ads', 'partenaire', 'crm_creation_manuelle'
 }
 
@@ -184,3 +190,37 @@ export interface CustomerProfile {
   tags: string[];
 }
 
+
+export interface CrmQuoteDetails { sourcePrefillVersion?: number; fields: Record<string,string>; services: {label:string;responsibility:string}[]; valuables:{label:string;value:string}[]; }
+export interface CrmQuoteDraft {
+  emailDelivery?: {revision:number;state:'sending'|'accepted'|'failed'|'uncertain';acceptedAt?:string;to?:string;reference?:string};
+  document?: CrmQuoteDetails;
+  id: string;
+  leadId: string;
+  reference: string;
+  clientName: string;
+  clientEmail: string;
+  clientPhone: string;
+  departureAddress: string;
+  arrivalAddress: string;
+  moveDate: string;
+  validUntil: string;
+  items: { description: string; quantity: number; unitPriceHT: number }[];
+  taxRate: number | null;
+  depositRate: number | null;
+  amountHT: number | null;
+  taxAmount: number | null;
+  amountTTC: number | null;
+  depositAmount: number | null;
+  notes: string;
+  status: 'brouillon';
+  revision: number;
+  createdAt: string;
+  updatedAt: string;
+}
+export type CrmQuoteDraftUpdate = Pick<CrmQuoteDraft, 'revision' | 'items' | 'taxRate' | 'depositRate' | 'validUntil' | 'notes' | 'document'>;
+
+export interface CrmMember {id:string;email:string;name:string;role:'gerant'|'commercial'|'secretaire';active:boolean}
+export interface CrmIdentity {mode:'local'|'firebase';id:string|null;email:string|null;name:string;role:CrmMember['role']}
+export interface RequestAction {type:'rappeler'|'visite'|'devis'|'relancer'|'planifier'|'facturer';dueDate:string;note:string}
+export interface FollowUpUpdate {revision:number;assigneeId?:string;action?:RequestAction|null;complete?:boolean}

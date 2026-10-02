@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ArrowRight, ArrowUpRight, Box, Check, ChevronDown, HeartHandshake, MapPin, MoveRight, PackageCheck, Phone, ShieldCheck } from 'lucide-react';
 import { Link, useRouter } from '../router';
 import { HomeJourney } from '../components/HomeJourney';
+import { AddressAutocomplete } from '../components/AddressAutocomplete';
 import { GoogleReviews, GoogleReviewBadge } from '../components/GoogleReviews';
 import { SeoContent } from '../components/SeoContent';
 import { FAQ_DATA } from '../data/content';
@@ -32,9 +33,9 @@ export function HomePage() {
       </div>
       <form className="quick-project wm-container" onSubmit={event => { event.preventDefault(); push(`/devis/?dep=${encodeURIComponent(departure)}&arr=${encodeURIComponent(arrival)}`); }}>
         <div className="project-heading"><span className="eyebrow">ON VOUS EMMÈNE OÙ ?</span><strong>Tout commence ici.</strong></div>
-        <label className="project-field"><MapPin size={20} /><span><span>Ville de départ</span><input required aria-label="Ville de départ" autoComplete="off" placeholder="Paris, 75015…" value={departure} onChange={event => setDeparture(event.target.value)} /></span></label>
+        <div className="project-field"><MapPin size={20} aria-hidden="true" /><div className="project-address"><label htmlFor="home-departure">Adresse de départ</label><AddressAutocomplete id="home-departure" label="Adresse de départ" required placeholder="Numéro, rue et ville…" value={departure} onChange={setDeparture} /></div></div>
         <MoveRight className="journey-arrow" size={22} />
-        <label className="project-field"><MapPin size={20} /><span><span>Ville d’arrivée</span><input required aria-label="Ville d’arrivée" autoComplete="off" placeholder="Votre nouvelle adresse…" value={arrival} onChange={event => setArrival(event.target.value)} /></span></label>
+        <div className="project-field"><MapPin size={20} aria-hidden="true" /><div className="project-address"><label htmlFor="home-arrival">Adresse d’arrivée</label><AddressAutocomplete id="home-arrival" label="Adresse d’arrivée" required placeholder="Votre nouvelle adresse…" value={arrival} onChange={setArrival} /></div></div>
         <button className="wm-button" type="submit">C’est parti <ArrowUpRight size={20} /></button>
       </form>
     </section>

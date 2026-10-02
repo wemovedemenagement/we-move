@@ -2,3 +2,42 @@
 scripts:
   buildCommand: npm run build
   runCommand: npm start
+env:
+  - variable: VITE_SITE_URL
+    value: https://we-move.fr
+    availability: [BUILD, RUNTIME]
+  - variable: FIREBASE_PROJECT_ID
+    value: wemove-b0057
+    availability: [RUNTIME]
+  - variable: FIRESTORE_DATABASE_ID
+    value: (default)
+    availability: [RUNTIME]
+  - variable: CRM_STORAGE
+    value: firestore
+    availability: [RUNTIME]
+  - variable: CRM_BILLING_LIVE_ENABLED
+    value: "false"
+    availability: [RUNTIME]
+  - variable: CRM_LOCAL_ACCESS
+    value: "false"
+    availability: [RUNTIME]
+  - variable: CRM_MAIL_PROVIDER
+    value: resend
+    availability: [RUNTIME]
+  - variable: CRM_LEAD_NOTIFICATIONS
+    value: "true"
+    availability: [RUNTIME]
+  - variable: CRM_CUSTOMER_RECEIPTS
+    value: "true"
+    availability: [RUNTIME]
+  - variable: CRM_MAIL_FROM
+    value: contact@we-move.fr
+    availability: [RUNTIME]
+  # Resource name only; the key is fetched server-side via IAM, never at build time.
+  - variable: CRM_MAIL_API_KEY_SECRET
+    value: projects/wemove-b0057/secrets/we-move-mail-sending-key/versions/1
+    availability: [RUNTIME]
+
+  - variable: VITE_GOOGLE_MAPS_API_KEY
+    value: "AIzaSyBAptOLHpQwjLIt94SykG8jaJx9ls4cdKA"
+    availability: [BUILD]

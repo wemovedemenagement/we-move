@@ -1,3 +1,4 @@
+import { SPECIFIC_MOVES } from './specificMoves';
 import { ARTICLE_CATALOG } from './articleCatalog';
 import { articleSeo, SITE_URL } from './blogSeo';
 
@@ -21,12 +22,14 @@ export const SITE_PAGES: Record<string, { title: string; description: string; na
   '/cgv/': { name: 'Conditions Générales de Vente', title: 'Conditions Générales de Vente (CGV) | We Move', description: 'Consultez les conditions générales de vente des prestations de déménagement We Move.' },
 };
 
+for (const page of SPECIFIC_MOVES) SITE_PAGES['/' + page.slug + '/'] = { name: page.name, title: page.title + ' | We Move', description: page.description, service: page.title };
+
 export function routeSeo(pathname: string, origin = SITE_URL) {
   const article = ARTICLE_CATALOG.find(item => pathname === `/blog/${item.slug}/`);
   const page = SITE_PAGES[pathname];
   const missing = !article && !page;
   const entityId = origin + '/#organization';
-  const organization = { '@type': 'Organization', '@id': entityId, name: 'We Move', url: origin + '/', telephone: '+33173743690', email: 'contact@wemove.fr', areaServed: { '@type': 'AdministrativeArea', name: 'Île-de-France' } };
+  const organization = { '@type': 'Organization', '@id': entityId, name: 'We Move', url: origin + '/', telephone: '+33173743690', email: 'contact@we-move.fr', areaServed: { '@type': 'AdministrativeArea', name: 'Île-de-France' } };
   const base = article ? articleSeo(article, origin) : {
     title: page?.title || 'Page introuvable | We Move',
     description: page?.description || 'Cette page est introuvable. Retrouvez les services de déménagement et les conseils We Move.',

@@ -1,3 +1,4 @@
+import { specificMove } from '../data/specificMoves';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -23,6 +24,7 @@ export const Breadcrumb: React.FC = () => {
 
   // Derive breadcrumbs trail based on the current pathname
   const getCrumbs = (): BreadcrumbCrumb[] => {
+    const specific = specificMove(pathname); if (specific) return [{ label: 'Accueil', href: '/' }, { label: 'Services', href: '/services/' }, { label: specific.name }];
     const article = ARTICLE_CATALOG.find(item => pathname === `/blog/${item.slug}/`);
     if (article) return [{ label: 'Accueil', href: '/' }, { label: 'Conseils', href: '/blog/' }, { label: article.shortTitle }];
     switch (pathname) {

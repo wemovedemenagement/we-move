@@ -12,3 +12,9 @@ coverage/
 # Generated document previews and local delivery copies
 tmp/
 output/
+
+# Local CRM database (customer data must never enter Git)
+server/data/*.sqlite*
+
+# Local customer records and databases
+server/data/

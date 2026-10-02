@@ -1,0 +1,9 @@
+{
+  "auth": {"providers": {"googleSignIn": {"oAuthBrandDisplayName": "We Move CRM", "supportEmail": "wemove.demenagement@gmail.com"}}},
+  "apphosting": [{
+    "backendId": "we-move",
+    "rootDir": ".",
+    "alwaysDeployFromSource": true,
+    "ignore": ["node_modules", ".git", ".env", ".env.*", "**/.env", "**/.env.*", ".codex", ".agents", "tmp", "output", "docs", "dist", ".prerender", "server/data", "**/*.log", "**/*.sqlite*", "firebase-debug*", "scripts/test-*", "scripts/check-*", "scripts/setup-*", "scripts/send-crm-mail-test.mjs", "scripts/verify-crm-mail.mjs"]
+  }]
+}

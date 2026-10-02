@@ -45,7 +45,7 @@ def chrome(c,doc):
   c.setFillColor(INK);c.roundRect(48,102,W-96,128,8,fill=1,stroke=0)
   c.setFillColor(HexColor('#c5d5b6'));c.setFont('Bold',9);c.drawString(68,207,'WE MOVE  |  DÉMÉNAGEMENT')
   c.setFillColor(HexColor('#ffffff'));c.setFont('Body',10)
-  for j,line in enumerate(['163 rue de la Convention, 75015 Paris','01 73 74 36 90  •  contact@wemove.fr','Contact RGPD : wemove.demenagement@gmail.com']):c.drawString(68,184-j*21,line)
+  for j,line in enumerate(['163 rue de la Convention, 75015 Paris','01 73 74 36 90  •  contact@we-move.fr','Contact RGPD : wemove.demenagement@gmail.com']):c.drawString(68,184-j*21,line)
  else:
   logo(c,48,H-66,.72);c.setFillColor(SAGE);c.setFont('Body',8);c.drawRightString(W-48,H-42,'CONTRAT DE DÉMÉNAGEMENT  /  CGV & RGPD')
   c.setStrokeColor(HexColor('#dbe1d5'));c.line(48,H-83,W-48,H-83)

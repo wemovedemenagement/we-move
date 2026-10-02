@@ -6,7 +6,7 @@ type PlacesLibrary = { PlaceAutocompleteElement: new (options: Record<string, un
 type MapsWindow = Window & { google?: { maps: { importLibrary: (name: string) => Promise<PlacesLibrary> } }; weMoveMapsReady?: () => void };
 let placesPromise: Promise<PlacesLibrary> | undefined;
 
-function loadPlaces() {
+export function loadPlaces() {
   if (placesPromise) return placesPromise;
   const mapsWindow = window as MapsWindow;
   placesPromise = new Promise<PlacesLibrary>((resolve, reject) => {

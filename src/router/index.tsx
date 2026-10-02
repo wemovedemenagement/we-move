@@ -22,7 +22,7 @@ export const useRouter = () => useContext(RouterContext);
 function normalizePath(path: string): string {
   if (!path) return '/';
   // Strip query string for path matching
-  const [cleanPath] = path.split('?');
+  const [cleanPath] = path.split(/[?#]/);
   let normalized = cleanPath;
   if (!normalized.startsWith('/')) {
     normalized = '/' + normalized;
@@ -36,7 +36,7 @@ function normalizePath(path: string): string {
 function parseQuery(url: string): Record<string, string> {
   const parts = url.split('?');
   if (parts.length < 2) return {};
-  const params = new URLSearchParams(parts[1]);
+  const params = new URLSearchParams(parts.slice(1).join('?').split('#')[0]);
   const res: Record<string, string> = {};
   params.forEach((value, key) => {
     res[key] = value;
@@ -109,7 +109,7 @@ export const Link: React.FC<LinkProps> = ({
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (onClick) onClick(e);
-    if (e.defaultPrevented || rest.target === '_blank') return;
+    if (e.defaultPrevented || rest.target || rest.download !== undefined || href.includes('#') || /^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(href)) return;
     // Don't intercept if modified click (cmd, ctrl, shift, or middle click)
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) {
       return;
