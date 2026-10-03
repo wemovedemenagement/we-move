@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { ArrowUpRight, Search, Plus, CheckCircle2, Clock3 } from 'lucide-react';
-import { workQueue } from '../../shared/crmWorkflow.mjs';
+import { workQueue, matchesWorkFilter } from '../../shared/crmWorkflow.mjs';
 import { parisToday } from '../../shared/followUp.mjs';
 import { requestCity } from '../../shared/requestCity.mjs';
 import type { QuoteLead } from '../types/crm';
@@ -21,33 +21,17 @@ export default function CrmToday({
 }) {
   const [filter, setFilter] = useState('all'),
     [query, setQuery] = useState(''),
-    [limit, setLimit] = useState(12),[timing,setTiming]=useState('all');
+    [limit, setLimit] = useState(12),[timing,setTiming]=useState('all'),[owner,setOwner]=useState('all');
   const today = parisToday();
   const work=workQueue(leads,today);
-  const counts = {
-    all: leads.filter((l) => l.status !== 'refuse').length,
-    urgent: work.filter((row:{bucket:string})=>['today','overdue'].includes(row.bucket)).length,
-    new: leads.filter((l) => l.status === 'nouveau').length,
-    visit: leads.filter(
-      (l) =>
-        l.visitDate?.slice(0, 10) === today && l.visitStatus !== 'effectuee' && !['refuse', 'termine'].includes(l.status),
-    ).length,
-    planning: leads.filter((l) => l.status === 'confirme' && !l.scheduledTime)
-      .length,
-  };
-  const queue = (work as {lead:QuoteLead;step:{priority:number;reason:string;label:string;target:string};bucket:string;date:string}[]  ).filter(
-    ({ lead: l,bucket }) =>
-      (timing==='all'||timing===bucket)&&
-      (filter === 'all' ||
-        (filter === 'urgent' &&
-          ['today', 'overdue'].includes(bucket)) ||
-        (filter === 'new' && l.status === 'nouveau') ||
-        (filter === 'visit' &&
-          l.visitDate?.slice(0, 10) === today &&
-          l.visitStatus !== 'effectuee' && !['refuse', 'termine'].includes(l.status)) ||
-        (filter === 'planning' &&
-          l.status === 'confirme' &&
-          !l.scheduledTime)) &&
+  const owners=Array.from(new Map(leads.filter(l=>l.assigneeId).map(l=>[l.assigneeId!,l.assigneeName||'Responsable enregistré'])).entries()).sort((a,b)=>a[1].localeCompare(b[1],'fr'));
+  const counts=Object.fromEntries(['urgent','new','visit','planning','followup'].map(key=>[key,work.filter((row:{lead:QuoteLead;step:{key:string};bucket:string})=>matchesWorkFilter(row,key,today)).length]));
+  const queue = (work as {lead:QuoteLead;step:{priority:number;reason:string;label:string;target:string};bucket:string;date:string}[]).filter(
+    row => {
+      const {lead:l,bucket}=row;
+      return (timing==='all'||timing===bucket)&&
+      (owner==='all'||(owner==='unassigned'?!l.assigneeId:l.assigneeId===owner))&&
+      matchesWorkFilter(row,filter,today)&&
       [
         l.fullName,
         l.email,
@@ -59,7 +43,8 @@ export default function CrmToday({
         s
           ?.toLocaleLowerCase('fr')
           .includes(query.trim().toLocaleLowerCase('fr')),
-      ),
+      );
+    },
   );
   return (
     <section className="crm-today">
@@ -93,6 +78,7 @@ export default function CrmToday({
             ['new', 'Nouvelles demandes'],
             ['visit', 'Visites aujourd’hui'],
             ['planning', 'À planifier'],
+            ['followup', 'Relances à organiser'],
           ] as const
         ).map(([id, label]) => (
           <button
@@ -100,6 +86,7 @@ export default function CrmToday({
             aria-pressed={filter === id}
             onClick={() => {
               setFilter(filter === id ? 'all' : id);
+              setTiming('all');setOwner('all');setQuery('');
               setLimit(12);
             }}
           >
@@ -112,7 +99,6 @@ export default function CrmToday({
           </button>
         ))}
       </div>
-      {finance}
       <div className="crm-worklist">
         <div className="crm-worklist-head">
           <div>
@@ -123,7 +109,7 @@ export default function CrmToday({
             className="crm-quiet-action"
             onClick={() => {
               setFilter('all');
-              setQuery('');setTiming('all');
+              setQuery('');setTiming('all');setOwner('all');
               setLimit(12);
             }}
           >
@@ -142,7 +128,7 @@ export default function CrmToday({
             }}
           />
         </label>
-        <div className="crm-work-timing"><label>Échéances<select aria-label="Filtrer les échéances" value={timing} onChange={e=>{setTiming(e.target.value);setLimit(12);}}><option value="all">Toutes les échéances</option><option value="overdue">En retard</option><option value="today">Aujourd’hui</option><option value="upcoming">À venir</option><option value="undated">Sans échéance</option></select></label><span aria-live="polite">{loaded?`${queue.length} dossier${queue.length>1?'s':''}`:'Chargement…'}</span></div>
+        <div className="crm-work-timing"><label>Échéances<select aria-label="Filtrer les échéances" value={timing} onChange={e=>{setTiming(e.target.value);setLimit(12);}}><option value="all">Toutes les échéances</option><option value="overdue">En retard</option><option value="today">Aujourd’hui</option><option value="upcoming">À venir</option><option value="undated">Sans échéance</option></select></label><label>Responsable<select aria-label="Filtrer par responsable" value={owner} onChange={e=>{setOwner(e.target.value);setLimit(12);}}><option value="all">Tous les responsables</option><option value="unassigned">Non attribués</option>{owners.map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label><span aria-live="polite">{loaded?`${queue.length} dossier${queue.length>1?'s':''}`:'Chargement…'}</span></div>
         {!loaded ? (
           <p className="p-6" role="status">
             Chargement des dossiers…
@@ -152,8 +138,7 @@ export default function CrmToday({
             <CheckCircle2 size={28} />
             <h3>Aucun dossier dans cette sélection</h3>
             <p>
-              Vos demandes et vos actions apparaîtront ici dès leur
-              enregistrement.
+              {query||filter!=='all'||timing!=='all'||owner!=='all'?'Aucun dossier ne correspond à ces filtres. Affichez tous les dossiers pour élargir la sélection.':'Vos demandes et vos actions apparaîtront ici dès leur enregistrement.'}
             </p>
           </div>
         ) : (
@@ -192,6 +177,7 @@ export default function CrmToday({
           </button>
         )}
       </div>
+      {finance}
     </section>
   );
 }

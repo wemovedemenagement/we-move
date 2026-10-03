@@ -103,3 +103,12 @@ export function workQueue(leads, today = parisToday()) {
     return {lead,step,bucket,date};
   }).sort((a,b)=>a.step.priority-b.step.priority||(a.date||a.lead.createdAt||'').localeCompare(b.date||b.lead.createdAt||'')||String(a.lead.id).localeCompare(String(b.lead.id)));
 }
+
+export function matchesWorkFilter({lead,step,bucket}, filter, today=parisToday()) {
+  if(filter==='urgent')return ['today','overdue'].includes(bucket);
+  if(filter==='new')return lead.status==='nouveau';
+  if(filter==='visit')return lead.visitDate?.slice(0,10)===today&&lead.visitStatus!=='effectuee'&&!['refuse','termine'].includes(lead.status);
+  if(filter==='planning')return lead.status==='confirme'&&!lead.scheduledTime;
+  if(filter==='followup')return step.key==='followup';
+  return true;
+}
