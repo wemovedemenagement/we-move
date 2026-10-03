@@ -4,6 +4,10 @@ const leads=[{id:'WM-001',fullName:'Élodie Martin',phone:'06 12 34 56 78',email
 assert.equal(searchCrmLeads(leads,'elodie')[0].id,'WM-001');
 assert.equal(searchCrmLeads(leads,'martin paris')[0].id,'WM-001');
 assert.equal(searchCrmLeads(leads,'0612345678')[0].id,'WM-001');
+assert.equal(searchCrmLeads(leads,'+33 6 12 34 56 78')[0].id,'WM-001');
+assert.equal(searchCrmLeads(leads,'0033612345678')[0].id,'WM-001');
+assert.equal(searchCrmLeads([{...leads[0],phone:'+33 6 12 34 56 78'}],'0612345678')[0].id,'WM-001');
+assert.equal(searchCrmLeads(leads,'+32 6 12 34 56 78').length,0);
 assert.equal(searchCrmLeads(leads,'34 56 78')[0].id,'WM-001');
 assert.equal(searchCrmLeads(leads,'elodie@example.invalid')[0].id,'WM-001');
 assert.equal(searchCrmLeads(leads,'wm-001')[0].id,'WM-001');
