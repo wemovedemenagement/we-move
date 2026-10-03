@@ -1,3 +1,4 @@
+import CrmVersion from '../components/CrmVersion';
 import CrmPricingSettings from '../components/CrmPricingSettings';
 import CrmCommandSearch from '../components/CrmCommandSearch';
 import CrmVisits from '../components/CrmVisits';
@@ -92,7 +93,7 @@ function CrmWorkspace({identity,onConnect,onLogout}:{identity:CrmIdentity;onConn
         {tab!=='requests' && <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-xs text-slate-500">Gestion / {current.label}</p><button onClick={()=>void refresh()} disabled={loading} className="crm-quiet-action"><RefreshCw size={14} className={loading?'animate-spin':''}/>{loading?'Actualisation…':syncedAt?`Actualisé à ${syncedAt}`:'Actualiser'}</button></div>}
         {error && tab!=='requests' && <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">{error} {loaded?'Les dernières données reçues restent affichées ; elles peuvent être anciennes.':'Aucune donnée n’a pu être chargée.'}</div>}
         {!loaded && !error && <p role="status" className="p-6 text-sm text-slate-500">Chargement des données enregistrées…</p>}
-        {tab==='dashboard' && <CrmToday finance={['gerant','secretaire'].includes(identity.role)?<CrmBillingOverview onOpen={id=>{setInvoiceLeadId(undefined);setInvoiceDocumentId(id);choose('invoices');}}/>:undefined} leads={leads} loaded={loaded} onOpen={lead=>open(lead)} onCreate={()=>setCreate(true)} onAction={(lead,target)=>{if(target==='quote')void prepareQuote(lead);else if(target==='invoice'){setInvoiceDocumentId(undefined);setInvoiceLeadId(lead.id);choose('invoices');}else open(lead,target==='move'?'move':target==='visit'?'visit':'summary');}}/>}
+        {tab==='dashboard' && <CrmToday finance={['gerant','secretaire'].includes(identity.role)?<CrmBillingOverview onOpen={id=>{setInvoiceLeadId(undefined);setInvoiceDocumentId(id);choose('invoices');}}/>:undefined} leads={leads} loaded={loaded} onOpen={lead=>open(lead)} onCreate={()=>setCreate(true)} onAction={(lead,target)=>{if(target==='quote')void prepareQuote(lead);else if(target==='invoice'&&identity.role!=='commercial'){setInvoiceDocumentId(undefined);setInvoiceLeadId(lead.id);choose('invoices');}else open(lead,target==='move'?'move':target==='visit'?'visit':'summary');}}/>}
         {tab==='requests' && <CrmRequests leads={leads} loading={loading} error={error} syncedAt={syncedAt} isDark={dark} onRefresh={()=>void refresh()} onCreate={()=>setCreate(true)} onOpen={lead=>open(lead)} onVisit={lead=>open(lead,'visit')} onQuote={lead=>void prepareQuote(lead)} onEdit={lead=>open(lead,'details')} onDelete={identity.role==='gerant'?async lead=>{await deleteQuoteLead(lead.id);setLeads(current=>current.filter(item=>item.id!==lead.id));void refresh();}:undefined}/>}
         {preparing && <p role="status" className="text-sm text-sky-700">Ouverture du brouillon enregistré…</p>}
         {tab==='quotes' && <CrmQuotes onOpenDossier={lead=>open(lead)} leads={leads} isDark={dark} initialDraft={draftToOpen} onInitialConsumed={()=>setDraftToOpen(null)} onNewRequest={()=>setCreate(true)}/>}
@@ -105,7 +106,7 @@ function CrmWorkspace({identity,onConnect,onLogout}:{identity:CrmIdentity;onConn
         {unavailableModule && <><h2>{current.label}</h2>{empty(unavailableModule.title,unavailableModule.detail)}</>}
         {tab==='settings' && (identity.role==='gerant'?<CrmPricingSettings/>:<><h2>Paramètres</h2><p>La grille tarifaire est configurée par le gérant. Les propositions sont disponibles dans l’édition des devis.</p></>)}
       </main>
-      <footer className="crm-footer">© {new Date().getFullYear()} We Move Déménagement. Tous droits réservés.</footer>
+      <footer className="crm-footer">© {new Date().getFullYear()} We Move Déménagement. Tous droits réservés.<CrmVersion/></footer>
       </div>
     </div>
     {create && <NewRequestDialog onClose={()=>setCreate(false)} onSave={async payload=>{const saved=await submitQuoteLead(payload);setLeads(current=>[saved,...current.filter(l=>l.id!==saved.id)]);setCreate(false);setSelected(saved);setEditorSection('summary');setTab('requests');void refresh();}}/>}

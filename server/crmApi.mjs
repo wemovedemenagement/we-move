@@ -1,3 +1,4 @@
+import {crmUiVersion} from './crmVersion.mjs';
 import {getPricingSettings,savePricingSettings} from './crmStore.mjs';
 import {estimatePricing} from './crmPricing.mjs';
 import {getTestBillingDocuments,getTestBillingDocument,createTestBillingDocument,saveTestBillingPayment} from './crmStore.mjs';
@@ -44,6 +45,7 @@ export function crmRouter() {
   router.get('/api/crm/pricing',route(async(req,res)=>{if(req.crmIdentity.role!=='gerant')return res.status(403).json({success:false,error:'Configuration réservée au gérant.'});res.json({success:true,settings:await getPricingSettings()});}));
   router.put('/api/crm/pricing',route(async(req,res)=>{if(req.crmIdentity.role!=='gerant')return res.status(403).json({success:false,error:'Configuration réservée au gérant.'});res.json({success:true,settings:await savePricingSettings(req.body,req.crmIdentity)});}));
   router.post('/api/crm/pricing/estimate',route(async(req,res)=>res.json({success:true,estimate:estimatePricing(await getPricingSettings(),req.body)})));
+  router.get('/api/crm/version',route(async(_req,res)=>res.json({success:true,version:crmUiVersion()})));
   router.get('/api/crm/session', (req,res)=>res.json({success:true,identity:req.crmIdentity}));
   router.use('/api/crm/billing',(req,res,next)=>['gerant','secretaire'].includes(req.crmIdentity.role)?next():res.status(403).json({success:false,error:'Accès facturation non autorisé.'}));
   router.get('/api/crm/billing/overview',route(async(req,res)=>res.json({success:true,overview:billingOverview(await getBillingOverviewRecords())})));

@@ -175,9 +175,9 @@ export default function CrmToday({
               </div>
               <button
                 className="crm-quiet-action"
-                onClick={() => onAction(lead, step.target)}
+                onClick={() => step.target==='invoice'&&!finance?onOpen(lead):onAction(lead, step.target)}
               >
-                {step.label}
+                {step.target==='invoice'&&!finance?'Consulter le dossier':step.label}
                 <ArrowUpRight size={15} />
               </button>
             </article>

@@ -1,0 +1,8 @@
+import {useEffect,useState} from 'react';
+import {request} from '../services/crmService';
+export default function CrmVersion(){
+ const [loaded]=useState(()=>typeof document==='undefined'?null:Array.from(document.scripts).map(s=>s.src.match(/\/assets\/(index-[A-Za-z0-9_-]+\.js)(?:\?|$)/)?.[1]).find(Boolean)||null);
+ const [available,setAvailable]=useState<string|null>(null),[offline,setOffline]=useState(false),[notice,setNotice]=useState('');
+ useEffect(()=>{if(!loaded)return;let alive=true,pending=false;const check=async()=>{if(pending||document.visibilityState!=='visible')return;pending=true;try{const result=await request<{version:string}>('/api/crm/version');if(alive&&/^index-[A-Za-z0-9_-]+\.js$/.test(result.version)){setAvailable(result.version);setOffline(false);}}catch{if(alive)setOffline(true);}finally{pending=false;}};void check();const timer=window.setInterval(check,90000);window.addEventListener('focus',check);return()=>{alive=false;clearInterval(timer);window.removeEventListener('focus',check);};},[loaded]);
+ return <div className="crm-version"><span>Version {loaded?loaded.replace(/^index-/,'').replace(/\.js$/,''):'développement'}</span>{offline&&<span>Vérification de mise à jour indisponible</span>}{available&&loaded!==available&&<div role="status" className="crm-update-notice"><strong>Une nouvelle version du CRM est disponible.</strong><span>Enregistrez votre travail avant de recharger.</span><button type="button" onClick={()=>{if(document.querySelector('dialog[open]')){setNotice('Terminez et fermez le formulaire ouvert avant de recharger.');return;}window.location.reload();}}>Charger la nouvelle version</button>{notice&&<p>{notice}</p>}</div>}</div>;
+}
