@@ -10,7 +10,7 @@ const suites=[
   'test-crm-workspace','test-crm-invoices','test-crm-billing',
   'test-crm-billing-overview','test-crm-billing-export','test-crm-pricing',
   'test-crm-dossier-workflow','test-crm-dossier-stages','test-crm-work-priorities',
-  'test-move-preparation','test-crm-search',
+  'test-move-preparation','test-crm-search','test-crm-notifications',
 ];
 for(const suite of suites){
   console.log('\nVérification : '+suite);
