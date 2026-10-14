@@ -1,5 +1,5 @@
 {
-  "auth": {"providers": {"googleSignIn": {"oAuthBrandDisplayName": "We Move CRM", "supportEmail": "wemove.demenagement@gmail.com"}}},
+  "auth": {"providers": {"emailPassword": true, "googleSignIn": {"oAuthBrandDisplayName": "We Move CRM", "supportEmail": "wemove.demenagement@gmail.com"}}},
   "apphosting": [{
     "backendId": "we-move",
     "rootDir": ".",

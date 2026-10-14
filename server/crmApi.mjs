@@ -27,7 +27,7 @@ const route = handler => (req, res, next) => Promise.resolve(handler(req, res, n
 export function crmRouter() {
   const router = express.Router();
   router.use('/api', (_req, res, next) => { res.set('Cache-Control', 'no-store'); next(); });
-  router.get('/api/crm/auth-config', (_req,res)=>res.json({success:true,config:firebaseWebConfig}));
+  router.get('/api/crm/auth-config', (_req,res)=>res.json({success:true,config:firebaseWebConfig,totpAvailable:process.env.CRM_TOTP_AVAILABLE==='true'}));
   router.use('/api', (req,res,next)=>{
     if(req.method==='POST'&&req.path==='/quotes')return next();
     return authenticateCrm(req,res,next);

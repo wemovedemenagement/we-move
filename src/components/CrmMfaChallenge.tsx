@@ -1,0 +1,7 @@
+import {useState} from 'react';
+import type {MultiFactorResolver} from 'firebase/auth';
+export default function CrmMfaChallenge({resolver,busy,onVerify,onCancel}:{resolver:MultiFactorResolver;busy:boolean;onVerify:(id:string,code:string)=>Promise<void>;onCancel:()=>void}){
+  const factors=resolver.hints.filter(h=>h.factorId==='totp');
+  const [factor,setFactor]=useState(factors[0]?.uid||''),[code,setCode]=useState('');
+  return <form className="crm-auth-form" onSubmit={e=>{e.preventDefault();void onVerify(factor,code);}}><h2>Confirmez votre identité</h2><p>Saisissez le code à six chiffres de votre application d’authentification.</p><fieldset disabled={busy}>{factors.length>1&&<label>Application<select value={factor} onChange={e=>setFactor(e.target.value)}>{factors.map((f,i)=><option value={f.uid} key={f.uid}>{f.displayName||`Application ${i+1}`}</option>)}</select></label>}<label>Code de vérification<input autoFocus autoComplete="one-time-code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} required value={code} onChange={e=>setCode(e.target.value.replace(/\D/g,''))}/></label><button className="crm-auth-primary" type="submit">{busy?'Vérification…':'Vérifier et continuer'}</button><button className="crm-auth-secondary" type="button" onClick={onCancel}>Annuler</button></fieldset><p className="crm-auth-hint">Application indisponible ? Contactez le gérant pour faire vérifier votre identité et rétablir l’accès.</p></form>;
+}

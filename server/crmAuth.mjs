@@ -29,18 +29,26 @@ export function localCrmAccess(req) {
   const origin=req.get('origin');
   return !process.env.K_SERVICE && process.env.NODE_ENV!=='production' && process.env.CRM_LOCAL_ACCESS==='true' && local && host && (!origin||origin==='http://'+req.get('host'));
 }
-export async function authenticateCrm(req,res,next){
+export function createCrmAuthenticator(authProvider=firebaseAuth){return async function authenticateCrm(req,res,next){
   try{
     const bearer=req.get('authorization');
     if(bearer){
       if(!bearer.startsWith('Bearer '))return res.status(401).json({success:false,error:'Connexion requise.'});
-      const token=await firebaseAuth().verifyIdToken(bearer.slice(7),true);
+      const auth=authProvider();
+      const token=await auth.verifyIdToken(bearer.slice(7),true);
       const member=memberForIdentity(token);
       if(!member)return res.status(403).json({success:false,error:'Ce compte n’est pas autorisé à accéder au CRM.'});
+      // Reject an older first-factor session after enrollment, including direct API calls.
+      if(!token.firebase?.sign_in_second_factor){
+        const account=await auth.getUser(token.uid);
+        if(account.multiFactor?.enrolledFactors?.length)return res.status(401).json({success:false,error:'Double authentification requise. Déconnectez-vous puis reconnectez-vous.'});
+      }
       req.crmIdentity={mode:'firebase',id:member.id,name:member.name,email:member.email,role:member.role};return next();
     }
     if(localCrmAccess(req)){req.crmIdentity={mode:'local',id:null,name:'Accès local',email:null,role:'gerant'};return next();}
     return res.status(401).json({success:false,error:'Connectez-vous avec votre compte autorisé.'});
   }catch{return res.status(401).json({success:false,error:'Session expirée ou invalide. Reconnectez-vous.'});}
 }
+}
+export const authenticateCrm=createCrmAuthenticator();
 export const firebaseWebConfig={projectId:'wemove-b0057',appId:'1:694105269612:web:a2f6342574aaeaf2dbff49',apiKey:'AIzaSyChmZd6_5r06-B4UqGXX59B8KzzunFkJzw',authDomain:'wemove-b0057.firebaseapp.com'};
