@@ -1,3 +1,4 @@
+import {useUnsavedChanges} from '../hooks/useUnsavedChanges';
 import {requestCity} from '../../shared/requestCity.mjs';
 import CrmDossierDetails from './CrmDossierDetails';
 
@@ -12,6 +13,7 @@ export default function CrmRequestSummary({lead,onClose,onEdit,onVisit,onQuote,o
 
   const [dirty,setDirty]=useState(false);
   const [saving,setSaving]=useState(false);
+  useUnsavedChanges(dirty||saving);
   const leave=(action:()=>void)=>{if(saving)return;if(!dirty||window.confirm('Quitter sans enregistrer le suivi ?'))action();};
   const dialog=useRef<HTMLDialogElement>(null);
   useEffect(()=>{dialog.current?.showModal();},[]);
@@ -26,6 +28,6 @@ export default function CrmRequestSummary({lead,onClose,onEdit,onVisit,onQuote,o
       <section className="request-detail-section"><h3>Le projet <span>{lead.projectType==='entreprise'?'Entreprise':'Particulier'}</span></h3><div className="request-journey"><div><i/><span><small>ADRESSE DE DÉPART</small><strong>{lead.departureAddress||'À préciser avec le client'}</strong><p>Étage : {lead.departureFloor||'À préciser'}</p></span></div><div><i/><span><small>ADRESSE D’ARRIVÉE</small><strong>{lead.arrivalAddress||'À préciser avec le client'}</strong><p>Étage : {lead.arrivalFloor||'À préciser'}</p></span></div></div><div className="request-project-facts"><div><CalendarDays size={17}/><span><small>Date souhaitée</small><strong>{requestDate(lead.moveDate)}</strong></span></div><div><Box size={17}/><span><small>Volume</small><strong>{lead.volume?lead.volume+' m³':'À estimer'}</strong></span></div></div>{(lead.storageRequired||lead.liftRequired)&&<p className="request-options">{[lead.storageRequired&&'Garde-meubles demandé',lead.liftRequired&&'Monte-meubles demandé'].filter(Boolean).join(' · ')}</p>}{lead.notes&&<div className="request-project-notes"><MessageSquare size={16}/><p>{lead.notes}</p></div>}{lead.sourceDetail&&<p className="request-source-detail">Précision sur l’origine : {lead.sourceDetail}</p>}</section>
       <p className="request-full-reference">Référence complète : {lead.id}</p>
     </div>
-    <footer className="request-sheet-footer"><span>Informations enregistrées dans votre dossier</span><button onClick={()=>leave(onClose)}>Fermer</button></footer>
+    <footer className="request-sheet-footer"><span aria-live="polite">{saving?'Enregistrement…':dirty?'Modifications non enregistrées':'Informations enregistrées dans votre dossier'}</span><button onClick={()=>leave(onClose)}>Fermer</button></footer>
   </dialog>;
 }

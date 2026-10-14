@@ -1,3 +1,4 @@
+import {useUnsavedChanges} from '../hooks/useUnsavedChanges';
 import CrmVersion from '../components/CrmVersion';
 import CrmPricingSettings from '../components/CrmPricingSettings';
 import CrmCommandSearch from '../components/CrmCommandSearch';
@@ -121,6 +122,7 @@ function RequestEditor({lead,section,onClose,onSave}:{lead:QuoteLead;section:'de
   const [busy,setBusy]=useState(false),[error,setError]=useState(''),[success,setSuccess]=useState(false);
   const busyRef=useRef(false);
   const [dirty,setDirty]=useState(false);
+  useUnsavedChanges(dirty||busy);
   const close=()=>{if(!busy&&(!dirty||window.confirm('Fermer sans enregistrer vos modifications ?')))onClose();};
   useEffect(()=>{dialog.current?.showModal();},[]);
   const submit=async(event:FormEvent<HTMLFormElement>)=>{

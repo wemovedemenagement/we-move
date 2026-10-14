@@ -1,3 +1,4 @@
+import {useUnsavedChanges} from '../hooks/useUnsavedChanges';
 import {requestCity} from '../../shared/requestCity.mjs';
 import {actionLabels,followUpBucket,parisToday} from '../../shared/followUp.mjs';
 import { useState, useRef, useEffect, type FormEvent } from 'react';
@@ -96,6 +97,7 @@ export function NewRequestDialog({ onClose, onSave }: { onClose: () => void; onS
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [dirty,setDirty]=useState(false);
+  useUnsavedChanges(dirty||busy);
   const close=()=>{if(!busy&&(!dirty||window.confirm('Fermer sans enregistrer cette demande ?')))onClose();};
   const [source, setSource] = useState('telephone');
   useEffect(() => { dialog.current?.showModal(); dialog.current?.querySelector<HTMLInputElement>('input[name=fullName]')?.focus(); }, []);

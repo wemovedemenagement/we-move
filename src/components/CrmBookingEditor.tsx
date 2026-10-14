@@ -1,3 +1,4 @@
+import {useUnsavedChanges} from '../hooks/useUnsavedChanges';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { X, CalendarDays } from 'lucide-react';
 import {
@@ -25,6 +26,7 @@ export default function CrmBookingEditor({
     [error, setError] = useState(''),
     [dirty, setDirty] = useState(false),
     [success, setSuccess] = useState('');
+  useUnsavedChanges(dirty||busy);
   const booking = data?.bookings.find((b) => b.leadId === lead.id);
   const close = () => {
     if (
