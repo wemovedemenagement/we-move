@@ -21,6 +21,13 @@ export function emptyQuoteDocument(source={}) {
   fields[prefix+'Phone']=source.phone||source.clientPhone||'';
   // An unchecked website checkbox means 'not indicated', never a confirmed absence.
   fields[prefix+'Elevator']=source[prefix+'Elevator']===true?'Oui':'';
+  const access=source.technicalVisit?.[prefix];
+  if(access){
+   fields[prefix+'Floor']=access.floor;
+   fields[prefix+'Elevator']=access.elevator;
+   fields[prefix+'Carry']=access.carry;
+   fields[prefix+'AccessNotes']=access.notes;
+  }
   if(fields[prefix+'Floor']==='À préciser')fields[prefix+'Floor']='';
  }
  if(source.unknownVolume)fields.volume='';

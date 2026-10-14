@@ -4,11 +4,9 @@
  */
 
 export type QuoteStatus = 'nouveau' | 'prise_contact' | 'visite_technique' | 'devis_brouillon' | 'devis_envoye' | 'confirme' | 'refuse' | 'termine';
-
 export type FormulaType = 'conseil' | 'economique' | 'economique-plus' | 'standard' | 'confort' | 'premium';
 
 export type ProjectType = 'particulier' | 'entreprise';
-
 export type CrmRole = 'admin' | 'commercial' | 'logistique';
 
 export interface CrmUser {
@@ -26,8 +24,14 @@ export interface InternalNote {
   content: string;
   createdAt: string;
 }
+export interface TechnicalVisit {
+  items: {room:string;label:string;quantity:number;unitVolume:number}[];
+  departure: {floor:string;elevator:string;carry:string;notes:string};
+  arrival: {floor:string;elevator:string;carry:string;notes:string};
+}
 
 export interface QuoteLead {
+  technicalVisit?: TechnicalVisit;
   expectedUpdatedAt?:string;
   id: string; // e.g. WM-2026-4892
   createdAt: string; // ISO string
@@ -113,7 +117,6 @@ export interface TruckResource {
 }
 
 export type QuoteDocStatus = 'en_attente' | 'envoye' | 'accepte' | 'refuse' | 'brouillon' | 'archive';
-
 export interface QuoteDocumentItem {
   description: string;
   quantity: number;
@@ -189,7 +192,6 @@ export interface CustomerProfile {
   lastMoveDate: string;
   tags: string[];
 }
-
 
 export interface CrmQuoteDetails { sourcePrefillVersion?: number; fields: Record<string,string>; services: {label:string;responsibility:string}[]; valuables:{label:string;value:string}[]; }
 export interface CrmQuoteDraft {

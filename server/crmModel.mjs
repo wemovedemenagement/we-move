@@ -1,3 +1,4 @@
+import {normalizeTechnicalVisit} from '../shared/technicalVisit.mjs';
 import {leadFormulaIds} from '../shared/movingFormulas.mjs';
 import { randomUUID } from 'node:crypto';
 function invalid(message) { const error = new Error(message); error.status = 400; throw error; }
@@ -57,8 +58,9 @@ export function mergeQuote(current, updates) {
     const business = Object.fromEntries(allowed.filter(key => Object.hasOwn(updates, key)).map(key => [key, updates[key]]));
     const quote = { ...current, ...clean({ ...current, ...updates }), ...business, updatedAt: new Date().toISOString() };
     if(Object.hasOwn(updates,'expectedUpdatedAt')&&updates.expectedUpdatedAt!==current.updatedAt){const error=new Error('Ce dossier a changé. Fermez puis rouvrez la fiche avant de réessayer.');error.status=409;throw error;}
-    const changed=['status','visitDate','visitType','visitStatus','visitNotes','scheduledTime','assignedTruckName','assignedDriver','teamMembers','fullName','phone','email','departureAddress','arrivalAddress','volume','moveDate','formula','notes'].filter(k=>Object.hasOwn(updates,k)&&JSON.stringify(current[k])!==JSON.stringify(quote[k]));
-    if(changed.length)quote.internalNotes=[{id:randomUUID(),author:String(updates.author||'Utilisateur').slice(0,160),content:'Dossier mis à jour : '+changed.map(k=>({status:'statut',visitDate:'rendez-vous',visitType:'format de visite',visitStatus:'état de visite',visitNotes:'notes de visite',scheduledTime:'créneau',assignedTruckName:'véhicule',assignedDriver:'responsable',teamMembers:'équipe',fullName:'nom',phone:'téléphone',email:'e-mail',departureAddress:'départ',arrivalAddress:'arrivée',volume:'volume',moveDate:'date souhaitée',formula:'formule',notes:'informations du projet'}[k]||k)).join(', ')+'.',createdAt:quote.updatedAt},...(current.internalNotes||[])];
+    if(Object.hasOwn(updates,'technicalVisit'))quote.technicalVisit=normalizeTechnicalVisit(updates.technicalVisit);
+    const changed=['technicalVisit','status','visitDate','visitType','visitStatus','visitNotes','scheduledTime','assignedTruckName','assignedDriver','teamMembers','fullName','phone','email','departureAddress','arrivalAddress','volume','moveDate','formula','notes'].filter(k=>Object.hasOwn(updates,k)&&JSON.stringify(current[k])!==JSON.stringify(quote[k]));
+    if(changed.length)quote.internalNotes=[{id:randomUUID(),author:String(updates.author||'Utilisateur').slice(0,160),content:'Dossier mis à jour : '+changed.map(k=>({technicalVisit:'fiche de visite',status:'statut',visitDate:'rendez-vous',visitType:'format de visite',visitStatus:'état de visite',visitNotes:'notes de visite',scheduledTime:'créneau',assignedTruckName:'véhicule',assignedDriver:'responsable',teamMembers:'équipe',fullName:'nom',phone:'téléphone',email:'e-mail',departureAddress:'départ',arrivalAddress:'arrivée',volume:'volume',moveDate:'date souhaitée',formula:'formule',notes:'informations du projet'}[k]||k)).join(', ')+'.',createdAt:quote.updatedAt},...(current.internalNotes||[])];
     if (updates.newNote) {
       if (typeof updates.newNote !== 'string' || updates.newNote.length > 5000) invalid('Note invalide.');
       quote.internalNotes = [{ id: randomUUID(), author: String(updates.author || 'Utilisateur').slice(0, 160), content: updates.newNote.trim(), createdAt: quote.updatedAt }, ...(quote.internalNotes || [])];
