@@ -1,3 +1,4 @@
+import {moveOperationIssues} from './moveOperations.mjs';
 // These are missing recorded details, not a certification that a move is ready.
 export function movePreparation(lead, booking, registry) {
   if(booking.cancelled || ['termine','refuse'].includes(lead?.status))return [];
@@ -11,5 +12,6 @@ export function movePreparation(lead, booking, registry) {
   if(!resources.some(r=>r.kind==='vehicle'&&r.active))issues.push('Véhicule à affecter');
   if(!resources.some(r=>r.kind==='person'&&r.active))issues.push('Intervenant à affecter');
   if(booking.resourceIds.some(id=>!registry.resources.some(r=>r.id===id&&r.active)))issues.push('Ressource supprimée ou désactivée');
+  if(booking.operations)issues.push(...moveOperationIssues(booking.operations));
   return issues;
 }

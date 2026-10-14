@@ -101,11 +101,12 @@ export async function fetchCrmDossier(id:string){return (await request<{dossier:
 
 export interface CrmResource {id:string;name:string;kind:'vehicle'|'person'|'lift';detail:string;active:boolean;}
 export interface ResourceRegistry {revision:number;resources:CrmResource[];}
-export interface MoveBooking {leadId:string;clientName:string;start:string;end:string;resourceIds:string[];resources:Pick<CrmResource,'id'|'name'|'kind'>[];revision:number;cancelled:boolean;}
+export interface MoveOperations {departureParking:'a_verifier'|'confirme'|'sans_objet';arrivalParking:'a_verifier'|'confirme'|'sans_objet';accessVerified:boolean;equipmentReady:boolean;equipmentNotes:string;instructions:string;}
+export interface MoveBooking {operations?:MoveOperations;leadId:string;clientName:string;start:string;end:string;resourceIds:string[];resources:Pick<CrmResource,'id'|'name'|'kind'>[];revision:number;cancelled:boolean;}
 export interface PlanningData {registry:ResourceRegistry;bookings:MoveBooking[];}
 export async function fetchPlanning(){return (await request<{planning:PlanningData}>('/api/crm/planning')).planning;}
 export async function saveCrmResource(payload:Omit<CrmResource,'id'>&{id?:string;revision:number}){return (await request<{registry:ResourceRegistry}>('/api/crm/resources',{method:'POST',body:JSON.stringify(payload)})).registry;}
-export async function saveCrmBooking(id:string,payload:{revision:number;start?:string;end?:string;resourceIds?:string[];cancel?:boolean}){return await request<{booking:MoveBooking;lead:QuoteLead}>('/api/crm/planning/'+encodeURIComponent(id),{method:'PUT',body:JSON.stringify(payload)});}
+export async function saveCrmBooking(id:string,payload:{revision:number;start?:string;end?:string;resourceIds?:string[];operations?:MoveOperations;cancel?:boolean}){return await request<{booking:MoveBooking;lead:QuoteLead}>('/api/crm/planning/'+encodeURIComponent(id),{method:'PUT',body:JSON.stringify(payload)});}
 
 export interface TestBillingPayment {id:string;amountCents:number;date:string;method:string;reference:string;createdAt:string;createdBy:string;reversedAt?:string;reversalReason?:string;}
 export interface TestBillingDocument {id:string;number:string;mode:'test';session:number;invoiceId:string;kind:'facture'|'acompte'|'solde';clientName:string;quoteReference:string;amountHT:number;taxAmount:number;amountTTC:number;totalProjectTTC:number;depositTTC:number;depositNumber:string|null;taxRate:number;depositRate:number|null;dueDate:string;issueDate:string;createdAt:string;revision:number;payments:TestBillingPayment[];paidCents:number;dueCents:number;status:'a_regler'|'partiel'|'regle';}

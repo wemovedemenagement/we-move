@@ -1,3 +1,4 @@
+import {normalizeMoveOperations} from './crmMoveOperations.mjs';
 import { randomUUID } from 'node:crypto';
 import { draftError } from './crmDraftModel.mjs';
 export const emptyRegistry = () => ({ revision: 0, resources: [] });
@@ -76,7 +77,7 @@ export function makeBooking(lead, current, others, registry, payload, actor) {
   if (
     !payload ||
     Object.keys(payload).some(
-      (k) => !['revision', 'start', 'end', 'resourceIds', 'cancel'].includes(k),
+      (k) => !['revision', 'start', 'end', 'resourceIds', 'cancel', 'operations'].includes(k),
     )
   )
     draftError(400, 'Planification invalide.');
@@ -142,6 +143,7 @@ export function makeBooking(lead, current, others, registry, payload, actor) {
     end: payload.end,
     resourceIds: payload.resourceIds,
     resources: resources.map(({ id, name, kind }) => ({ id, name, kind })),
+    operations: normalizeMoveOperations(payload.operations,current?.operations),
     cancelled: false,
     revision: (current?.revision || 0) + 1,
     updatedAt: now,
