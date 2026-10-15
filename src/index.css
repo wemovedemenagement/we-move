@@ -390,6 +390,17 @@ p.eyebrow { margin-bottom:24px; }
 .about-local .eyebrow { font-size:8px; margin-bottom:12px; }
 .about-local p:not(.eyebrow) { max-width:600px; font-size:12px; margin-top:15px; }
 .about-local .text-link { white-space:nowrap; }
+.about-partner { padding-bottom:64px; }
+.about-partner-card { display:grid; grid-template-columns:auto minmax(0,1fr); gap:24px; padding:32px; background:var(--wm-paper); border:1px solid var(--wm-line); border-radius:12px; }
+.about-partner-icon { display:grid; place-items:center; width:52px; height:52px; color:var(--wm-blue); background:#e8f1f3; border-radius:12px; }
+.about-partner-copy { max-width:780px; }
+.about-partner-copy .eyebrow { margin:0 0 12px; color:var(--wm-blue); }
+.about-page .about-partner h2 { font-size:clamp(25px,2.6vw,34px); line-height:1.2; letter-spacing:-.7px; margin:0; }
+.about-partner-copy > p:not(.eyebrow) { margin:16px 0 18px; font-size:14px; line-height:1.85; color:#53686c; }
+.about-partner-link { min-height:44px; max-width:100%; line-height:1.65; text-decoration:underline; text-underline-offset:4px; }
+.about-partner-link svg { flex-shrink:0; }
+.about-partner-link:focus-visible { outline:2px solid var(--wm-blue); outline-offset:5px; border-radius:3px; }
+@media(max-width:600px) { .about-partner { padding-bottom:44px; } .about-partner-card { grid-template-columns:1fr; padding:24px; gap:18px; } .about-partner-link { align-items:flex-start; } .about-partner-link svg { margin-top:4px; } }
 .about-invitation { text-align:center; padding-block:75px; background:#edf1e9; }
 .about-invitation-icon { display:inline-grid; place-items:center; width:68px; height:68px; border:1px solid #c9d8c8; border-radius:50%; color:#6d8b75; margin-bottom:25px; }
 .about-invitation h2 { font-size:clamp(38px,4.8vw,65px); letter-spacing:-2px; }
