@@ -104,7 +104,7 @@ function CrmWorkspace({identity,onConnect,onLogout}:{identity:CrmIdentity;onConn
         {tab==='storage' && loaded && <CrmOperationsPanel tab={tab as 'planning'|'storage'|'statistics'} leads={leads} isDark={dark} onOpen={lead=>open(lead)}/>}
         {tab==='statistics'&&loaded&&<CrmStatistics leads={leads}/>}
         {tab==='fleet'&&<CrmResources identity={identity}/>}
-        {tab==='planning'&&loaded&&<CrmPlanning leads={leads} onOpen={lead=>open(lead)} onFollowUp={lead=>open(lead,'move')}/>}
+        {tab==='planning'&&loaded&&<CrmPlanning leads={leads} onOpen={lead=>open(lead)} onFollowUp={lead=>open(lead,'move')} onPrepare={(lead,target)=>open(lead,target)}/>}
         {tab==='invoices' && <CrmInvoices leads={leads} identity={identity} initialLeadId={invoiceLeadId} initialDocumentId={invoiceDocumentId}/>}
         {unavailableModule && <><h2>{current.label}</h2>{empty(unavailableModule.title,unavailableModule.detail)}</>}
         {tab==='settings' && (identity.role==='gerant'?<CrmPricingSettings/>:<><h2>Paramètres</h2><p>La grille tarifaire est configurée par le gérant. Les propositions sont disponibles dans l’édition des devis.</p></>)}

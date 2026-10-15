@@ -1,4 +1,5 @@
 import CrmAftercare from './CrmAftercare';
+import CrmDepartureReadiness from './CrmDepartureReadiness';
 import CrmAvailability from './CrmAvailability';
 import {absenceLabels} from '../../shared/resourceAvailability.mjs';
 import {movePreparation} from '../../shared/movePreparation.mjs';
@@ -19,10 +20,12 @@ export default function CrmPlanning({
   leads,
   onOpen,
   onFollowUp,
+  onPrepare,
 }: {
   leads: QuoteLead[];
   onOpen: (lead: QuoteLead) => void;
   onFollowUp: (lead: QuoteLead) => void;
+  onPrepare: (lead: QuoteLead,target:'summary'|'details'|'move') => void;
 }) {
   const [day, setDay] = useState(parisToday()),
     [resource, setResource] = useState('all'),
@@ -88,6 +91,7 @@ export default function CrmPlanning({
           {loading?'Actualisation…':'Actualiser'}
         </button>
       </header>
+      <CrmDepartureReadiness data={data} loading={loading} error={error} leads={leads} today={today} onOpen={onPrepare}/>
       <CrmAftercare data={data} loading={loading} error={error} leads={leads} today={today} onOpen={onFollowUp}/>
       <CrmAvailability data={data} loading={loading} error={error} day={selectedDay||day} leads={leads} onOpen={onOpen}/>
       {error && (
