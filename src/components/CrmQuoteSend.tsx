@@ -1,14 +1,18 @@
-import {useRef,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {Mail,Send,Paperclip,RefreshCw} from 'lucide-react';
 import {prepareQuoteMail,sendQuoteMail,downloadQuoteMailPdf,type QuoteMailPreparation} from '../services/crmService';
 
 const labels={accepted:'Transmis au serveur e-mail',sending:'Envoi en cours ou à vérifier',failed:'Envoi refusé',uncertain:'Envoi à vérifier'};
-export default function CrmQuoteSend({id,disabled=false}:{id:string;disabled?:boolean}){
+export default function CrmQuoteSend({id,disabled=false,autoPrepare=false}:{id:string;disabled?:boolean;autoPrepare?:boolean}){
  const [data,setData]=useState<QuoteMailPreparation|null>(null),[subject,setSubject]=useState(''),[message,setMessage]=useState(''),[confirmed,setConfirmed]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
  const lock=useRef(false);
  const load=async()=>{if(lock.current)return;lock.current=true;setBusy(true);setError('');try{const p=await prepareQuoteMail(id);setData(p);setSubject(p.subject);setMessage(p.message);setConfirmed(false);}catch(e){setError(e instanceof Error?e.message:'Chargement impossible.');}finally{lock.current=false;setBusy(false);}};
+ const autoLoaded=useRef(false);
+ const section=useRef<HTMLElement>(null);
+ useEffect(()=>{if(autoPrepare&&!disabled&&!autoLoaded.current){autoLoaded.current=true;void load();}},[autoPrepare,disabled]);
+ useEffect(()=>{if(autoPrepare&&data)section.current?.scrollIntoView({block:'start'});},[autoPrepare,!!data]);
  const previous=data?.history.find(r=>r.revision===data.revision);
- return <section className="crm-quote-send" aria-label="Envoyer le devis par e-mail">
+ return <section ref={section} className="crm-quote-send" aria-label="Envoyer le devis par e-mail">
   <div className="quote-send-heading"><div><Mail size={18}/><strong>Envoyer au client</strong></div><button type="button" disabled={disabled||busy} onClick={()=>void load()}>{data?<><RefreshCw size={15}/>Actualiser</>:<><Send size={15}/>Préparer l’envoi</>}</button></div>
   <p>Le devis et ses annexes seront joints au message. La version envoyée sera conservée dans le dossier.</p>
   {disabled&&<p>Enregistrez les modifications avant de préparer l’envoi.</p>}

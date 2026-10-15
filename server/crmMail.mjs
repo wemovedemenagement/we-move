@@ -1,3 +1,4 @@
+import {quoteReadiness} from '../shared/quoteReadiness.mjs';
 import nodemailer from 'nodemailer';
 import {createHash,randomUUID} from 'node:crypto';
 import {generateCrmPdf} from './crmPdf.mjs';
@@ -18,15 +19,7 @@ export async function mailConfiguration() {
  const ready=email.test(from)&&!!host&&[465,587].includes(port)&&!!process.env.CRM_SMTP_USER&&!!process.env.CRM_SMTP_PASSWORD;
  return {ready,from,message:ready?'Expéditeur configuré.':'L’envoi e-mail doit être configuré par le gérant avant le premier envoi.'};
 }
-export function sendIssues(d) {
- const f=d.document?.fields||{},issues=[];
- if(!email.test(f.clientEmail||''))issues.push('Renseignez une adresse e-mail client valide.');
- for(const [key,label] of [['clientName','le nom du client'],['clientAddress','l’adresse de facturation'],['departureAddress','l’adresse de chargement'],['arrivalAddress','l’adresse de livraison'],['formula','la formule'],['issueDate','la date du devis'],['departureStart','la période de chargement'],['arrivalStart','la période de livraison'],['guarantee','la garantie'],['coveredValue','la valeur garantie'],['itemLimit','le plafond par objet'],['paymentKind','le versement à la commande'],['balanceWhen','l’échéance du solde']])if(!f[key])issues.push('Complétez '+label+'.');
- const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Paris',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
- if(!d.validUntil||d.validUntil<today)issues.push('Renseignez une validité non expirée.');
- if(!d.items?.length||d.amountTTC===null||d.amountTTC<=0||d.taxRate===null||d.depositRate===null)issues.push('Vérifiez le chiffrage, la TVA et le taux de versement.');
- return issues;
-}
+export function sendIssues(d) {return quoteReadiness(d).map(issue=>issue.message);}
 export const publicMail=r=>({id:r.id,revision:r.revision,reference:r.reference,to:r.to,from:r.from,subject:r.subject,message:r.message,state:r.state,createdAt:r.createdAt,acceptedAt:r.acceptedAt||null,actor:r.actor,error:r.error||null});
 export async function prepareQuoteMail(id) {
  const d=(await getQuoteDrafts()).find(d=>d.id===id);if(!d)draftError(404,'Devis introuvable.');
