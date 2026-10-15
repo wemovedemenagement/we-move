@@ -1,0 +1,8 @@
+.mission-closure{margin:20px 0;border:1px solid #cbded8;border-radius:16px;background:#f6faf8;overflow:hidden;color:#193e35}
+.mission-closure>summary{display:flex;align-items:center;gap:12px;padding:20px;cursor:pointer;font-weight:700;list-style:none}
+.mission-closure summary small{display:block;font-weight:400;color:#60766e;margin-top:5px}
+.mission-closure form{padding:0 20px 20px}.mission-closure .mission-fields{display:grid;gap:18px}
+.mission-closure label{display:grid;gap:7px;font-size:13px;font-weight:600}.mission-closure .mission-check{display:flex}
+.mission-closure input:not([type=checkbox]),.mission-closure textarea{width:100%;min-width:0;padding:11px 12px;border:1px solid #d8e2de;border-radius:9px;background:white;color:#223e35;font:inherit;box-sizing:border-box}
+.closure-followup{display:grid;gap:14px;padding:18px;background:white;border-radius:12px;border:1px solid #e0e8e4}.closure-followup h3{display:flex;gap:8px;align-items:center;margin:0}.mission-closure p{font-size:13px;line-height:1.6}.closure-pending{display:grid;gap:12px;padding:0 20px 20px}.closure-pending article{background:white;border:1px solid #e2e7e4;border-radius:10px;padding:14px;overflow-wrap:anywhere}.closure-pending button{display:block;margin-top:10px}
+@media(max-width:600px){.mission-closure .mission-two-columns{grid-template-columns:1fr}.mission-closure form{padding:0 12px 16px}}

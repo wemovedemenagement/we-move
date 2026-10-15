@@ -1,5 +1,6 @@
 import {normalizeAbsences,resourceAbsence,absenceLabels} from '../shared/resourceAvailability.mjs';
 import {normalizeMoveOperations} from './crmMoveOperations.mjs';
+import {normalizeMoveClosure} from './crmMoveClosure.mjs';
 import { randomUUID } from 'node:crypto';
 import { draftError } from './crmDraftModel.mjs';
 export const emptyRegistry = () => ({ revision: 0, resources: [] });
@@ -84,13 +85,19 @@ export function makeBooking(lead, current, others, registry, payload, actor) {
   if (
     !payload ||
     Object.keys(payload).some(
-      (k) => !['revision', 'start', 'end', 'resourceIds', 'cancel', 'operations'].includes(k),
+      (k) => !['revision', 'start', 'end', 'resourceIds', 'cancel', 'operations', 'closure'].includes(k),
     )
   )
     draftError(400, 'Planification invalide.');
   if (payload.revision !== (current?.revision || 0))
     draftError(409, 'Cette mission a changé. Actualisez avant de réessayer.');
   const now = new Date().toISOString();
+  if (payload.closure !== undefined) {
+    if(Object.keys(payload).some(k=>!['revision','closure'].includes(k))) draftError(400,'Enregistrez séparément la préparation et la clôture.');
+    if(!current||current.cancelled||!['confirme','termine'].includes(lead.status)) draftError(409,'Une mission active et acceptée est nécessaire.');
+    return {...current,closure:normalizeMoveClosure(payload.closure,actor),revision:current.revision+1,updatedAt:now,updatedBy:actor.email||actor.name};
+  }
+  if(current?.closure) draftError(409,'Cette mission est réalisée. Son compte rendu reste modifiable.');
   if (payload.cancel === true) {
     if (!current || current.cancelled)
       draftError(409, 'Aucune réservation active.');
@@ -162,6 +169,7 @@ export function makeBooking(lead, current, others, registry, payload, actor) {
 export function applyBooking(lead, booking, actor) {
   return {
     ...lead,
+    ...(booking.closure ? {status:'termine'} : {}),
     scheduledTime: booking.cancelled ? '' : booking.start,
     scheduledEnd: booking.cancelled ? '' : booking.end,
     assignedTruckId: booking.cancelled
@@ -186,7 +194,7 @@ export function applyBooking(lead, booking, actor) {
         id: randomUUID(),
         author: actor.name,
         createdAt: booking.updatedAt,
-        content: booking.cancelled
+        content: booking.closure ? (booking.closure.followUp && !booking.closure.resolved ? 'Mission réalisée · suivi à traiter : '+booking.closure.followUp+' · '+booking.closure.owner+' · '+booking.closure.due : 'Mission clôturée · compte rendu complet. Préparation de facturation à vérifier.') : booking.cancelled
           ? 'Réservation annulée, ressources libérées.'
           : `Mission planifiée du ${booking.start.replace('T', ' à ')} au ${booking.end.replace('T', ' à ')} : ${booking.resources.map((r) => r.name).join(', ')}.`,
       },

@@ -1,6 +1,7 @@
 import {resourceAbsence,absenceLabels} from '../../shared/resourceAvailability.mjs';
 import CrmVisitPhotos from './CrmVisitPhotos';
 import CrmVisitReport from './CrmVisitReport';
+import CrmMoveClosure from './CrmMoveClosure';
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   X,
@@ -61,12 +62,13 @@ export default function CrmBookingEditor({
     [documentError, setDocumentError] = useState(""),
     [dirty, setDirty] = useState(false),
     [success, setSuccess] = useState("");
-  useUnsavedChanges(dirty || busy);
+  const [closureDirty,setClosureDirty]=useState(false);
+  useUnsavedChanges(dirty || closureDirty || busy);
   const booking = data?.bookings.find((b) => b.leadId === lead.id);
   const close = () => {
     if (
       !busy &&
-      (!dirty ||
+      (!(dirty || closureDirty) ||
         window.confirm("Fermer sans enregistrer la fiche déménagement ?"))
     )
       onClose();
@@ -349,7 +351,7 @@ export default function CrmBookingEditor({
         }}
       >
         <fieldset
-          disabled={busy || loading || !data || lead.status !== "confirme"}
+          disabled={busy || closureDirty || !!booking?.closure || loading || !data || lead.status !== "confirme"}
           className="mission-fields"
         >
           <section className="mission-section">
@@ -648,7 +650,7 @@ export default function CrmBookingEditor({
           <div>
             <button
               disabled={
-                busy ||
+                busy || closureDirty || !!booking?.closure ||
                 loading ||
                 !data ||
                 !ids.length ||
@@ -669,11 +671,11 @@ export default function CrmBookingEditor({
               Retour au dossier
             </button>
           </div>
-          {booking && !booking.cancelled && (
+          {booking && !booking.cancelled && !booking.closure && (
             <button
               type="button"
               className="mission-cancel"
-              disabled={busy || loading}
+              disabled={busy || closureDirty || loading}
               onClick={() => void save(true)}
             >
               Annuler la réservation
@@ -681,6 +683,7 @@ export default function CrmBookingEditor({
           )}
         </footer>
       </form>
+      {!loading && booking && !booking.cancelled && ['confirme','termine'].includes(lead.status) && <CrmMoveClosure key={booking.leadId} booking={booking} disabled={busy || dirty} onBusy={setBusy} onDirty={()=>setClosureDirty(true)} onSaved={(updated,nextLead)=>{setData(current=>current?{...current,bookings:current.bookings.map(b=>b.leadId===updated.leadId?updated:b)}:current);setClosureDirty(false);onSaved(nextLead);}}/>}
     </dialog>
   );
 }
