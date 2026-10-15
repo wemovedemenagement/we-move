@@ -1,3 +1,4 @@
+import CrmAftercare from './CrmAftercare';
 import CrmAvailability from './CrmAvailability';
 import {absenceLabels} from '../../shared/resourceAvailability.mjs';
 import {movePreparation} from '../../shared/movePreparation.mjs';
@@ -17,9 +18,11 @@ import type { QuoteLead } from '../types/crm';
 export default function CrmPlanning({
   leads,
   onOpen,
+  onFollowUp,
 }: {
   leads: QuoteLead[];
   onOpen: (lead: QuoteLead) => void;
+  onFollowUp: (lead: QuoteLead) => void;
 }) {
   const [day, setDay] = useState(parisToday()),
     [resource, setResource] = useState('all'),
@@ -85,7 +88,7 @@ export default function CrmPlanning({
           {loading?'Actualisation…':'Actualiser'}
         </button>
       </header>
-      {!loading && !error && data?.bookings.some(b=>b.closure?.followUp&&!b.closure.resolved) && <details className="mission-closure"><summary>Après la mission · {data.bookings.filter(b=>b.closure?.followUp&&!b.closure.resolved).length} suivis à traiter</summary><div className="closure-pending">{data.bookings.filter(b=>b.closure?.followUp&&!b.closure.resolved).sort((a,b)=>a.closure!.due.localeCompare(b.closure!.due)).map(b=><article key={b.leadId}><strong>{b.clientName}</strong><p>{b.closure!.followUp}</p><small>{b.closure!.owner} · {b.closure!.due.replace('T',' à ')}</small>{leads.find(l=>l.id===b.leadId)&&<button type="button" className="crm-quiet-action" onClick={()=>onOpen(leads.find(l=>l.id===b.leadId)!)}>Ouvrir le dossier</button>}</article>)}</div></details>}
+      <CrmAftercare data={data} loading={loading} error={error} leads={leads} today={today} onOpen={onFollowUp}/>
       <CrmAvailability data={data} loading={loading} error={error} day={selectedDay||day} leads={leads} onOpen={onOpen}/>
       {error && (
         <p role="alert" className="text-rose-700">
