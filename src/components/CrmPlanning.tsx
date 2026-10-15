@@ -1,3 +1,4 @@
+import CrmAvailability from './CrmAvailability';
 import {absenceLabels} from '../../shared/resourceAvailability.mjs';
 import {movePreparation} from '../../shared/movePreparation.mjs';
 import { useEffect, useRef, useState } from 'react';
@@ -84,6 +85,7 @@ export default function CrmPlanning({
           {loading?'Actualisation…':'Actualiser'}
         </button>
       </header>
+      <CrmAvailability data={data} loading={loading} error={error} day={selectedDay||day} leads={leads} onOpen={onOpen}/>
       {error && (
         <p role="alert" className="text-rose-700">
           {error} {data?'Les dernières réservations reçues restent affichées ; elles peuvent être anciennes.':'Aucune réservation ne peut être vérifiée pour le moment.'}
