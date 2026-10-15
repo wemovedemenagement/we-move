@@ -1,12 +1,21 @@
 import {randomUUID} from 'node:crypto';
 import {draftError} from './crmDraftModel.mjs';
 import {crmMembers} from './crmAuth.mjs';
+import {contactOutcomes,contactChannels} from '../shared/commercialContact.mjs';
 export const followUpLabels={rappeler:'Rappeler',visite:'Prévoir une visite',devis:'Préparer un devis',relancer:'Relancer le client',planifier:'Planifier le déménagement',facturer:'Préparer la facturation'};
 export function updateFollowUp(current,payload,actor){
   if(!payload||typeof payload!=='object'||Array.isArray(payload))draftError(400,'Suivi invalide.');
-  if(Object.keys(payload).some(key=>!['revision','assigneeId','action','complete'].includes(key)))draftError(400,'Champ de suivi invalide.');
+  if(Object.keys(payload).some(key=>!['revision','assigneeId','action','complete','contact'].includes(key)))draftError(400,'Champ de suivi invalide.');
   if(payload.revision!==(current.followUpRevision||0))draftError(409,'Le suivi a été modifié ailleurs. Fermez puis rouvrez la fiche avant de réessayer.');
   const now=new Date().toISOString();let assigneeId=current.assigneeId||'',assigneeName=current.assigneeName||'',nextAction=current.nextAction||null,description;
+  let contact;
+  if(payload.contact!==undefined){
+    const value=payload.contact;
+    if(['confirme','termine','refuse'].includes(current.status))draftError(409,'Le dossier a changé d’étape. Consultez sa fiche avant d’ajouter une relance commerciale.');
+    if(payload.complete===true||!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).some(k=>!['channel','outcome','note'].includes(k))||!Object.hasOwn(contactChannels,value.channel)||!Object.hasOwn(contactOutcomes,value.outcome)||typeof value.note!=='string'||value.note.length>1000)draftError(400,'Résultat de l’échange invalide.');
+    if(value.outcome==='changes'&&!value.note.trim())draftError(400,'Précisez les modifications demandées par le client.');
+    contact={channel:value.channel,outcome:value.outcome,note:value.note.trim(),createdAt:now,author:actor?.name||actor?.email||'Utilisateur CRM'};
+  }
   if(payload.complete===true){
     if(!nextAction)draftError(409,'Aucune action à terminer.');
     description='Action terminée : '+followUpLabels[nextAction.type]+' (échéance '+nextAction.dueDate+').';nextAction=null;
@@ -24,6 +33,7 @@ export function updateFollowUp(current,payload,actor){
     description=nextAction?'Prochaine action : '+followUpLabels[nextAction.type]+' le '+nextAction.dueDate+'.':'Prochaine action effacée.';
     description+=' Responsable : '+(assigneeName||'non attribué')+'.';
   }
-  return {...current,assigneeId,assigneeName,assignedAgent:assigneeName||'Non assigné',nextAction,followUpRevision:(current.followUpRevision||0)+1,updatedAt:now,
+  if(contact)description=`Échange commercial · ${contactChannels[contact.channel]} · ${contactOutcomes[contact.outcome]}.${contact.note?' '+contact.note:''}\n`+description;
+  return {...current,...(contact?{lastCommercialContact:contact}:{}),assigneeId,assigneeName,assignedAgent:assigneeName||'Non assigné',nextAction,followUpRevision:(current.followUpRevision||0)+1,updatedAt:now,
     internalNotes:[{id:randomUUID(),author:actor?.name||'Saisie locale',content:description,createdAt:now},...(current.internalNotes||[])]};
 }
