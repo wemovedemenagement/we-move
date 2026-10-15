@@ -1,16 +1,17 @@
+import {normalizeAbsences,resourceAbsence,absenceLabels} from '../shared/resourceAvailability.mjs';
 import {normalizeMoveOperations} from './crmMoveOperations.mjs';
 import { randomUUID } from 'node:crypto';
 import { draftError } from './crmDraftModel.mjs';
 export const emptyRegistry = () => ({ revision: 0, resources: [] });
-export function reviseRegistry(current, payload, actor) {
+export function reviseRegistry(current, payload, actor, bookings=[]) {
   if (actor.role !== 'gerant')
     draftError(403, 'Le gérant administre les ressources.');
   if (!payload || payload.revision !== current.revision)
-    draftError(409, 'Le registre a changé. Actualisez avant de réessayer.');
+    draftError(409, 'Le registre a changé. Fermez puis rouvrez la ressource avant de réessayer.');
   if (
     Object.keys(payload).some(
       (k) =>
-        !['revision', 'id', 'name', 'kind', 'active', 'detail'].includes(k),
+        !['revision', 'id', 'name', 'kind', 'active', 'detail', 'unavailablePeriods'].includes(k),
     )
   )
     draftError(400, 'Champ de ressource invalide.');
@@ -45,7 +46,11 @@ export function reviseRegistry(current, payload, actor) {
     draftError(409, 'Cette ressource existe déjà.');
   if (!previous && current.resources.length >= 300)
     draftError(400, 'Limite du registre atteinte.');
+  const unavailablePeriods=normalizeAbsences(payload.unavailablePeriods===undefined?previous?.unavailablePeriods||[]:payload.unavailablePeriods);
+  const conflict=bookings.find(b=>!b.cancelled&&b.resourceIds.includes(previous?.id)&&resourceAbsence({unavailablePeriods},b.start,b.end));
+  if(conflict)draftError(409,'Cette indisponibilité chevauche la mission de '+conflict.clientName+'. Réaffectez ou déplacez la mission avant de bloquer ce créneau.');
   const resource = {
+    unavailablePeriods,
     id: previous?.id || randomUUID(),
     name: payload.name.trim(),
     kind: payload.kind,
@@ -54,13 +59,15 @@ export function reviseRegistry(current, payload, actor) {
     updatedAt: new Date().toISOString(),
     updatedBy: actor.email || actor.name,
   };
-  return {
+  const result = {
     revision: current.revision + 1,
     resources: [
       ...current.resources.filter((r) => r.id !== resource.id),
       resource,
     ],
   };
+  if(Buffer.byteLength(JSON.stringify(result),"utf8")>750000)draftError(400,"Le registre est trop volumineux. Retirez des indisponibilités anciennes avant de continuer.");
+  return result;
 }
 function validTime(value) {
   return (
@@ -121,6 +128,8 @@ export function makeBooking(lead, current, others, registry, payload, actor) {
   );
   if (resources.some((r) => !r || !r.active))
     draftError(409, 'Une ressource est indisponible. Actualisez le registre.');
+  const absent=resources.find(r=>resourceAbsence(r,payload.start,payload.end));
+  if(absent){const period=resourceAbsence(absent,payload.start,payload.end);draftError(409,absent.name+' : '+absenceLabels[period.reason]+' du '+period.start.replace('T',' à ')+' au '+period.end.replace('T',' à ')+'. Choisissez une autre ressource ou un autre créneau.');}
   if (!resources.some((r) => r.kind === 'vehicle'))
     draftError(400, 'Sélectionnez au moins un véhicule.');
   const conflict = others.find(

@@ -168,7 +168,7 @@ import {emptyRegistry,reviseRegistry,makeBooking,applyBooking} from './crmPlanni
 const registryRef=()=>firestore().collection(collectionName('crm_resources')).doc('registry');
 const bookingsRef=()=>firestore().collection(collectionName('crm_move_bookings'));
 export async function getPlanning(){const [r,b]=await Promise.all([registryRef().get(),bookingsRef().get()]);return {registry:r.exists?r.data():emptyRegistry(),bookings:b.docs.map(d=>d.data())};}
-export async function saveResource(payload,actor){return firestore().runTransaction(async tx=>{const ref=registryRef(),r=await tx.get(ref);const registry=reviseRegistry(r.exists?r.data():emptyRegistry(),payload,actor);tx.set(ref,registry);tx.create(ref.collection('events').doc(String(registry.revision)),{at:new Date().toISOString(),actor:actor.email||actor.name,change:payload});return registry;});}
+export async function saveResource(payload,actor){return firestore().runTransaction(async tx=>{const ref=registryRef(),r=await tx.get(ref);const b=await tx.get(bookingsRef());const registry=reviseRegistry(r.exists?r.data():emptyRegistry(),payload,actor,b.docs.map(d=>d.data()));tx.set(ref,registry);tx.create(ref.collection('events').doc(String(registry.revision)),{at:new Date().toISOString(),actor:actor.email||actor.name,change:payload});return registry;});}
 export async function saveBooking(id,payload,actor){draftId(id);return firestore().runTransaction(async tx=>{
  const [l,r,b]=await Promise.all([tx.get(requests().doc(id)),tx.get(registryRef()),tx.get(bookingsRef())]);const registry=r.exists?r.data():emptyRegistry(),bookings=b.docs.map(d=>d.data());
  const booking=makeBooking(l.data(),bookings.find(b=>b.leadId===id),bookings,registry,payload,actor),lead=applyBooking(l.data(),booking,actor);

@@ -5,6 +5,7 @@ import path from 'node:path';
 
 // Each suite gets its own process and local data directory. No production writes.
 const suites=[
+  'test-crm-absences',
   'test-crm-visit-photos',
   'test-crm-technical-visit',
   'test-crm-move-operations','test-crm-auth','test-server','test-seo','test-crm-cache','test-crm-version',

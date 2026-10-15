@@ -99,7 +99,8 @@ export interface BillingRow {id:string;number:string;kind:string;invoiceId:strin
 export interface BillingOverview {asOf:string;today:string;month:string;documentCount:number;invoiceCount:number;creditCount:number;dueCents:number;overdueCents:number;refundDueCents:number;receivedCents:number;refundedCents:number;netReceivedCents:number;openCount:number;overdueCount:number;priorityCount:number;priorities:(BillingRow&{reason:'refund'|'overdue'|'today'|'upcoming';daysOverdue:number})[];}
 export async function fetchCrmDossier(id:string){return (await request<{dossier:CrmDossier}>('/api/crm/dossiers/'+encodeURIComponent(id))).dossier;}
 
-export interface CrmResource {id:string;name:string;kind:'vehicle'|'person'|'lift';detail:string;active:boolean;}
+export interface ResourceAbsence {start:string;end:string;reason:"conges"|"maintenance"|"autre";}
+export interface CrmResource {unavailablePeriods?:ResourceAbsence[];id:string;name:string;kind:'vehicle'|'person'|'lift';detail:string;active:boolean;}
 export interface ResourceRegistry {revision:number;resources:CrmResource[];}
 export interface MoveOperations {departureParking:'a_verifier'|'confirme'|'sans_objet';arrivalParking:'a_verifier'|'confirme'|'sans_objet';accessVerified:boolean;equipmentReady:boolean;equipmentNotes:string;instructions:string;}
 export interface MoveBooking {operations?:MoveOperations;leadId:string;clientName:string;start:string;end:string;resourceIds:string[];resources:Pick<CrmResource,'id'|'name'|'kind'>[];revision:number;cancelled:boolean;}

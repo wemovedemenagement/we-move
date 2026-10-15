@@ -1,3 +1,4 @@
+import {resourceAbsence,absenceLabels} from '../../shared/resourceAvailability.mjs';
 import CrmVisitPhotos from './CrmVisitPhotos';
 import CrmVisitReport from './CrmVisitReport';
 import { useEffect, useRef, useState, type FormEvent } from "react";
@@ -125,7 +126,7 @@ export default function CrmBookingEditor({
         b.start < end &&
         b.end > start,
     ) || [];
-  const unavailable = new Set(overlaps.flatMap((b) => b.resourceIds));
+  const unavailable = new Set([...overlaps.flatMap((b) => b.resourceIds),...(data?.registry.resources.filter(r=>resourceAbsence(r,start,end)).map(r=>r.id)||[])]);
   const issues = data
     ? movePreparation(
         lead,
@@ -391,7 +392,7 @@ export default function CrmBookingEditor({
             <h3>
               <span>02</span>Équipe et moyens
             </h3>
-            <p>Les ressources déjà réservées sur ce créneau sont signalées.</p>
+            <p>Les réservations, congés et maintenances sont vérifiés sur toute la durée de la mission.</p>
             {selectedUnavailable && (
               <p className="mission-warning" role="alert">
                 <AlertCircle size={16} />
@@ -445,9 +446,11 @@ export default function CrmBookingEditor({
                           <small>
                             {!r.active
                               ? "Désactivé"
+                              : resourceAbsence(r,start,end)
+                                ? absenceLabels[resourceAbsence(r,start,end)!.reason as keyof typeof absenceLabels]
                               : unavailable.has(r.id)
                                 ? "Déjà réservé"
-                                : r.detail || "Disponible sur ce créneau"}
+                                : !start||!end||end<=start?"Choisissez un créneau pour vérifier": "Disponible sur ce créneau"}
                           </small>
                         </span>
                       </label>

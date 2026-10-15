@@ -1,3 +1,6 @@
+import CrmAbsenceEditor from './CrmAbsenceEditor';
+import {useUnsavedChanges} from '../hooks/useUnsavedChanges';
+import {absenceLabels} from '../../shared/resourceAvailability.mjs';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Plus, Truck, Users, ArrowUpRight, RefreshCw } from 'lucide-react';
 import {
@@ -19,6 +22,12 @@ export default function CrmResources({ identity }: { identity: CrmIdentity }) {
     [busy, setBusy] = useState(false),
     [kind, setKind] = useState('all');
   const lock = useRef(false);
+  const [dirty,setDirty]=useState(false),[editRevision,setEditRevision]=useState(0);
+  useUnsavedChanges(dirty||busy);
+  const beginEdit=(value:CrmResource|null|undefined)=>{
+    if(busy||dirty&&!window.confirm('Fermer sans enregistrer les modifications de cette ressource ?'))return;
+    setEdit(value);setEditRevision(data?.registry.revision||0);setDirty(false);
+  };
   const load = async () => {
     try {
       setData(await fetchPlanning());
@@ -38,7 +47,8 @@ export default function CrmResources({ identity }: { identity: CrmIdentity }) {
     setBusy(true);
     try {
       const registry = await saveCrmResource({
-        revision: data.registry.revision,
+        revision: editRevision,
+        unavailablePeriods:JSON.parse(String(form.get("unavailablePeriods"))),
         id: edit?.id,
         name: String(form.get('name')),
         detail: String(form.get('detail')),
@@ -46,7 +56,7 @@ export default function CrmResources({ identity }: { identity: CrmIdentity }) {
         active: form.has('active'),
       });
       setData({ ...data, registry });
-      setEdit(undefined);
+      setEdit(undefined);setDirty(false);
       setError('');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Enregistrement impossible.');
@@ -73,7 +83,7 @@ export default function CrmResources({ identity }: { identity: CrmIdentity }) {
           <button
             className="requests-primary"
             disabled={busy}
-            onClick={() => setEdit(null)}
+            onClick={() => beginEdit(null)}
           >
             <Plus size={17} />
             Ajouter une ressource
@@ -89,6 +99,7 @@ export default function CrmResources({ identity }: { identity: CrmIdentity }) {
         <form
           key={edit?.id || 'new'}
           onSubmit={submit}
+          onChange={()=>setDirty(true)}
           className="crm-surface border p-5 space-y-4"
         >
           <h3>{edit ? 'Modifier la ressource' : 'Nouvelle ressource'}</h3>
@@ -129,8 +140,9 @@ export default function CrmResources({ identity }: { identity: CrmIdentity }) {
                 type="checkbox"
                 defaultChecked={edit?.active ?? true}
               />{' '}
-              Disponible pour de nouvelles réservations
+              Ressource active dans le registre
             </label>
+          <CrmAbsenceEditor initial={edit?.unavailablePeriods||[]} onDirty={()=>setDirty(true)}/>
           </fieldset>
           {edit && (
             <p className="text-xs text-slate-500">
@@ -146,7 +158,7 @@ export default function CrmResources({ identity }: { identity: CrmIdentity }) {
               type="button"
               disabled={busy}
               className="crm-quiet-action"
-              onClick={() => setEdit(undefined)}
+              onClick={() => beginEdit(undefined)}
             >
               Annuler
             </button>
@@ -204,7 +216,7 @@ export default function CrmResources({ identity }: { identity: CrmIdentity }) {
                 </p>
                 <p className="mt-4 text-sm">
                   {r.active
-                    ? 'Disponible à la réservation'
+                    ? 'Active · disponibilité selon le planning'
                     : 'Indisponible aux nouvelles réservations'}
                 </p>
                 <p className="mt-2 text-xs text-slate-500">
@@ -215,10 +227,11 @@ export default function CrmResources({ identity }: { identity: CrmIdentity }) {
                   }{' '}
                   réservation(s) enregistrée(s)
                 </p>
+                {!!r.unavailablePeriods?.length&&<details className="resource-absence-summary"><summary>{r.unavailablePeriods.length} période(s) d’indisponibilité</summary>{r.unavailablePeriods.map((p,i)=><p key={i}><strong>{absenceLabels[p.reason]}</strong> · {p.start.replace('T',' à ')} → {p.end.replace('T',' à ')}</p>)}</details>}
                 {identity.role === 'gerant' && (
                   <button
                     className="crm-quiet-action mt-4"
-                    onClick={() => setEdit(r)}
+                    onClick={() => beginEdit(r)}
                   >
                     Modifier
                     <ArrowUpRight size={15} />
