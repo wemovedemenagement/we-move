@@ -1,4 +1,5 @@
 import {newInvoicePreparation,reviseInvoicePreparation} from './crmInvoiceModel.mjs';
+import {reviseStorageStay,historyBefore} from './crmStorageStay.mjs';
 import {updateFollowUp} from './crmFollowUp.mjs';
 import {createHash} from 'node:crypto';
 import { newDraft, reviseDraft, draftId, draftError } from './crmDraftModel.mjs';
@@ -88,9 +89,12 @@ export function updateQuoteLead(id, updates) {
   } catch (error) { connection.exec('ROLLBACK'); throw error; }
 }
 export function deleteQuoteLead(id) {
+  return draftTransaction(()=>{
+  if(getStorageStays().some(s=>s.leadId===id))draftError(409,'Ce dossier possède un historique de stockage et doit être conservé.');
   if(getPlanning().bookings.some(b=>b.leadId===id))draftError(409,'Ce dossier possède un historique de réservation et doit être conservé.');
   if (db().prepare('SELECT id FROM quote_drafts WHERE id = ?').get(id)) draftError(409, 'Cette demande possède un brouillon de devis et doit être conservée.');
   return db().prepare('DELETE FROM requests WHERE id = ?').run(id).changes > 0;
+  });
 }
 
 
@@ -114,6 +118,20 @@ function draftTransaction(action) {
   try { const result=action(connection);connection.exec('COMMIT');return result; }
   catch(error) {connection.exec('ROLLBACK');throw error;}
 }
+function storageTables(){db().exec('CREATE TABLE IF NOT EXISTS storage_stays (id TEXT PRIMARY KEY,data TEXT NOT NULL); CREATE TABLE IF NOT EXISTS storage_events (stay_id TEXT NOT NULL,revision INTEGER NOT NULL,data TEXT NOT NULL,PRIMARY KEY(stay_id,revision))');}
+export function getStorageStays(){storageTables();return db().prepare('SELECT data FROM storage_stays').all().map(r=>JSON.parse(r.data)).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt));}
+export function saveStorageStay(payload,actor){
+ storageTables();const id=draftId(payload?.id),leadId=draftId(payload?.leadId);
+ return draftTransaction(c=>{
+   const current=c.prepare('SELECT data FROM storage_stays WHERE id=?').get(id),lead=c.prepare('SELECT data FROM requests WHERE id=?').get(leadId);
+   const result=reviseStorageStay(current?JSON.parse(current.data):null,lead?JSON.parse(lead.data):null,payload,actor);
+   c.prepare('INSERT OR REPLACE INTO storage_stays(id,data) VALUES(?,?)').run(id,JSON.stringify(result.stay));
+   c.prepare('INSERT INTO storage_events(stay_id,revision,data) VALUES(?,?,?)').run(id,result.stay.revision,JSON.stringify(result.event));
+   c.prepare('UPDATE requests SET data=? WHERE id=?').run(JSON.stringify(result.lead),leadId);
+   return {stay:result.stay,lead:result.lead};
+ });
+}
+export function getStorageHistory(id,before){storageTables();draftId(id);if(!db().prepare('SELECT id FROM storage_stays WHERE id=?').get(id))draftError(404,'Séjour introuvable.');const rows=db().prepare('SELECT data FROM storage_events WHERE stay_id=? AND revision<? ORDER BY revision DESC LIMIT 21').all(id,historyBefore(before)).map(r=>JSON.parse(r.data));return {events:rows.slice(0,20),next:rows.length>20?rows[19].revision:null};}
 export function createQuoteDraft(leadId) {
   const id=draftId(leadId);
   return draftTransaction(connection=>{

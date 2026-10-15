@@ -1,3 +1,4 @@
+import CrmStorage from '../components/CrmStorage';
 import CrmVisitPhotos from '../components/CrmVisitPhotos';
 import CrmTechnicalVisit from '../components/CrmTechnicalVisit';
 import {useUnsavedChanges} from '../hooks/useUnsavedChanges';
@@ -101,7 +102,7 @@ function CrmWorkspace({identity,onConnect,onLogout}:{identity:CrmIdentity;onConn
         {preparing && <p role="status" className="text-sm text-sky-700">Ouverture du brouillon enregistré…</p>}
         {tab==='quotes' && <CrmQuotes onLeadSaved={saved=>{setLeads(current=>current.map(l=>l.id===saved.id?saved:l));void refresh();}} onOpenDossier={lead=>open(lead)} leads={leads} isDark={dark} initialDraft={draftToOpen} onInitialConsumed={()=>setDraftToOpen(null)} onNewRequest={()=>setCreate(true)}/>}
         {tab==='visits' && <CrmVisits leads={leads} loaded={loaded} loading={loading} onRefresh={()=>void refresh()} onVisit={lead=>open(lead,'visit')} onOpen={lead=>open(lead)}/>}
-        {tab==='storage' && loaded && <CrmOperationsPanel tab={tab as 'planning'|'storage'|'statistics'} leads={leads} isDark={dark} onOpen={lead=>open(lead)}/>}
+        {tab==='storage' && loaded && <CrmStorage leads={leads} identity={identity} onLeadSaved={saved=>{setLeads(current=>current.map(l=>l.id===saved.id?saved:l));void refresh();}} onOpen={lead=>open(lead)}/>}
         {tab==='statistics'&&loaded&&<CrmStatistics leads={leads}/>}
         {tab==='fleet'&&<CrmResources identity={identity}/>}
         {tab==='planning'&&loaded&&<CrmPlanning leads={leads} onOpen={lead=>open(lead)} onFollowUp={lead=>open(lead,'move')} onPrepare={(lead,target)=>open(lead,target)}/>}

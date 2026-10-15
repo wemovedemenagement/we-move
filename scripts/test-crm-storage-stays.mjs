@@ -1,0 +1,43 @@
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';import {mkdtempSync} from 'node:fs';import {tmpdir} from 'node:os';import path from 'node:path';
+import {storageOverview} from '../shared/storageStays.mjs';import {parisToday} from '../shared/followUp.mjs';
+process.env.CRM_STORAGE='sqlite';process.env.CRM_LOCAL_ACCESS='true';process.env.NODE_ENV='test';process.env.CRM_DATA_DIR=mkdtempSync(path.join(tmpdir(),'wm-storage-'));process.env.CRM_LEAD_NOTIFICATIONS='false';process.env.CRM_CUSTOMER_RECEIPTS='false';process.env.CRM_BILLING_LIVE_ENABLED='false';
+const s=await import('../server/crmStore.mjs');const {createApp}=await import('../server.mjs');const actor={role:'gerant',email:'test@example.invalid',name:'Contrôle isolé'},today=parisToday();
+const server=createApp().listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));const base='http://127.0.0.1:'+server.address().port;
+const blank=leadId=>({id:randomUUID(),leadId,revision:0,status:'prevu',site:'',location:'',volume:null,goods:'',notes:'',expectedEntry:'',expectedExit:'',actualEntry:'',actualExit:'',reason:''});
+async function api(route,body){const r=await fetch(base+route,{method:body?'POST':'GET',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});return {status:r.status,body:await r.json()};}
+const payload=stay=>Object.fromEntries(['id','leadId','revision','status','site','location','volume','goods','notes','expectedEntry','expectedExit','actualEntry','actualExit'].map(k=>[k,stay[k]]));
+try{
+ const lead=await s.createQuoteLead({fullName:'Stockage isolé',email:'test@example.invalid',volume:18,storageRequired:true});const first=blank(lead.id);
+ process.env.CRM_LOCAL_ACCESS='false';assert.equal((await api('/api/crm/storage')).status,401);assert.equal((await api('/api/crm/storage',first)).status,401);assert.equal((await api('/api/crm/storage/none/history')).status,401);process.env.CRM_LOCAL_ACCESS='true';
+ assert.deepEqual((await api('/api/crm/storage')).body.stays,[]);
+ const invalid=[{...first,status:'sorti'},{...first,volume:0},{...first,volume:-1},{...first,volume:0.001},{...first,volume:1001},{...first,goods:'x'.repeat(3001)},{...first,expectedEntry:'2026-02-31'},{...first,expectedEntry:'2026-10-20',expectedExit:'2026-10-19'},{...first,status:'stocke'},{...first,actualEntry:today},{...first,extra:'bad'}];
+ for(const p of invalid)assert.ok([400,409].includes((await api('/api/crm/storage',p)).status));
+ await assert.rejects(()=>s.saveStorageStay(first,{...actor,role:'commercial'}),e=>e.status===403);
+ const parallel=await Promise.all([api('/api/crm/storage',first),api('/api/crm/storage',first)]);assert.deepEqual(parallel.map(r=>r.status).sort(),[200,409]);let stay=parallel.find(r=>r.status===200).body.stay;
+ assert.equal(stay.revision,1);assert.equal((await s.getAllQuotes())[0].volume,18);assert.equal((await s.getAllQuotes())[0].storageRequired,true);
+ const stock={...payload(stay),reason:'',status:'stocke',site:'Site isolé',location:'Allée A',volume:8,goods:'Deux meubles et dix cartons',actualEntry:today,expectedExit:today};
+ assert.equal((await api('/api/crm/storage',{...stock,actualEntry:'2099-01-01'})).status,400);assert.equal((await api('/api/crm/storage',{...stock,actualExit:today})).status,400);
+ stay=(await api('/api/crm/storage',stock)).body.stay;
+ assert.deepEqual(storageOverview(await s.getStorageStays(),today),{planned:0,stored:1,volume:8,exitDue:1});
+ await assert.rejects(()=>s.deleteQuoteLead(lead.id),e=>e.status===409);
+ assert.equal((await api('/api/crm/storage',{...payload(stay),reason:'',leadId:'missing'})).status,404);
+ assert.equal((await api('/api/crm/storage',{...payload(stay),reason:'',status:'annule',actualEntry:''})).status,409);
+ const out=await api('/api/crm/storage',{...payload(stay),reason:'',status:'sorti',actualExit:today});assert.equal(out.status,200);stay=out.body.stay;
+ assert.equal(storageOverview(await s.getStorageStays(),today).volume,0);
+ assert.equal((await api('/api/crm/storage',{...payload(stay),reason:'',notes:'Correction'})).status,403);
+ await assert.rejects(()=>s.saveStorageStay({...payload(stay),reason:'Corriger les notes'}, {...actor,role:'secretaire'}),e=>e.status===403);
+ stay=(await api('/api/crm/storage',{...payload(stay),reason:'Précision après restitution',notes:'Restitution complète confirmée.'})).body.stay;
+ const history=(await api('/api/crm/storage/'+stay.id+'/history')).body;
+ assert.equal(history.events.length,4);assert.equal(history.events[0].reason,'Précision après restitution');assert.equal(history.events.at(-1).status,'prevu');assert.equal(history.events[1].status,'sorti');assert.equal(history.events[2].status,'stocke');assert.equal(history.next,null);
+ assert.equal((await api('/api/crm/storage/'+stay.id+'/history?before=bad')).status,400);assert.equal((await api('/api/crm/storage/missing/history')).status,404);
+ let planned=(await s.saveStorageStay(blank(lead.id),actor)).stay;
+ for(let i=0;i<23;i++)planned=(await s.saveStorageStay({...payload(planned),reason:'',notes:'Note '+i},actor)).stay;
+ const page1=await s.getStorageHistory(planned.id),page2=await s.getStorageHistory(planned.id,page1.next);assert.equal(page1.events.length,20);assert.equal(page2.events.length,4);assert.equal(new Set([...page1.events,...page2.events].map(e=>e.revision)).size,24);
+ planned=(await s.saveStorageStay({...payload(planned),reason:'',status:'annule'},actor)).stay;await assert.rejects(()=>s.deleteQuoteLead(lead.id),e=>e.status===409);
+ const other=await s.createQuoteLead({fullName:'Course stockage isolée',email:'test@example.invalid'});
+ const race=await Promise.allSettled([s.saveStorageStay(blank(other.id),actor),s.deleteQuoteLead(other.id)]);assert.equal(race.filter(r=>r.status==='fulfilled').length,1);
+ assert.equal((await s.getAllQuotes()).find(l=>l.id===lead.id).volume,18,'Stored volume must not overwrite moving volume');
+ assert.equal((await s.getQuoteMails(lead.id)).length,0);
+ console.log('Garde-meubles : authentification, rôles, dates, transitions, volume distinct, concurrence, entrées/sorties, corrections gérant, historique paginé et protection des dossiers vérifiés. Aucun envoi ni facturation.');
+}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}

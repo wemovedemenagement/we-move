@@ -1,4 +1,5 @@
 import {newInvoicePreparation,reviseInvoicePreparation} from './crmInvoiceModel.mjs';
+import {reviseStorageStay,historyBefore} from './crmStorageStay.mjs';
 import {updateFollowUp} from './crmFollowUp.mjs';
 import {createHash} from 'node:crypto';
 import { newDraft, reviseDraft, draftId, draftError } from './crmDraftModel.mjs';
@@ -33,6 +34,25 @@ function collectionName(name) {
   return testNamespace + '_' + name;
 }
 const requests = () => firestore().collection(collectionName('crm_requests'));
+const storageStays=()=>firestore().collection(collectionName('crm_storage_stays'));
+export async function getStorageStays(){return (await storageStays().orderBy('updatedAt','desc').get()).docs.map(d=>d.data());}
+export async function saveStorageStay(payload,actor){
+ const id=draftId(payload?.id),leadId=draftId(payload?.leadId);
+ return firestore().runTransaction(async tx=>{
+   const ref=storageStays().doc(id),leadRef=requests().doc(leadId);
+   const [current,lead]=await Promise.all([tx.get(ref),tx.get(leadRef)]);
+   const result=reviseStorageStay(current.exists?current.data():null,lead.data(),payload,actor);
+   tx.set(ref,result.stay);tx.create(ref.collection('events').doc(String(result.stay.revision)),result.event);tx.set(leadRef,result.lead);
+   return {stay:result.stay,lead:result.lead};
+ });
+}
+export async function getStorageHistory(id,before){
+ const ref=storageStays().doc(draftId(id));if(!(await ref.get()).exists)draftError(404,'Séjour introuvable.');
+ let query=ref.collection('events').orderBy('revision','desc');
+ if(before!==undefined)query=query.where('revision','<',historyBefore(before));
+ const rows=(await query.limit(21).get()).docs.map(d=>d.data()),events=rows.slice(0,20);
+ return {events,next:rows.length>20?events.at(-1).revision:null};
+}
 export async function customerReceiptTransaction(id,action) {
  const ref=requests().doc(draftId(id));
  return firestore().runTransaction(async tx=>{
@@ -88,6 +108,7 @@ export async function deleteQuoteLead(id) {
     if (!(await transaction.get(ref)).exists) return false;
     if ((await transaction.get(firestore().collection(collectionName('crm_quote_drafts')).doc(id))).exists) draftError(409, 'Cette demande possède un brouillon de devis et doit être conservée.');
     if((await transaction.get(bookingsRef().doc(id))).exists)draftError(409,'Ce dossier possède un historique de réservation et doit être conservé.');
+    if(!(await transaction.get(storageStays().where('leadId','==',id).limit(1))).empty)draftError(409,'Ce dossier possède un historique de stockage et doit être conservé.');
     transaction.delete(ref);
     return true;
   });

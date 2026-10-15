@@ -13,6 +13,7 @@ import {billingSearch} from './crmBillingSearch.mjs';
 import {publicTestDocument} from './crmTestBillingModel.mjs';
 import {generateTestBillingPdf} from './crmTestBillingPdf.mjs';
 import {getPlanning,saveResource,saveBooking} from './crmStore.mjs';
+import {getStorageStays,saveStorageStay,getStorageHistory} from './crmStore.mjs';
 import {withMoveFollowUps} from '../shared/moveFollowUp.mjs';
 import {getDossierRecords} from './crmStore.mjs';
 import {generateCrmPdf,documentTypes} from './crmPdf.mjs';
@@ -49,6 +50,9 @@ export function crmRouter() {
     res.json({success:true,dossier});
   }));
   router.get('/api/crm/planning',route(async(req,res)=>res.json({success:true,planning:await getPlanning()})));
+  router.get('/api/crm/storage',route(async(_req,res)=>res.json({success:true,stays:await getStorageStays()})));
+  router.post('/api/crm/storage',route(async(req,res)=>res.json({success:true,...await saveStorageStay(req.body,req.crmIdentity)})));
+  router.get('/api/crm/storage/:id/history',route(async(req,res)=>res.json({success:true,...await getStorageHistory(req.params.id,req.query.before)})));
   router.post('/api/crm/resources',route(async(req,res)=>res.json({success:true,registry:await saveResource(req.body,req.crmIdentity)})));
   router.put('/api/crm/planning/:id',route(async(req,res)=>res.json({success:true,...await saveBooking(req.params.id,req.body,req.crmIdentity)})));
   router.get('/api/crm/pricing',route(async(req,res)=>{if(req.crmIdentity.role!=='gerant')return res.status(403).json({success:false,error:'Configuration réservée au gérant.'});res.json({success:true,settings:await getPricingSettings()});}));

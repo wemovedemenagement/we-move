@@ -50,6 +50,12 @@ export async function deleteQuoteLead(id: string): Promise<boolean> {
 export async function fetchCrmStats(): Promise<CrmStats> {
   return (await request<{ stats: CrmStats }>('/api/crm/stats')).stats;
 }
+export interface StorageStay {id:string;leadId:string;clientName:string;revision:number;status:'prevu'|'stocke'|'sorti'|'annule';site:string;location:string;volume:number|null;goods:string;notes:string;expectedEntry:string;expectedExit:string;actualEntry:string;actualExit:string;createdAt:string;createdBy:string;updatedAt:string;updatedBy:string;}
+export interface StorageEvent {revision:number;at:string;actor:string;status:StorageStay['status'];reason:string;changes:{field:string;from:string|number|null;to:string|number|null}[];}
+export type StorageStayUpdate=Pick<StorageStay,'id'|'leadId'|'revision'|'status'|'site'|'location'|'volume'|'goods'|'notes'|'expectedEntry'|'expectedExit'|'actualEntry'|'actualExit'>&{reason:string};
+export async function fetchStorageStays(){return (await request<{stays:StorageStay[]}>('/api/crm/storage')).stays;}
+export async function saveStorageStay(payload:StorageStayUpdate){return request<{stay:StorageStay;lead:QuoteLead}>('/api/crm/storage',{method:'POST',body:JSON.stringify(payload)});}
+export async function fetchStorageHistory(id:string,before?:number){return request<{events:StorageEvent[];next:number|null}>('/api/crm/storage/'+encodeURIComponent(id)+'/history'+(before?'?before='+before:''));}
 
 
 export async function fetchQuoteDrafts(): Promise<import('../types/crm').CrmQuoteDraft[]> {

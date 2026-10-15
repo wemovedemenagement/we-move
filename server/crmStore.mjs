@@ -8,6 +8,9 @@ async function store() {
   return backend;
 }
 export async function getAllQuotes() { return (await store()).getAllQuotes(); }
+export async function getStorageStays(){return (await store()).getStorageStays();}
+export async function saveStorageStay(payload,actor){return (await store()).saveStorageStay(payload,actor);}
+export async function getStorageHistory(id,before){return (await store()).getStorageHistory(id,before);}
 export async function createQuoteLead(payload) { return (await store()).createQuoteLead(payload); }
 export async function updateQuoteLead(id, updates) { return (await store()).updateQuoteLead(id, updates); }
 export async function deleteQuoteLead(id) { return (await store()).deleteQuoteLead(id); }
