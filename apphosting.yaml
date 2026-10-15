@@ -12,6 +12,9 @@ env:
   - variable: FIRESTORE_DATABASE_ID
     value: (default)
     availability: [RUNTIME]
+  - variable: CRM_PHOTO_BUCKET
+    value: wemove-b0057-crm-photos
+    availability: [RUNTIME]
   - variable: CRM_STORAGE
     value: firestore
     availability: [RUNTIME]

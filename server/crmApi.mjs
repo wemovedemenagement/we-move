@@ -1,3 +1,4 @@
+import {listVisitPhotos,addVisitPhoto,readVisitPhoto,deleteVisitPhoto} from './crmVisitPhotos.mjs';
 import {crmUiVersion} from './crmVersion.mjs';
 import {getPricingSettings,savePricingSettings} from './crmStore.mjs';
 import {estimatePricing} from './crmPricing.mjs';
@@ -32,6 +33,12 @@ export function crmRouter() {
     if(req.method==='POST'&&req.path==='/quotes')return next();
     return authenticateCrm(req,res,next);
   });
+  router.get('/api/crm/dossiers/:id/photos',route(async(req,res)=>res.json({success:true,photos:await listVisitPhotos(req.params.id)})));
+  router.put('/api/crm/dossiers/:id/photos/:slot',express.raw({type:'image/*',limit:'8mb'}),route(async(req,res)=>{
+    await addVisitPhoto(req.params.id,Number(req.params.slot),req.body,{caption:req.query.caption,area:req.query.area});res.status(201).json({success:true});
+  }));
+  router.get('/api/crm/dossiers/:id/photos/:slot',route(async(req,res)=>res.set({'Content-Type':'image/jpeg','Cache-Control':'private, no-store','Content-Disposition':'inline; filename="visite.jpg"'}).send(await readVisitPhoto(req.params.id,Number(req.params.slot)))));
+  router.delete('/api/crm/dossiers/:id/photos/:slot',route(async(req,res)=>{await deleteVisitPhoto(req.params.id,Number(req.params.slot),req.query.generation);res.json({success:true});}));
   router.get('/api/crm/dossiers/:id',route(async(req,res)=>{
     const dossier=await getDossierRecords(req.params.id);
     if(!dossier.lead)return res.status(404).json({success:false,error:'Dossier introuvable.'});
@@ -109,6 +116,7 @@ export function crmRouter() {
   }));
   router.delete('/api/quotes/:id', route(async (req, res) => {
     if(req.crmIdentity.role!=='gerant')return res.status(403).json({success:false,error:'Action réservée au gérant.'});
+    if((await listVisitPhotos(req.params.id)).length)return res.status(409).json({success:false,error:'Retirez les photos du dossier avant de supprimer la demande.'});
     if (!(await deleteQuoteLead(req.params.id))) return res.status(404).json({ success: false, error: 'Demande introuvable.' });
     res.json({ success: true });
   }));
@@ -133,6 +141,7 @@ export function crmRouter() {
     res.set({'Content-Type':'application/pdf','Content-Disposition':'attachment; filename="'+filename+'"','X-Content-Type-Options':'nosniff','Cache-Control':'private, no-store'}).send(bytes);
   }));
   router.use('/api', (error, _req, res, _next) => {
+    if(error.type==='entity.too.large')return res.status(413).json({success:false,error:'Choisissez une image de 8 Mo maximum.'});
     const validation = [400,403,404,409].includes(error.status);
     res.status(validation ? error.status : 503).json({ success: false, error: validation ? error.message : 'Le service CRM est indisponible. Veuillez réessayer.' });
   });

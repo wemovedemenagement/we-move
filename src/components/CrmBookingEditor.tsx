@@ -1,3 +1,5 @@
+import CrmVisitPhotos from './CrmVisitPhotos';
+import CrmVisitReport from './CrmVisitReport';
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   X,
@@ -281,6 +283,8 @@ export default function CrmBookingEditor({
           </ul>
         </details>
       )}
+      <CrmVisitReport lead={lead}/>
+      <details className="technical-visit-access"><summary>Photos de la visite</summary><CrmVisitPhotos leadId={lead.id} readOnly/></details>
       <section className="mission-addresses" aria-label="Adresses et accès">
         {(["departure", "arrival"] as const).map((prefix) => {
           const address =

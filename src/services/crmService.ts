@@ -120,3 +120,10 @@ export interface PricingEstimate {revision:number;items:{description:string;quan
 export async function getPricing(){return (await request<{settings:PricingSettings}>('/api/crm/pricing')).settings;}
 export async function savePricing(settings:PricingSettings){return (await request<{settings:PricingSettings}>('/api/crm/pricing',{method:'PUT',body:JSON.stringify(settings)})).settings;}
 export async function proposePricing(payload:unknown){return (await request<{estimate:PricingEstimate}>('/api/crm/pricing/estimate',{method:'POST',body:JSON.stringify(payload)})).estimate;}
+
+export async function fetchCrmPhoto(id:string,slot:number):Promise<Blob>{
+ const token=tokenProvider?await tokenProvider():null;
+ const response=await fetch('/api/crm/dossiers/'+encodeURIComponent(id)+'/photos/'+slot,{cache:'no-store',headers:token?{Authorization:'Bearer '+token}:{},signal:AbortSignal.timeout(30000)});
+ if(!response.ok)throw new Error('Photo indisponible. Actualisez la galerie.');
+ return response.blob();
+}
