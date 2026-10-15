@@ -31,6 +31,7 @@ export interface TechnicalVisit {
 }
 
 export interface QuoteLead {
+  moveFollowUp?: {note:string;owner:string;due:string}|null;
   technicalVisit?: TechnicalVisit;
   expectedUpdatedAt?:string;
   id: string; // e.g. WM-2026-4892

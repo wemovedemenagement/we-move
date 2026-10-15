@@ -1,9 +1,12 @@
 import {parisToday} from './followUp.mjs';
 import {nextStep} from './crmWorkflow.mjs';
+import {moveFollowUpStep} from './moveFollowUp.mjs';
 export function dossierAction(data,canInvoice=true,today=parisToday()){
  const lead=data.lead,quote=data.quote,billing=data.billing||[];
  if(lead.status==='refuse')return {target:'followup',label:'Consulter le suivi',reason:'Projet non retenu. Le dossier reste consultable.',tone:'closed'};
  if(canInvoice&&billing.some(d=>d.refundDueCents>0))return {target:'invoice',label:'Vérifier le remboursement',reason:'Un solde à rembourser figure dans les règlements.',tone:'attention'};
+ const aftercare=moveFollowUpStep(lead,today);
+ if(aftercare)return {...aftercare,tone:aftercare.priority<=1?'attention':'active',badge:aftercare.priority===0?'En retard':aftercare.priority===1?'Aujourd’hui':'À venir'};
  if(lead.status==='termine'){
   if(!canInvoice)return {target:'followup',label:'Consulter le suivi',reason:'Déménagement effectué. La facturation est suivie par le gérant ou le secrétariat.',tone:'done'};
   return billing.some(d=>d.dueCents>0)?{target:'invoice',label:'Suivre le règlement',reason:'Des factures restent à régler selon les paiements enregistrés.',tone:'attention'}:billing.some(d=>d.kind!=='avoir')?{target:'invoice',label:'Consulter les règlements',reason:'Aucun reste à régler sur les factures enregistrées. Vérifiez que toute la prestation est facturée.',tone:'done'}:{target:'invoice',label:'Préparer la facturation',reason:'Déménagement effectué, aucune facture définitive enregistrée.',tone:'attention'};

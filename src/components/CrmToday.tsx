@@ -24,13 +24,14 @@ export default function CrmToday({
     [limit, setLimit] = useState(12),[timing,setTiming]=useState('all'),[owner,setOwner]=useState('all');
   const today = parisToday();
   const work=workQueue(leads,today);
-  const owners=Array.from(new Map(leads.filter(l=>l.assigneeId).map(l=>[l.assigneeId!,l.assigneeName||'Responsable enregistré'])).entries()).sort((a,b)=>a[1].localeCompare(b[1],'fr'));
-  const counts=Object.fromEntries(['urgent','new','visit','planning','followup'].map(key=>[key,work.filter((row:{lead:QuoteLead;step:{key:string};bucket:string})=>matchesWorkFilter(row,key,today)).length]));
+  const responsible=(l:QuoteLead)=>l.moveFollowUp?{id:'mission:'+l.moveFollowUp.owner,name:l.moveFollowUp.owner}:{id:l.assigneeId||'',name:l.assigneeName||'Responsable enregistré'};
+  const owners=Array.from(new Map(leads.map(responsible).filter(r=>r.id).map(r=>[r.id,r.name])).entries()).sort((a,b)=>a[1].localeCompare(b[1],'fr'));
+  const counts=Object.fromEntries(['urgent','new','visit','planning','followup','aftercare'].map(key=>[key,work.filter((row:{lead:QuoteLead;step:{key:string};bucket:string})=>matchesWorkFilter(row,key,today)).length]));
   const queue = (work as {lead:QuoteLead;step:{priority:number;reason:string;label:string;target:string};bucket:string;date:string}[]).filter(
     row => {
       const {lead:l,bucket}=row;
       return (timing==='all'||timing===bucket)&&
-      (owner==='all'||(owner==='unassigned'?!l.assigneeId:l.assigneeId===owner))&&
+      (owner==='all'||(owner==='unassigned'?!responsible(l).id:responsible(l).id===owner))&&
       matchesWorkFilter(row,filter,today)&&
       [
         l.fullName,
@@ -79,6 +80,7 @@ export default function CrmToday({
             ['visit', 'Visites aujourd’hui'],
             ['planning', 'À planifier'],
             ['followup', 'Relances à organiser'],
+            ['aftercare', 'Après déménagement'],
           ] as const
         ).map(([id, label]) => (
           <button
@@ -156,7 +158,7 @@ export default function CrmToday({
                   <Clock3 size={13} />
                   {step.reason}
                 </small>
-                <span>{lead.assigneeName || 'Responsable à définir'}</span>
+                <span>{responsible(lead).id?responsible(lead).name:'Responsable à définir'}</span>
               </div>
               <button
                 className="crm-quiet-action"

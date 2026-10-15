@@ -13,6 +13,7 @@ import {billingSearch} from './crmBillingSearch.mjs';
 import {publicTestDocument} from './crmTestBillingModel.mjs';
 import {generateTestBillingPdf} from './crmTestBillingPdf.mjs';
 import {getPlanning,saveResource,saveBooking} from './crmStore.mjs';
+import {withMoveFollowUps} from '../shared/moveFollowUp.mjs';
 import {getDossierRecords} from './crmStore.mjs';
 import {generateCrmPdf,documentTypes} from './crmPdf.mjs';
 import {prepareQuoteMail,sendQuoteMail} from './crmMail.mjs';
@@ -42,6 +43,7 @@ export function crmRouter() {
   router.get('/api/crm/dossiers/:id',route(async(req,res)=>{
     const dossier=await getDossierRecords(req.params.id);
     if(!dossier.lead)return res.status(404).json({success:false,error:'Dossier introuvable.'});
+    dossier.lead=withMoveFollowUps([dossier.lead],(await getPlanning()).bookings)[0];
     if(req.crmIdentity.role==='commercial')dossier.invoice=null;
     dossier.billing=req.crmIdentity.role==='commercial'?[]:(await getBillingOverviewRecords(req.params.id)).filter(d=>d.mode==='live').map(d=>billingRow(d)).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
     res.json({success:true,dossier});
@@ -97,7 +99,8 @@ export function crmRouter() {
   router.get('/api/quotes', route(async (req, res) => {
     const search = String(req.query.search || '').trim().toLocaleLowerCase('fr');
     const status = req.query.status;
-    const quotes = (await getAllQuotes()).filter(quote => (!status || status === 'all' || quote.status === status) && (!search || [quote.fullName, quote.email, quote.phone, quote.id, quote.departureAddress, quote.arrivalAddress].some(value => String(value || '').toLocaleLowerCase('fr').includes(search))));
+    const [leads,planning]=await Promise.all([getAllQuotes(),getPlanning()]);
+    const quotes = withMoveFollowUps(leads,planning.bookings).filter(quote => (!status || status === 'all' || quote.status === status) && (!search || [quote.fullName, quote.email, quote.phone, quote.id, quote.departureAddress, quote.arrivalAddress].some(value => String(value || '').toLocaleLowerCase('fr').includes(search))));
     res.json({ success: true, count: quotes.length, quotes });
   }));
   router.post('/api/quotes', route(async (req, res) => {

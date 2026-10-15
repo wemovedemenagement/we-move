@@ -1,5 +1,8 @@
 import { parisToday, actionLabels } from './followUp.mjs';
+import {moveFollowUpStep} from './moveFollowUp.mjs';
 export function nextStep(lead, today = parisToday()) {
+  const aftercare=moveFollowUpStep(lead,today);
+  if(aftercare)return aftercare;
   if (lead.status === 'refuse')
     return {
       key: 'archive',
@@ -98,13 +101,14 @@ export function nextStep(lead, today = parisToday()) {
 export function workQueue(leads, today = parisToday()) {
   return leads.filter(l=>l.status!=='refuse').map(lead=>{
     const step=nextStep(lead,today);
-    const date=lead.status==='termine'?'':step.key==='visit'?lead.visitDate?.slice(0,10):step.key==='mission'?lead.scheduledTime?.slice(0,10):step.key==='stale'||step.key==='planning'?'':lead.nextAction?.dueDate||'';
+    const date=step.key==='aftercare'?lead.moveFollowUp.due.slice(0,10):lead.status==='termine'?'':step.key==='visit'?lead.visitDate?.slice(0,10):step.key==='mission'?lead.scheduledTime?.slice(0,10):step.key==='stale'||step.key==='planning'?'':lead.nextAction?.dueDate||'';
     const bucket=date?(date<today?'overdue':date===today?'today':'upcoming'):'undated';
     return {lead,step,bucket,date};
   }).sort((a,b)=>a.step.priority-b.step.priority||(a.date||a.lead.createdAt||'').localeCompare(b.date||b.lead.createdAt||'')||String(a.lead.id).localeCompare(String(b.lead.id)));
 }
 
 export function matchesWorkFilter({lead,step,bucket}, filter, today=parisToday()) {
+  if(filter==='aftercare')return step.key==='aftercare';
   if(filter==='urgent')return ['today','overdue'].includes(bucket);
   if(filter==='new')return lead.status==='nouveau';
   if(filter==='visit')return lead.visitDate?.slice(0,10)===today&&lead.visitStatus!=='effectuee'&&!['refuse','termine'].includes(lead.status);
