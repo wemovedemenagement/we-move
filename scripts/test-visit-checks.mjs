@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {visitChecks} from '../shared/visitChecks.mjs';
+const access={floor:'0',elevator:'Non',carry:'0',notes:''};
+const visit={items:[{room:'Séjour',label:'Canapé',quantity:1,unitVolume:2}],departure:{...access},arrival:{...access}};
+assert.deepEqual(visitChecks({},visit),[],'Ground floor, no lift and zero carry are explicit recorded values');
+assert.equal(visitChecks({},{...visit,items:[]})[0].fieldId,'visit-add-item');
+for(const [patch,field] of [[{label:' '},'label'],[{quantity:0},'quantity'],[{quantity:1.5},'quantity'],[{quantity:501},'quantity'],[{unitVolume:0},'volume'],[{unitVolume:NaN},'volume'],[{unitVolume:101},'volume']])assert.equal(visitChecks({},{...visit,items:[{...visit.items[0],...patch}]})[0].fieldId,'visit-item-0-'+field);
+for(const side of ['departure','arrival'])for(const key of ['floor','elevator','carry'])assert.equal(visitChecks({},{...visit,[side]:{...access,[key]:''}})[0].fieldId,`visit-${side}-${key}`);
+assert.equal(visit.items[0].quantity,1);
+console.log('Repères visite : inventaire vide, quantités, volumes, ciblage des champs et accès explicitement renseignés vérifiés.');
