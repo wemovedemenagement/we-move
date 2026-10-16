@@ -24,6 +24,6 @@ export function recordClientAgreement(lead,quote,payload,actor) {
   const at=new Date().toISOString(),actorName=actor.email||actor.name;
   const summary={quoteRevision:quote.revision,agreementDate:date,note:payload.note.trim(),at,actor:actorName,previousRevision:quote.clientAcceptance?.quoteRevision||null};
   const {clientAcceptance,emailDelivery,...quoteSnapshot}=quote;
-  const updatedLead={...lead,updatedAt:at,internalNotes:[...(lead.internalNotes||[]),{id:'agreement-'+quote.revision,content:`Accord client enregistré : ${quote.reference}, version ${quote.revision}. ${summary.note}`,author:actorName,createdAt:at}]};
+  const updatedLead={...lead,acceptedQuoteRevision:quote.revision,updatedAt:at,internalNotes:[...(lead.internalNotes||[]),{id:'agreement-'+quote.revision,content:`Accord client enregistré : ${quote.reference}, version ${quote.revision}. ${summary.note}`,author:actorName,createdAt:at}]};
   return {acceptance:{...summary,quote:quoteSnapshot},quote:{...quote,clientAcceptance:summary},lead:updatedLead};
 }

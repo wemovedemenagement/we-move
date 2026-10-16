@@ -43,7 +43,7 @@ export function makeQuote(payload) {
 }
 export function mergeQuote(current, updates) {
   if (!updates || typeof updates !== "object" || Array.isArray(updates)) invalid("Modification invalide.");
-    if (['assigneeId','assigneeName','nextAction','followUpRevision','assignedAgent','lastCommercialContact','storageRevision'].some(key=>Object.hasOwn(updates,key))) invalid('Utilisez le suivi dédié pour modifier le responsable ou la relance.');
+    if (['assigneeId','assigneeName','nextAction','followUpRevision','assignedAgent','lastCommercialContact','storageRevision','documentChecklist','acceptedQuoteRevision'].some(key=>Object.hasOwn(updates,key))) invalid('Utilisez le suivi dédié pour modifier le responsable ou la relance.');
     if (Object.hasOwn(updates, 'status') && !statuses.includes(updates.status)) invalid('Statut invalide.');
     const allowed = ['status','visitDate','visitType','visitStatus','visitNotes','devisStatus','devisNumber','assignedTruckId','assignedTruckName','assignedDriver','scheduledTime','assignedEquipment','teamMembers','refusalReason'];
     for (const key of allowed.filter(key => Object.hasOwn(updates, key))) {

@@ -4,7 +4,7 @@ const registry={resources:[{id:'v',kind:'vehicle',active:true},{id:'p',kind:'per
 const lead={id:'a',status:'confirme',departureAddress:'Paris',arrivalAddress:'Lyon',volume:20,phone:'0100000000'};
 const base={leadId:'a',start:'2026-10-15T08:00',end:'2026-10-15T18:00',resourceIds:['v','p']};
 const row=(b=base,l=lead,r=registry,days=7)=>departureReadiness([l],[b],r,'2026-10-15',days);
-assert.equal(row()[0].issues.length,4,'Old missions require preparation checks');
+assert.equal(row()[0].issues.length,6,'Old missions require preparation checks');
 assert.equal(row({...base,start:'2026-10-14T08:00',end:'2026-10-15T09:00'}).length,1,'Include ongoing multiday missions');
 assert.equal(row({...base,end:'2026-10-15T00:00'}).length,0);
 assert.equal(row({...base,start:'2026-10-22T00:00',end:'2026-10-22T18:00'}).length,0);

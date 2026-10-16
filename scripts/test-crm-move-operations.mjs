@@ -73,7 +73,7 @@ for (const invalid of [
   );
 let result = await store.saveBooking(lead.id, { ...base, operations }, actor);
 assert.equal(result.booking.operations.equipmentNotes, "Deux chariots");
-assert.deepEqual(movePreparation(result.lead, result.booking, registry), []);
+assert.deepEqual(movePreparation(result.lead, result.booking, registry), ['Devis signé à réunir','Déclaration de valeur remplie à réunir']);
 assert.equal(
   (await store.getPlanning()).bookings[0].operations.instructions,
   operations.instructions,
@@ -109,7 +109,7 @@ result = await store.saveBooking(
   { ...base, revision: 3, operations: emptyMoveOperations() },
   actor,
 );
-assert.equal(movePreparation(result.lead, result.booking, registry).length, 4);
+assert.equal(movePreparation(result.lead, result.booking, registry).length, 6);
 assert.equal(result.booking.operations.instructions, "");
 assert.equal(result.lead.status, "confirme");
 console.log(

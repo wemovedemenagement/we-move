@@ -1,4 +1,5 @@
 import {newInvoicePreparation,reviseInvoicePreparation} from './crmInvoiceModel.mjs';
+import {reviseDocumentChecklist} from './crmDocumentChecklist.mjs';
 import {recordClientAgreement,acceptanceRevision} from './crmQuoteAcceptance.mjs';
 import {reviseStorageStay,historyBefore} from './crmStorageStay.mjs';
 import {updateFollowUp} from './crmFollowUp.mjs';
@@ -103,10 +104,24 @@ export async function updateQuoteLead(id, updates) {
     return quote;
   });
 }
+export async function saveDocumentChecklist(id,payload,actor){
+ draftId(id);return firestore().runTransaction(async tx=>{
+   const ref=requests().doc(id),[lead,quote]=await Promise.all([tx.get(ref),tx.get(drafts().doc(id))]);
+   const result=reviseDocumentChecklist(lead.data(),quote.data(),payload,actor);
+   tx.set(ref,result.lead);tx.create(ref.collection('document_checks').doc(String(result.event.revision)),result.event);return result;
+ });
+}
+export async function getDocumentCheckHistory(id,before){
+ const ref=requests().doc(draftId(id));if(!(await ref.get()).exists)draftError(404,'Dossier introuvable.');
+ const rows=(await ref.collection('document_checks').where('revision','<',historyBefore(before)).orderBy('revision','desc').limit(21).get()).docs.map(d=>d.data());
+ return {events:rows.slice(0,20),next:rows.length>20?rows[19].revision:null};
+}
 export async function deleteQuoteLead(id) {
   const ref = requests().doc(id);
   return firestore().runTransaction(async transaction => {
-    if (!(await transaction.get(ref)).exists) return false;
+    const record=await transaction.get(ref);
+    if (!record.exists) return false;
+    if(record.data().documentChecklist?.revision)draftError(409,'Ce dossier possède un historique documentaire et doit être conservé.');
     if ((await transaction.get(firestore().collection(collectionName('crm_quote_drafts')).doc(id))).exists) draftError(409, 'Cette demande possède un brouillon de devis et doit être conservée.');
     if((await transaction.get(bookingsRef().doc(id))).exists)draftError(409,'Ce dossier possède un historique de réservation et doit être conservé.');
     if(!(await transaction.get(storageStays().where('leadId','==',id).limit(1))).empty)draftError(409,'Ce dossier possède un historique de stockage et doit être conservé.');

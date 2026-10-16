@@ -16,6 +16,7 @@ import {getPlanning,saveResource,saveBooking} from './crmStore.mjs';
 import {getStorageStays,saveStorageStay,getStorageHistory} from './crmStore.mjs';
 import {withMoveFollowUps} from '../shared/moveFollowUp.mjs';
 import {getDossierRecords} from './crmStore.mjs';
+import {saveDocumentChecklist,getDocumentCheckHistory} from './crmStore.mjs';
 import {recordQuoteAcceptance,getQuoteAcceptance,getQuoteAcceptanceHistory} from './crmStore.mjs';
 import {generateCrmPdf,documentTypes} from './crmPdf.mjs';
 import {prepareQuoteMail,sendQuoteMail} from './crmMail.mjs';
@@ -53,6 +54,8 @@ export function crmRouter() {
     res.json({success:true,dossier});
   }));
   router.get('/api/crm/planning',route(async(req,res)=>res.json({success:true,planning:await getPlanning()})));
+  router.put('/api/crm/dossiers/:id/document-checks',route(async(req,res)=>res.json({success:true,...await saveDocumentChecklist(req.params.id,req.body,req.crmIdentity)})));
+  router.get('/api/crm/dossiers/:id/document-checks',route(async(req,res)=>res.json({success:true,...await getDocumentCheckHistory(req.params.id,req.query.before)})));
   router.get('/api/crm/storage',route(async(_req,res)=>res.json({success:true,stays:await getStorageStays()})));
   router.post('/api/crm/storage',route(async(req,res)=>res.json({success:true,...await saveStorageStay(req.body,req.crmIdentity)})));
   router.get('/api/crm/storage/:id/history',route(async(req,res)=>res.json({success:true,...await getStorageHistory(req.params.id,req.query.before)})));

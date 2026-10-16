@@ -31,6 +31,8 @@ export interface TechnicalVisit {
 }
 
 export interface QuoteLead {
+  acceptedQuoteRevision?:number|null;
+  documentChecklist?:DocumentChecklist;
   lastCommercialContact?: {channel:'phone'|'email'|'other';outcome:'no_answer'|'exchanged'|'changes'|'callback';note:string;createdAt:string;author:string};
   moveFollowUp?: {note:string;owner:string;due:string}|null;
   technicalVisit?: TechnicalVisit;
@@ -96,6 +98,8 @@ export interface QuoteLead {
   sourceDetail?: string;
   source: string; // e.g., 'page_devis', 'modal_devis', 'estimation_volume', 'telephone', 'recommandation', 'ads', 'partenaire', 'crm_creation_manuelle'
 }
+export interface DocumentReceipt {received:boolean;receivedOn:string;reference:string;quoteRevision:number|null;verifiedAt:string|null;verifiedBy:string|null;}
+export interface DocumentChecklist {revision:number;signedQuote:DocumentReceipt;valueDeclaration:DocumentReceipt;updatedAt:string;updatedBy:string;}
 
 export interface CrmStats {
   totalLeads: number;

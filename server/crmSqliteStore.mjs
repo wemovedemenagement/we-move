@@ -1,4 +1,5 @@
 import {newInvoicePreparation,reviseInvoicePreparation} from './crmInvoiceModel.mjs';
+import {reviseDocumentChecklist} from './crmDocumentChecklist.mjs';
 import {recordClientAgreement,acceptanceRevision} from './crmQuoteAcceptance.mjs';
 import {reviseStorageStay,historyBefore} from './crmStorageStay.mjs';
 import {updateFollowUp} from './crmFollowUp.mjs';
@@ -91,11 +92,25 @@ export function updateQuoteLead(id, updates) {
 }
 export function deleteQuoteLead(id) {
   return draftTransaction(()=>{
+  const record=db().prepare('SELECT data FROM requests WHERE id=?').get(id);if(record&&JSON.parse(record.data).documentChecklist?.revision)draftError(409,'Ce dossier possède un historique documentaire et doit être conservé.');
   if(getStorageStays().some(s=>s.leadId===id))draftError(409,'Ce dossier possède un historique de stockage et doit être conservé.');
   if(getPlanning().bookings.some(b=>b.leadId===id))draftError(409,'Ce dossier possède un historique de réservation et doit être conservé.');
   if (db().prepare('SELECT id FROM quote_drafts WHERE id = ?').get(id)) draftError(409, 'Cette demande possède un brouillon de devis et doit être conservée.');
   return db().prepare('DELETE FROM requests WHERE id = ?').run(id).changes > 0;
   });
+}
+function documentCheckTable(){db().exec('CREATE TABLE IF NOT EXISTS document_checks(id TEXT NOT NULL,revision INTEGER NOT NULL,data TEXT NOT NULL,PRIMARY KEY(id,revision))');}
+export function saveDocumentChecklist(id,payload,actor){
+ documentCheckTable();draftId(id);return draftTransaction(c=>{
+  const read=table=>{const row=c.prepare(`SELECT data FROM ${table} WHERE id=?`).get(id);return row?JSON.parse(row.data):null;};
+  const result=reviseDocumentChecklist(read('requests'),read('quote_drafts'),payload,actor);
+  c.prepare('UPDATE requests SET data=? WHERE id=?').run(JSON.stringify(result.lead),id);
+  c.prepare('INSERT INTO document_checks(id,revision,data) VALUES(?,?,?)').run(id,result.event.revision,JSON.stringify(result.event));return result;
+ });
+}
+export function getDocumentCheckHistory(id,before){
+ documentCheckTable();draftId(id);if(!db().prepare('SELECT id FROM requests WHERE id=?').get(id))draftError(404,'Dossier introuvable.');
+ const rows=db().prepare('SELECT data FROM document_checks WHERE id=? AND revision<? ORDER BY revision DESC LIMIT 21').all(id,historyBefore(before)).map(r=>JSON.parse(r.data));return {events:rows.slice(0,20),next:rows.length>20?rows[19].revision:null};
 }
 
 

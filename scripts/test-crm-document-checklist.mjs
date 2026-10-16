@@ -1,0 +1,52 @@
+import assert from 'node:assert/strict';
+import {mkdtempSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import path from 'node:path';
+import {parisToday,followUpDateIn} from '../shared/followUp.mjs';
+import {missionAgreementChanges} from '../shared/missionHandover.mjs';
+process.env.NODE_ENV='test';process.env.CRM_STORAGE='sqlite';process.env.CRM_LOCAL_ACCESS='true';process.env.CRM_DATA_DIR=mkdtempSync(path.join(tmpdir(),'wemove-agreement-'));process.env.CRM_LEAD_NOTIFICATIONS='false';process.env.CRM_CUSTOMER_RECEIPTS='false';process.env.CRM_BILLING_LIVE_ENABLED='false';
+const store=await import('../server/crmStore.mjs');const {createApp}=await import('../server.mjs');
+const actor={role:'gerant',email:'test@example.invalid',name:'Contrôle isolé'},today=parisToday();
+let lead=await store.createQuoteLead({fullName:'Accord de contrôle',email:'test@example.invalid',phone:'0100000000',departureAddress:'Paris',arrivalAddress:'Versailles',volume:18});
+lead=await store.updateQuoteLead(lead.id,{status:'confirme'});
+let quote=await store.createQuoteDraft(lead.id);
+const document=structuredClone(quote.document);Object.assign(document.fields,{clientAddress:'Paris',formula:'MOVE Confort',issueDate:today,departureStart:today,arrivalStart:today,guarantee:'Responsabilité contractuelle',coveredValue:'10000',itemLimit:'1500',paymentKind:'Arrhes',balanceWhen:'À la livraison'});
+const edit=q=>({revision:q.revision,items:[{description:'Déménagement',quantity:1,unitPriceHT:100}],taxRate:20,depositRate:30,validUntil:followUpDateIn(30),notes:'',document});
+quote=await store.saveQuoteDraft(lead.id,edit(quote));
+const payload=()=>({quoteRevision:quote.revision,previousRevision:quote.clientAcceptance?.quoteRevision||0,expectedUpdatedAt:lead.updatedAt,agreementDate:today,note:'Devis signé reçu, contrôle isolé.',confirmed:true});
+
+const {documentChecklistIssues}=await import('../shared/documentChecklist.mjs');
+const route='/api/crm/dossiers/'+lead.id+'/document-checks';
+const empty={received:false,receivedOn:'',reference:''},received={received:true,receivedOn:today,reference:'E-mail reçu, contrôle isolé.'};
+const noAgreement={revision:0,acceptedQuoteRevision:0,signedQuote:received,valueDeclaration:empty,reason:''};
+await assert.rejects(()=>store.saveDocumentChecklist(lead.id,noAgreement,actor),e=>e.status===409);
+const agreement=await store.recordQuoteAcceptance(lead.id,payload(),actor);lead=agreement.lead;quote=agreement.quote;
+let data={revision:0,acceptedQuoteRevision:quote.revision,signedQuote:received,valueDeclaration:received,reason:''};
+const server=createApp().listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));const base='http://127.0.0.1:'+server.address().port;
+const api=async(method='GET',body,url=route)=>{const r=await fetch(base+url,{method,headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});return {status:r.status,data:await r.json()};};
+try {
+ process.env.CRM_LOCAL_ACCESS='false';assert.equal((await api()).status,401);assert.equal((await api('PUT',data)).status,401);process.env.CRM_LOCAL_ACCESS='true';
+ await assert.rejects(()=>store.saveDocumentChecklist(lead.id,data,{...actor,role:'commercial'}),e=>e.status===403);
+ for(const patch of [{extra:true},{signedQuote:{...received,verifiedBy:'forgé'}},{signedQuote:{...received,received:'true'}},{signedQuote:{...received,receivedOn:'2026-02-30'}},{signedQuote:{...received,receivedOn:followUpDateIn(1)}},{signedQuote:{...received,reference:'court'}},{signedQuote:{...received,reference:'a'.repeat(501)}},{reason:'a'.repeat(1001)},{valueDeclaration:null}])assert.equal((await api('PUT',{...data,...patch})).status,400);
+ for(const patch of [{revision:9},{acceptedQuoteRevision:999}])assert.equal((await api('PUT',{...data,...patch})).status,409);
+ const concurrent=await Promise.all([api('PUT',data),api('PUT',data)]);assert.deepEqual(concurrent.map(r=>r.status).sort(),[200,409]);lead=concurrent.find(r=>r.status===200).data.lead;
+ assert.equal(lead.documentChecklist.revision,1);assert.deepEqual(documentChecklistIssues(lead),[]);assert.ok(lead.documentChecklist.signedQuote.verifiedAt);assert.equal(lead.documentChecklist.signedQuote.quoteRevision,2);
+ assert.equal((await api('PATCH',{documentChecklist:{}},'/api/quotes/'+lead.id)).status,400);assert.equal((await api('PATCH',{acceptedQuoteRevision:999},'/api/quotes/'+lead.id)).status,400);
+ assert.equal((await api('PUT',{...data,revision:1,signedQuote:empty})).status,400);
+ let result=await store.saveDocumentChecklist(lead.id,{...data,revision:1,signedQuote:empty,reason:'Mauvaise pièce classée, correction vérifiée.'},actor);lead=result.lead;
+ assert.equal(lead.documentChecklist.signedQuote.received,false);assert.deepEqual(documentChecklistIssues(lead),['Devis signé à réunir']);assert.equal(result.event.changes[0].before.received,true);
+ result=await store.saveDocumentChecklist(lead.id,{...data,revision:2},actor);lead=result.lead;
+ const oldChecklist=structuredClone(lead.documentChecklist);
+ quote=await store.saveQuoteDraft(lead.id,{...edit(quote),acceptedQuoteRevision:2});const changed=await store.recordQuoteAcceptance(lead.id,{...payload(),note:'Nouvelle version acceptée, contrôle isolé.'},actor);lead=changed.lead;quote=changed.quote;
+ assert.deepEqual(lead.documentChecklist,oldChecklist);assert.equal(documentChecklistIssues(lead).length,2);assert.ok(documentChecklistIssues(lead).every(s=>s.includes('à revérifier')));
+ assert.equal((await api('PUT',{...data,revision:3})).status,409);
+ data={...data,revision:3,acceptedQuoteRevision:quote.revision,reason:'Les deux nouvelles pièces ont été revérifiées.'};result=await store.saveDocumentChecklist(lead.id,data,actor);lead=result.lead;assert.deepEqual(documentChecklistIssues(lead),[]);
+ for(let index=0;index<19;index++){data={...data,revision:lead.documentChecklist.revision,valueDeclaration:{...received,reference:'Référence de contrôle isolé '+index},reason:'Classement précisé après vérification réelle.'};lead=(await store.saveDocumentChecklist(lead.id,data,actor)).lead;}
+ const history=await store.getDocumentCheckHistory(lead.id);assert.equal(history.events.length,20);assert.ok(history.next);const older=await store.getDocumentCheckHistory(lead.id,history.next);assert.equal(older.events.length,3);assert.equal(older.next,null);assert.equal(new Set([...history.events,...older.events].map(e=>e.revision)).size,23);assert.equal(older.events.at(-1).changes[0].after.quoteRevision,2);
+ assert.equal((await api('GET',undefined,route+'?before=no')).status,400);
+ await assert.rejects(()=>store.deleteQuoteLead(lead.id),e=>e.status===409);
+ assert.equal((await store.getQuoteMails(lead.id)).length,0);assert.equal((await store.getPlanning()).bookings.length,0);assert.equal((await store.getBillingRelated(lead.id)).length,0);
+ lead=await store.updateQuoteLead(lead.id,{status:'termine'});data={...data,revision:lead.documentChecklist.revision,valueDeclaration:{...received,reference:'Classement après déménagement, contrôle isolé.'}};lead=(await store.saveDocumentChecklist(lead.id,data,{...actor,role:'secretaire'})).lead;assert.equal(lead.status,'termine');
+ await store.updateQuoteLead(lead.id,{status:'refuse'});assert.equal((await api('PUT',{...data,revision:lead.documentChecklist.revision})).status,409);
+ console.log('Pièces client : droits, données protégées, dates, références, concurrence, corrections motivées, nouvelle version, historique paginé et absence d’envoi/facture vérifiés.');
+}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}

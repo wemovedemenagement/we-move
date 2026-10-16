@@ -1,5 +1,6 @@
 import {moveOperationIssues} from './moveOperations.mjs';
 import {resourceAbsence} from './resourceAvailability.mjs';
+import {documentChecklistIssues} from './documentChecklist.mjs';
 // Recorded information only: this is not a certification that a move is ready.
 export function movePreparationDetails(lead, booking, registry) {
   if(booking.cancelled || booking.closure || ['termine','refuse'].includes(lead?.status))return [];
@@ -17,6 +18,7 @@ export function movePreparationDetails(lead, booking, registry) {
   if(booking.resourceIds.some(id=>!registry.resources.some(r=>r.id===id&&r.active)))add('Ressource supprimée ou désactivée');
   if(resources.some(r=>resourceAbsence(r,booking.start,booking.end)))add('Indisponibilité sur le créneau réservé');
   for(const label of moveOperationIssues(booking.operations))add(label);
+  for(const label of documentChecklistIssues(lead))add(label);
   return issues;
 }
 export function movePreparation(lead,booking,registry) {
