@@ -4,6 +4,7 @@ import { workQueue, matchesWorkFilter } from '../../shared/crmWorkflow.mjs';
 import { parisToday } from '../../shared/followUp.mjs';
 import { requestCity } from '../../shared/requestCity.mjs';
 import type { QuoteLead } from '../types/crm';
+import CrmTodayDepartures from './CrmTodayDepartures';
 export default function CrmToday({
   leads,
   loaded,
@@ -11,6 +12,9 @@ export default function CrmToday({
   onAction,
   onCreate,
   finance,
+  error='',
+  onPrepare,
+  onPlanning,
 }: {
   leads: QuoteLead[];
   loaded: boolean;
@@ -18,11 +22,15 @@ export default function CrmToday({
   onAction: (l: QuoteLead, target: string) => void;
   onCreate: () => void;
   finance?: ReactNode;
+  error?: string;
+  onPrepare: (lead:QuoteLead,target:'summary'|'details'|'move')=>void;
+  onPlanning: ()=>void;
 }) {
   const [filter, setFilter] = useState('all'),
     [query, setQuery] = useState(''),
     [limit, setLimit] = useState(12),[timing,setTiming]=useState('all'),[owner,setOwner]=useState('all');
   const today = parisToday();
+  const available=loaded&&!error;
   const work=workQueue(leads,today);
   const responsible=(l:QuoteLead)=>l.moveFollowUp?{id:'mission:'+l.moveFollowUp.owner,name:l.moveFollowUp.owner}:{id:l.assigneeId||'',name:l.assigneeName||'Responsable enregistré'};
   const owners=Array.from(new Map(leads.map(responsible).filter(r=>r.id).map(r=>[r.id,r.name])).entries()).sort((a,b)=>a[1].localeCompare(b[1],'fr'));
@@ -96,11 +104,12 @@ export default function CrmToday({
               {label}
               <ArrowUpRight size={17} />
             </span>
-            <strong>{loaded ? counts[id] : '—'}</strong>
+            <strong>{available ? counts[id] : '—'}</strong>
             <small>Voir les dossiers</small>
           </button>
         ))}
       </div>
+      <CrmTodayDepartures leads={leads} available={available} today={today} onOpen={onPrepare} onPlanning={onPlanning}/>
       <div className="crm-worklist">
         <div className="crm-worklist-head">
           <div>
@@ -130,8 +139,8 @@ export default function CrmToday({
             }}
           />
         </label>
-        <div className="crm-work-timing"><label>Échéances<select aria-label="Filtrer les échéances" value={timing} onChange={e=>{setTiming(e.target.value);setLimit(12);}}><option value="all">Toutes les échéances</option><option value="overdue">En retard</option><option value="today">Aujourd’hui</option><option value="upcoming">À venir</option><option value="undated">Sans échéance</option></select></label><label>Responsable<select aria-label="Filtrer par responsable" value={owner} onChange={e=>{setOwner(e.target.value);setLimit(12);}}><option value="all">Tous les responsables</option><option value="unassigned">Non attribués</option>{owners.map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label><span aria-live="polite">{loaded?`${queue.length} dossier${queue.length>1?'s':''}`:'Chargement…'}</span></div>
-        {!loaded ? (
+        <div className="crm-work-timing"><label>Échéances<select aria-label="Filtrer les échéances" value={timing} onChange={e=>{setTiming(e.target.value);setLimit(12);}}><option value="all">Toutes les échéances</option><option value="overdue">En retard</option><option value="today">Aujourd’hui</option><option value="upcoming">À venir</option><option value="undated">Sans échéance</option></select></label><label>Responsable<select aria-label="Filtrer par responsable" value={owner} onChange={e=>{setOwner(e.target.value);setLimit(12);}}><option value="all">Tous les responsables</option><option value="unassigned">Non attribués</option>{owners.map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label><span aria-live="polite">{available?`${queue.length} dossier${queue.length>1?'s':''}`:error?'Dossiers non vérifiés':'Chargement…'}</span></div>
+        {error ? <p className="p-6" role="status">La liste de travail n’est pas vérifiée. Utilisez l’actualisation en haut de page pour réessayer.</p> : !loaded ? (
           <p className="p-6" role="status">
             Chargement des dossiers…
           </p>
@@ -170,7 +179,7 @@ export default function CrmToday({
             </article>
           ))
         )}
-        {queue.length > limit && (
+        {available && queue.length > limit && (
           <button
             className="crm-quiet-action m-5"
             onClick={() => setLimit(limit + 12)}

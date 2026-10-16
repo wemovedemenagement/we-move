@@ -7,12 +7,12 @@ import './crmDepartureReadiness.css';
 type Target='summary'|'details'|'move';
 type Row={booking:MoveBooking;lead?:QuoteLead;issues:{label:string;target:Target}[]};
 const dateTime=(value:string)=>`${value.slice(8,10)}/${value.slice(5,7)} à ${value.slice(11)}`;
-export default function CrmDepartureReadiness({data,loading,error,leads,today,onOpen}:{data:PlanningData|null;loading:boolean;error:string;leads:QuoteLead[];today:string;onOpen:(lead:QuoteLead,target:Target)=>void}) {
+export default function CrmDepartureReadiness({data,loading,error,leads,today,onOpen,initiallyOpen=false}:{data:PlanningData|null;loading:boolean;error:string;leads:QuoteLead[];today:string;onOpen:(lead:QuoteLead,target:Target)=>void;initiallyOpen?:boolean}) {
   const [days,setDays]=useState(7),[onlyIncomplete,setOnlyIncomplete]=useState(true),[limit,setLimit]=useState(6);
   const ready=data&&!loading&&!error;
   const all=(data?departureReadiness(leads,data.bookings,data.registry,today,days):[]) as Row[];
   const incomplete=all.filter(row=>row.issues.length>0),rows=onlyIncomplete?incomplete:all;
-  return <details className="crm-departure-readiness"><summary><ClipboardCheck size={20}/><span>Avant le départ<small>{ready?`${incomplete.length} mission(s) à compléter sur ${all.length} · ${days===1?'aujourd’hui':days+' prochains jours'}`:'Préparation en cours de vérification'}</small></span></summary>
+  return <details className="crm-departure-readiness" open={initiallyOpen||undefined}><summary><ClipboardCheck size={20}/><span>Avant le départ<small>{ready?`${incomplete.length} mission(s) à compléter sur ${all.length} · ${days===1?'aujourd’hui':days+' prochains jours'}`:'Préparation en cours de vérification'}</small></span></summary>
     <div className="departure-content"><p>Vérifiez les informations et les moyens des missions à venir ou en cours. Ces repères ne remplacent pas la validation terrain.</p>
       {!ready?<p role={error?'alert':'status'}>{error?'Préparation non vérifiée. Utilisez « Actualiser » pour réessayer.':'Chargement des missions…'}</p>:<>
         <div className="departure-filters"><label>Période<select aria-label="Période de préparation" value={days} onChange={e=>{setDays(Number(e.target.value));setLimit(6);}}><option value={1}>Aujourd’hui</option><option value={7}>7 prochains jours</option><option value={30}>30 prochains jours</option></select></label><label><input type="checkbox" checked={onlyIncomplete} onChange={e=>{setOnlyIncomplete(e.target.checked);setLimit(6);}}/>Uniquement les missions à compléter</label></div>
