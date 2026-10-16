@@ -23,7 +23,7 @@ export default function CrmToday({
   onCreate: () => void;
   finance?: ReactNode;
   error?: string;
-  onPrepare: (lead:QuoteLead,target:'summary'|'details'|'move')=>void;
+  onPrepare: (lead:QuoteLead,target:'summary'|'details'|'move'|'documents')=>void;
   onPlanning: ()=>void;
 }) {
   const [filter, setFilter] = useState('all'),

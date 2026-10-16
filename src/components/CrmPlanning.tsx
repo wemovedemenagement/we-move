@@ -1,3 +1,4 @@
+import CrmDocumentQueue from './CrmDocumentQueue';
 import CrmAftercare from './CrmAftercare';
 import CrmDepartureReadiness from './CrmDepartureReadiness';
 import CrmAvailability from './CrmAvailability';
@@ -25,7 +26,7 @@ export default function CrmPlanning({
   leads: QuoteLead[];
   onOpen: (lead: QuoteLead) => void;
   onFollowUp: (lead: QuoteLead) => void;
-  onPrepare: (lead: QuoteLead,target:'summary'|'details'|'move') => void;
+  onPrepare: (lead: QuoteLead,target:'summary'|'details'|'move'|'documents') => void;
 }) {
   const [day, setDay] = useState(parisToday()),
     [resource, setResource] = useState('all'),
@@ -92,6 +93,7 @@ export default function CrmPlanning({
         </button>
       </header>
       <CrmDepartureReadiness data={data} loading={loading} error={error} leads={leads} today={today} onOpen={onPrepare}/>
+      <CrmDocumentQueue data={data} loading={loading} error={error} leads={leads} today={today} onOpen={lead=>onPrepare(lead,'documents')}/>
       <CrmAftercare data={data} loading={loading} error={error} leads={leads} today={today} onOpen={onFollowUp}/>
       <CrmAvailability data={data} loading={loading} error={error} day={selectedDay||day} leads={leads} onOpen={onOpen}/>
       {error && (

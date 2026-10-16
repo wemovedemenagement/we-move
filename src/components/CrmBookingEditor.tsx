@@ -45,7 +45,9 @@ export default function CrmBookingEditor({
   canEdit,
   onQuote,
   onEdit,
+  initialSection,
 }: {
+  initialSection?:'documents';
   canEdit:boolean;
   onQuote:()=>void;
   onEdit:()=>void;
@@ -56,6 +58,7 @@ export default function CrmBookingEditor({
   const dialog = useRef<HTMLDialogElement>(null),
     lock = useRef(false),
     alive = useRef(true);
+  const sectionOpened=useRef(false);
   const [data, setData] = useState<PlanningData | null>(null),
     [dossier, setDossier] = useState<CrmDossier | null>(null);
   const [start, setStart] = useState(lead.scheduledTime || ""),
@@ -131,6 +134,11 @@ export default function CrmBookingEditor({
       alive.current = false;
     };
   }, []);
+  useEffect(()=>{
+    if(initialSection!=='documents'||loading||!dossier||sectionOpened.current)return;
+    const frame=window.requestAnimationFrame(()=>{const section=dialog.current?.querySelector<HTMLElement>('#mission-documents');if(section){section.scrollIntoView({block:'start'});section.focus({preventScroll:true});sectionOpened.current=true;}});
+    return ()=>window.cancelAnimationFrame(frame);
+  },[initialSection,loading,dossier]);
   const overlaps =
     data?.bookings.filter(
       (b) =>
@@ -700,7 +708,7 @@ export default function CrmBookingEditor({
           )}
         </footer>
       </form>
-      {!loading&&dossier&&<div id="mission-documents" tabIndex={-1}><CrmDocumentChecklist key={lead.id+'-'+(dossier.lead.documentChecklist?.revision||0)+'-'+(dossier.acceptance?.quoteRevision||0)} lead={dossier.lead} acceptedRevision={dossier.acceptance?.quoteRevision||0} canEdit={canEdit} disabled={busy||dirty||closureDirty||agreementDirty||agreementBusy} onReload={()=>{if(!documentDirty||window.confirm("Recharger les pièces et abandonner cette saisie ?"))void load();}} onDirty={setDocumentDirty} onBusy={setDocumentBusy} onSaved={updated=>{setDocumentDirty(false);setDossier(current=>current?{...current,lead:updated}:null);onSaved(updated);setSuccess('Réceptions enregistrées. Les pièces restent dans votre messagerie ou votre dossier papier.');}}/></div>}
+      {!loading&&dossier&&<div id="mission-documents" tabIndex={-1}><CrmDocumentChecklist onAgreement={()=>jump("mission-agreement")} key={lead.id+'-'+(dossier.lead.documentChecklist?.revision||0)+'-'+(dossier.acceptance?.quoteRevision||0)} lead={dossier.lead} acceptedRevision={dossier.acceptance?.quoteRevision||0} canEdit={canEdit} disabled={busy||dirty||closureDirty||agreementDirty||agreementBusy} onReload={()=>{if(!documentDirty||window.confirm("Recharger les pièces et abandonner cette saisie ?"))void load();}} onDirty={setDocumentDirty} onBusy={setDocumentBusy} onSaved={updated=>{setDocumentDirty(false);setDossier(current=>current?{...current,lead:updated}:null);onSaved(updated);setSuccess('Réceptions enregistrées. Les pièces restent dans votre messagerie ou votre dossier papier.');}}/></div>}
       {!loading && booking && !booking.cancelled && ['confirme','termine'].includes(lead.status) && <CrmMoveClosure key={booking.leadId} booking={booking} disabled={!canEdit || busy || dirty || agreementDirty || agreementBusy || documentDirty || documentBusy} onBusy={setBusy} onDirty={()=>setClosureDirty(true)} onSaved={(updated,nextLead)=>{setData(current=>current?{...current,bookings:current.bookings.map(b=>b.leadId===updated.leadId?updated:b)}:current);setClosureDirty(false);setDossier(current=>current?{...current,lead:nextLead}:null);onSaved(nextLead);}}/>}
     </dialog>
   );
