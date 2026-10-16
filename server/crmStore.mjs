@@ -19,6 +19,9 @@ export async function getCrmStats() { return quoteStats(await getAllQuotes()); }
 export async function getQuoteDrafts() { return (await store()).getQuoteDrafts(); }
 export async function createQuoteDraft(id) { return (await store()).createQuoteDraft(id); }
 export async function saveQuoteDraft(id,payload) { return (await store()).saveQuoteDraft(id,payload); }
+export async function recordQuoteAcceptance(id,payload,actor){return (await store()).recordQuoteAcceptance(id,payload,actor);}
+export async function getQuoteAcceptance(id,revision){return (await store()).getQuoteAcceptance(id,revision);}
+export async function getQuoteAcceptanceHistory(id){return (await store()).getQuoteAcceptanceHistory(id);}
 
 export async function saveFollowUp(id,payload,actor) { return (await store()).saveFollowUp(id,payload,actor); }
 export async function quoteMailTransaction(id,key,action) {return (await store()).quoteMailTransaction(id,key,action);}

@@ -197,6 +197,7 @@ export interface CustomerProfile {
 
 export interface CrmQuoteDetails { sourcePrefillVersion?: number; fields: Record<string,string>; services: {label:string;responsibility:string}[]; valuables:{label:string;value:string}[]; }
 export interface CrmQuoteDraft {
+  clientAcceptance?:import('../services/crmService').QuoteAcceptanceSummary;
   emailDelivery?: {revision:number;state:'sending'|'accepted'|'failed'|'uncertain';acceptedAt?:string;to?:string;reference?:string};
   document?: CrmQuoteDetails;
   id: string;
@@ -222,7 +223,7 @@ export interface CrmQuoteDraft {
   createdAt: string;
   updatedAt: string;
 }
-export type CrmQuoteDraftUpdate = Pick<CrmQuoteDraft, 'revision' | 'items' | 'taxRate' | 'depositRate' | 'validUntil' | 'notes' | 'document'>;
+export type CrmQuoteDraftUpdate = Pick<CrmQuoteDraft, 'revision' | 'items' | 'taxRate' | 'depositRate' | 'validUntil' | 'notes' | 'document'> & {acceptedQuoteRevision?:number};
 
 export interface CrmMember {id:string;email:string;name:string;role:'gerant'|'commercial'|'secretaire';active:boolean}
 export interface CrmIdentity {mode:'local'|'firebase';id:string|null;email:string|null;name:string;role:CrmMember['role']}

@@ -16,6 +16,7 @@ import {getPlanning,saveResource,saveBooking} from './crmStore.mjs';
 import {getStorageStays,saveStorageStay,getStorageHistory} from './crmStore.mjs';
 import {withMoveFollowUps} from '../shared/moveFollowUp.mjs';
 import {getDossierRecords} from './crmStore.mjs';
+import {recordQuoteAcceptance,getQuoteAcceptance,getQuoteAcceptanceHistory} from './crmStore.mjs';
 import {generateCrmPdf,documentTypes} from './crmPdf.mjs';
 import {prepareQuoteMail,sendQuoteMail} from './crmMail.mjs';
 import {getQuoteMails} from './crmStore.mjs';
@@ -44,6 +45,8 @@ export function crmRouter() {
   router.get('/api/crm/dossiers/:id',route(async(req,res)=>{
     const dossier=await getDossierRecords(req.params.id);
     if(!dossier.lead)return res.status(404).json({success:false,error:'Dossier introuvable.'});
+    dossier.acceptance=dossier.quote?.clientAcceptance?await getQuoteAcceptance(req.params.id,dossier.quote.clientAcceptance.quoteRevision):null;
+    dossier.acceptanceHistory=await getQuoteAcceptanceHistory(req.params.id);
     dossier.lead=withMoveFollowUps([dossier.lead],(await getPlanning()).bookings)[0];
     if(req.crmIdentity.role==='commercial')dossier.invoice=null;
     dossier.billing=req.crmIdentity.role==='commercial'?[]:(await getBillingOverviewRecords(req.params.id)).filter(d=>d.mode==='live').map(d=>billingRow(d)).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
@@ -131,6 +134,15 @@ export function crmRouter() {
   router.get('/api/crm/quote-drafts', route(async (_req, res) => res.json({success:true, drafts:await getQuoteDrafts()})));
   router.post('/api/crm/quote-drafts', route(async (req, res) => res.status(201).json({success:true, draft:await createQuoteDraft(req.body?.leadId)})));
   router.patch('/api/crm/quote-drafts/:id', route(async (req, res) => res.json({success:true, draft:await saveQuoteDraft(req.params.id,req.body)})));
+  router.post('/api/crm/quote-drafts/:id/acceptance',route(async(req,res)=>res.json({success:true,...await recordQuoteAcceptance(req.params.id,req.body,req.crmIdentity)})));
+  router.get('/api/crm/quote-drafts/:id/acceptance/:revision/pdf/:type',route(async(req,res)=>{
+    if(!['devis','mission','lettre-voiture'].includes(req.params.type))return res.status(400).json({success:false,error:'Type de document inconnu.'});
+    const acceptance=await getQuoteAcceptance(req.params.id,req.params.revision);
+    if(!acceptance)return res.status(404).json({success:false,error:'Version acceptée introuvable.'});
+    const {lead}=await getDossierRecords(req.params.id);
+    const bytes=await generateCrmPdf(req.params.type,acceptance.quote,lead||{});
+    res.set({'Content-Type':'application/pdf','Content-Disposition':`attachment; filename="WE-MOVE-${req.params.type}-version-${acceptance.quoteRevision}.pdf"`,'X-Quote-Revision':String(acceptance.quoteRevision),'X-Content-Type-Options':'nosniff','Cache-Control':'private, no-store'}).send(bytes);
+  }));
   router.get('/api/crm/quote-drafts/:id/email',route(async(req,res)=>res.json({success:true,preparation:await prepareQuoteMail(req.params.id)})));
   router.post('/api/crm/quote-drafts/:id/email',route(async(req,res)=>res.json({success:true,delivery:await sendQuoteMail(req.params.id,req.body,req.crmIdentity)})));
   router.get('/api/crm/quote-drafts/:id/email/:key/pdf',route(async(req,res)=>{

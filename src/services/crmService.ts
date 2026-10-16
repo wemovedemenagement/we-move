@@ -85,9 +85,10 @@ export async function downloadQuoteMailPdf(id:string,key:string){
  if(!response.ok)throw new Error('Archive indisponible.');
  const url=URL.createObjectURL(await response.blob()),a=document.createElement('a');a.href=url;a.download='WE-MOVE-devis-archive.pdf';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);
 }
-export async function downloadCrmPdf(id:string,type:CrmPdfType) {
+export async function downloadCrmPdf(id:string,type:CrmPdfType,acceptedRevision?:number) {
  const token=tokenProvider?await tokenProvider():null;
- const response=await fetch(`/api/crm/quote-drafts/${encodeURIComponent(id)}/pdf/${type}`,{cache:'no-store',signal:AbortSignal.timeout(60000),headers:token?{Authorization:'Bearer '+token}:{}});
+ const path=acceptedRevision?`acceptance/${acceptedRevision}/pdf/${type}`:`pdf/${type}`;
+ const response=await fetch(`/api/crm/quote-drafts/${encodeURIComponent(id)}/${path}`,{cache:'no-store',signal:AbortSignal.timeout(60000),headers:token?{Authorization:'Bearer '+token}:{}});
  if(!response.ok){const data=await response.json().catch(()=>null);throw new Error(data?.error||'Génération PDF impossible.');}
  const blob=await response.blob();const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=`WE-MOVE-${type}.pdf`;document.body.appendChild(link);link.click();link.remove();window.setTimeout(()=>URL.revokeObjectURL(url),30000);
 }
@@ -100,7 +101,10 @@ export interface InvoiceTestState {mode:'test';session:number;counter:number;rev
 export async function fetchInvoiceTestState(){return (await request<{state:InvoiceTestState}>('/api/crm/invoice-tests')).state;}
 export async function changeInvoiceTestState(state:InvoiceTestState,action:'number'|'reset',invoiceId?:string){return (await request<{state:InvoiceTestState}>('/api/crm/invoice-tests',{method:'POST',body:JSON.stringify({revision:state.revision,action,invoiceId})})).state;}
 
-export interface CrmDossier {lead:QuoteLead;quote:import('../types/crm').CrmQuoteDraft|null;invoice:InvoicePreparation|null;mails:QuoteMail[];billing:BillingRow[];}
+export interface QuoteAcceptanceSummary {quoteRevision:number;agreementDate:string;note:string;at:string;actor:string;previousRevision:number|null;}
+export interface QuoteAcceptance extends QuoteAcceptanceSummary {quote:import('../types/crm').CrmQuoteDraft;}
+export async function recordQuoteAcceptance(id:string,payload:{quoteRevision:number;previousRevision:number;expectedUpdatedAt:string;agreementDate:string;note:string;confirmed:boolean}){return request<{acceptance:QuoteAcceptance;quote:import('../types/crm').CrmQuoteDraft;lead:QuoteLead}>('/api/crm/quote-drafts/'+encodeURIComponent(id)+'/acceptance',{method:'POST',body:JSON.stringify(payload)});}
+export interface CrmDossier {acceptance?:QuoteAcceptance|null;acceptanceHistory?:QuoteAcceptanceSummary[];lead:QuoteLead;quote:import('../types/crm').CrmQuoteDraft|null;invoice:InvoicePreparation|null;mails:QuoteMail[];billing:BillingRow[];}
 export interface BillingRow {id:string;number:string;kind:string;invoiceId:string;leadId:string;clientName:string;issueDate:string;dueDate:string;createdAt:string;amountTTC:number;creditedTTC:number;paidCents:number;dueCents:number;refundDueCents:number;status:string;}
 export interface BillingOverview {asOf:string;today:string;month:string;documentCount:number;invoiceCount:number;creditCount:number;dueCents:number;overdueCents:number;refundDueCents:number;receivedCents:number;refundedCents:number;netReceivedCents:number;openCount:number;overdueCount:number;priorityCount:number;priorities:(BillingRow&{reason:'refund'|'overdue'|'today'|'upcoming';daysOverdue:number})[];}
 export async function fetchCrmDossier(id:string){return (await request<{dossier:CrmDossier}>('/api/crm/dossiers/'+encodeURIComponent(id))).dossier;}

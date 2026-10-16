@@ -21,7 +21,7 @@ const visit={...data,lead:{status:'prise_contact',visitDate:'2026-09-30T10:00',v
 assert.equal(dossierAction(visit,true,today).label,'Vérifier la visite passée');
 assert.equal(dossierAction({...visit,lead:{...visit.lead,visitDate:'2026-10-02T14:00'}},true,today).badge,'Aujourd’hui');
 assert.equal(dossierAction({...visit,lead:{...visit.lead,visitStatus:'effectuee'}},true,today).label,'Mettre à jour le suivi');
-assert.equal(dossierAction({...visit,lead:{...visit.lead,status:'confirme'}},true,today).label,'Planifier le déménagement');
+assert.equal(dossierAction({...visit,lead:{...visit.lead,status:'confirme'}},true,today).label,'Organiser le déménagement');
 assert.equal(dossierAction({...visit,lead:{...visit.lead,status:'confirme',scheduledTime:'2026-10-01T08:00'}},true,today).label,'Vérifier le déménagement');
 const late=dossierAction({...data,lead:{status:'devis_envoye',nextAction:{type:'relancer',dueDate:'2026-10-01',note:'Appeler le client'}}},true,today);
 assert.equal(late.badge,'En retard');assert.match(late.reason,/Appeler le client.*2026-10-01/);

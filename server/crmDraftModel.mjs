@@ -17,9 +17,10 @@ export function newDraft(lead) {
 }
 export function reviseDraft(current, payload) {
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) draftError(400, 'Brouillon invalide.');
-  const keys = ['revision','items','taxRate','depositRate','validUntil','notes','document'];
+  const keys = ['revision','items','taxRate','depositRate','validUntil','notes','document','acceptedQuoteRevision'];
   if (Object.keys(payload).some(key => !keys.includes(key))) draftError(400, 'Champ de devis non modifiable.');
   if (payload.revision !== current.revision) draftError(409, 'Ce brouillon a été modifié ailleurs. Rechargez la version enregistrée avant de réessayer.');
+  if(current.clientAcceptance&&payload.acceptedQuoteRevision!==current.clientAcceptance.quoteRevision)draftError(409,'Une version acceptée est conservée. Confirmez la préparation d’une nouvelle version avant de modifier le devis.');
   if (!Array.isArray(payload.items) || payload.items.length > 50) draftError(400, 'Le devis accepte au maximum 50 prestations.');
   const numeric = (value, min, max, precision, label) => {
     if (typeof value !== 'number' || !Number.isFinite(value) || value < min || value > max || Math.abs(value * precision - Math.round(value * precision)) > 0.00001) draftError(400, label + ' invalide.');

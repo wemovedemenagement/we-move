@@ -1,4 +1,5 @@
 import {newInvoicePreparation,reviseInvoicePreparation} from './crmInvoiceModel.mjs';
+import {recordClientAgreement,acceptanceRevision} from './crmQuoteAcceptance.mjs';
 import {reviseStorageStay,historyBefore} from './crmStorageStay.mjs';
 import {updateFollowUp} from './crmFollowUp.mjs';
 import {createHash} from 'node:crypto';
@@ -115,6 +116,17 @@ export async function deleteQuoteLead(id) {
 }
 
 const drafts = () => firestore().collection(collectionName('crm_quote_drafts'));
+const acceptances=id=>drafts().doc(draftId(id)).collection('client_acceptances');
+export async function getQuoteAcceptance(id,revision){const doc=await acceptances(id).doc(String(acceptanceRevision(revision))).get();return doc.data()||null;}
+export async function getQuoteAcceptanceHistory(id){return (await acceptances(id).orderBy('quoteRevision','desc').limit(20).get()).docs.map(d=>{const {quote,...summary}=d.data();return summary;});}
+export async function recordQuoteAcceptance(id,payload,actor){
+ draftId(id);return firestore().runTransaction(async tx=>{
+  const [lead,quote]=await Promise.all([tx.get(requests().doc(id)),tx.get(drafts().doc(id))]);
+  const result=recordClientAgreement(lead.data(),quote.data(),payload,actor);
+  tx.create(acceptances(id).doc(String(result.acceptance.quoteRevision)),result.acceptance);
+  tx.set(drafts().doc(id),result.quote);tx.set(requests().doc(id),result.lead);return result;
+ });
+}
 const mails = id => drafts().doc(draftId(id)).collection('mail_deliveries');
 export async function getQuoteMails(id) {return (await mails(id).get()).docs.map(doc=>doc.data()).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));}
 export async function quoteMailTransaction(id,key,action) {

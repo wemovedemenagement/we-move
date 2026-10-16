@@ -1,0 +1,31 @@
+import {useState,useRef} from 'react';
+import {ShieldCheck,ArrowUpRight,Download} from 'lucide-react';
+import {parisToday} from '../../shared/followUp.mjs';
+import {missionAgreementChanges} from '../../shared/missionHandover.mjs';
+import {recordQuoteAcceptance,downloadCrmPdf,type CrmDossier} from '../services/crmService';
+import './crmMissionHandover.css';
+
+export default function CrmMissionAgreement({dossier,disabled,canEdit,onSaved,onDirty,onBusy,onQuote}:{dossier:CrmDossier;disabled:boolean;canEdit:boolean;onSaved:(data:Awaited<ReturnType<typeof recordQuoteAcceptance>>)=>void;onDirty:(dirty:boolean)=>void;onBusy:(busy:boolean)=>void;onQuote:()=>void}) {
+  const lock=useRef(false);
+  const [date,setDate]=useState(parisToday),[note,setNote]=useState(''),[confirmed,setConfirmed]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[showForm,setShowForm]=useState(false);
+  const [downloading,setDownloading]=useState(false);
+  const quote=dossier.quote,acceptance=dossier.acceptance;
+  const changes=missionAgreementChanges(dossier.lead,quote,acceptance) as string[];
+  const current=!!acceptance&&quote?.revision===acceptance.quoteRevision;
+  const mayRecord=canEdit&&dossier.lead.status==='confirme'&&!!quote&&!current;
+  const submit=async(event:React.FormEvent)=>{
+    event.preventDefault();if(lock.current||disabled||!quote)return;lock.current=true;setBusy(true);onBusy(true);setError('');
+    try {const result=await recordQuoteAcceptance(quote.id,{quoteRevision:quote.revision,previousRevision:quote.clientAcceptance?.quoteRevision||0,expectedUpdatedAt:dossier.lead.updatedAt,agreementDate:date,note,confirmed});onDirty(false);setShowForm(false);setNote('');setConfirmed(false);onSaved(result);}
+    catch(e){setError(e instanceof Error?e.message:'Enregistrement impossible.');}
+    finally {lock.current=false;setBusy(false);onBusy(false);}
+  };
+  return <section className="mission-agreement" aria-label="Référence du devis accepté">
+    <div className="mission-agreement-heading"><ShieldCheck size={21}/><div><h3>Le devis de référence</h3><p>{acceptance?`${acceptance.quote.reference} · version ${acceptance.quoteRevision} · accord du ${acceptance.agreementDate.split('-').reverse().join('/')}`:'Liez la mission à la version ayant reçu l’accord du client.'}</p></div></div>
+    {acceptance?<><p className="agreement-record">Saisi par {acceptance.actor} · {new Date(acceptance.at).toLocaleString('fr-FR',{timeZone:'Europe/Paris'})}</p><p className="agreement-note">{acceptance.note}</p><p>La copie des données du devis est conservée. Cet enregistrement interne ne vaut pas signature électronique.</p></>:<p>Aucun accord sur une version précise n’est enregistré. Le statut « Accepté » du dossier ne suffit pas à identifier le devis concerné.</p>}
+    {!!changes.length&&<div className="mission-warning" role="status"><strong>À rapprocher avant le départ</strong><ul>{changes.map(text=><li key={text}>{text}</li>)}</ul><p>La version acceptée reste conservée. Faites valider tout changement de prestation ou de prix par le client.</p></div>}
+    {error&&<p role="alert" className="mission-warning">{error}</p>}
+    <div className="agreement-actions"><button type="button" className="crm-quiet-action" disabled={disabled||busy} onClick={onQuote}>Vérifier le devis actuel<ArrowUpRight size={14}/></button>{mayRecord&&!showForm&&<button type="button" disabled={disabled||busy} className="crm-quiet-action" onClick={()=>setShowForm(true)}>{acceptance?'Enregistrer un nouvel accord':'Enregistrer l’accord client'}<ArrowUpRight size={14}/></button>}</div>
+    {mayRecord&&showForm&&<form onSubmit={submit} onChange={()=>onDirty(true)}><fieldset disabled={disabled||busy}><p>Vérifiez le devis actuel, version {quote!.revision}, puis confirmez uniquement un accord réellement reçu. Aucun e-mail n’est envoyé.</p><label>Date de l’accord<input aria-label="Date de l’accord client" required type="date" max={parisToday()} min={quote!.document?.fields.issueDate} value={date} onChange={e=>setDate(e.target.value)}/></label><label>Référence de l’accord{acceptance?' et changements acceptés':''}<textarea aria-label="Référence de l’accord client" required minLength={10} maxLength={2000} rows={3} value={note} onChange={e=>setNote(e.target.value)} placeholder="Ex. devis signé reçu par e-mail le… ; changements validés…"/></label><label className="mission-check"><input type="checkbox" required checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/><span>Je confirme l’accord du client sur la version {quote!.revision} du devis.</span></label><button className="requests-primary" disabled={!confirmed}>{busy?'Enregistrement…':'Conserver cette version acceptée'}</button></fieldset></form>}
+    {!!dossier.acceptanceHistory?.length&&<details className="agreement-history"><summary>Historique des accords ({dossier.acceptanceHistory.length===20?'20 derniers':dossier.acceptanceHistory.length})</summary>{dossier.acceptanceHistory.map(record=><article key={record.quoteRevision}><div><strong>Version {record.quoteRevision} · {record.agreementDate.split('-').reverse().join('/')}</strong><small>{record.actor}</small><p>{record.note}</p></div><button type="button" className="crm-quiet-action" disabled={downloading||disabled||busy} onClick={async()=>{setDownloading(true);onBusy(true);setError('');try{await downloadCrmPdf(dossier.lead.id,'devis',record.quoteRevision);}catch(e){setError(e instanceof Error?e.message:'PDF indisponible.');}finally{setDownloading(false);onBusy(false);}}}><Download size={14}/>Devis de cette version</button></article>)}</details>}
+  </section>;
+}

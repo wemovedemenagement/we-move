@@ -1,4 +1,5 @@
 import {newInvoicePreparation,reviseInvoicePreparation} from './crmInvoiceModel.mjs';
+import {recordClientAgreement,acceptanceRevision} from './crmQuoteAcceptance.mjs';
 import {reviseStorageStay,historyBefore} from './crmStorageStay.mjs';
 import {updateFollowUp} from './crmFollowUp.mjs';
 import {createHash} from 'node:crypto';
@@ -143,6 +144,18 @@ export function createQuoteDraft(leadId) {
     connection.prepare('INSERT INTO quote_drafts (id,data) VALUES (?,?)').run(id,JSON.stringify(draft));
     return draft;
   });
+}
+function acceptanceTable(){db().exec('CREATE TABLE IF NOT EXISTS quote_acceptances (id TEXT NOT NULL,revision INTEGER NOT NULL,data TEXT NOT NULL,PRIMARY KEY(id,revision))');}
+export function getQuoteAcceptance(id,revision){acceptanceTable();const row=db().prepare('SELECT data FROM quote_acceptances WHERE id=? AND revision=?').get(draftId(id),acceptanceRevision(revision));return row?JSON.parse(row.data):null;}
+export function getQuoteAcceptanceHistory(id){acceptanceTable();return db().prepare('SELECT data FROM quote_acceptances WHERE id=? ORDER BY revision DESC LIMIT 20').all(draftId(id)).map(r=>{const {quote,...summary}=JSON.parse(r.data);return summary;});}
+export function recordQuoteAcceptance(id,payload,actor){
+ acceptanceTable();draftId(id);return draftTransaction(c=>{
+  const read=table=>{const row=c.prepare(`SELECT data FROM ${table} WHERE id=?`).get(id);return row?JSON.parse(row.data):null;};
+  const result=recordClientAgreement(read('requests'),read('quote_drafts'),payload,actor);
+  c.prepare('INSERT INTO quote_acceptances(id,revision,data) VALUES(?,?,?)').run(id,result.acceptance.quoteRevision,JSON.stringify(result.acceptance));
+  c.prepare('UPDATE quote_drafts SET data=? WHERE id=?').run(JSON.stringify(result.quote),id);
+  c.prepare('UPDATE requests SET data=? WHERE id=?').run(JSON.stringify(result.lead),id);return result;
+ });
 }
 export function saveQuoteDraft(id,payload) {
   draftId(id);

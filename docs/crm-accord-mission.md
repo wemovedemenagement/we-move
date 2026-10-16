@@ -1,0 +1,13 @@
+# Du devis accepté à la mission
+
+Dans la fiche déménagement, cinq raccourcis relient l'accord client, le créneau, les moyens, la préparation et les documents existants. La réservation reste indépendante : les dossiers historiques sans accord détaillé peuvent être organisés, mais leur référence contractuelle manquante est indiquée.
+
+« Dossier accepté » reste un statut de suivi manuel. Le gérant ou le secrétariat enregistre séparément la version du devis dont l'accord a réellement été reçu : date, référence de l'accord, confirmation explicite. Ceci ne crée pas de signature électronique et ne téléverse pas le devis signé. Les envois Resend acceptés ne sont jamais assimilés à un accord client.
+
+Les données du devis sont copiées dans `crm_quote_drafts/{id}/client_acceptances/{quoteRevision}` par création seule. Le devis de travail conserve un résumé de la dernière version acceptée. L'enregistrement du résumé, de la copie et de la note au dossier est transactionnel. Le contrôle des révisions du devis, de l'accord précédent et du dossier empêche les écrasements concurrents. Le client ne peut fournir ni auteur, ni date système, ni copie de document.
+
+Après un accord, toute sauvegarde du devis de travail exige l'acquittement explicite de la version acceptée. Elle crée une nouvelle révision de travail ; elle ne remplace pas l'accord. Un nouvel accord enregistré sur cette révision conserve l'ancienne copie. Les vingt derniers accords sont consultables ; les versions plus anciennes restent en base et accessibles par leur numéro à l'API protégée.
+
+La mission signale les différences de version, d'adresses, de volume ou de période de départ. Ses téléchargements utilisent les données de la version acceptée choisie, avec les affectations opérationnelles enregistrées. Les PDF sont régénérés à partir des données conservées et des modèles courants ; ils ne sont pas l'original signé et leur rendu binaire n'est pas une archive immuable. Le devis signé et la déclaration de valeur remplie restent à collecter selon le processus de l'entreprise. La réception de la lettre de voiture signée continue d'être suivie dans le compte rendu existant.
+
+Aucune modification de devis ou de mission n'envoie d'e-mail, ne modifie une facture existante et n'active la facturation réelle. Aucune reprise automatique des anciens accords n'est effectuée. La validation utilise SQLite isolé ; les règles Firestore navigateur restent fermées et le serveur applique les contrôles d'accès. Base existante Standard `(default)`, Paris `europe-west9` ; index simple `quoteRevision` sur chaque historique, aucun index composé requis.

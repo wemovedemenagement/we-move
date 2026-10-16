@@ -21,7 +21,7 @@ export function nextStep(lead, today = parisToday()) {
     };
   if (lead.status==='confirme'&&(!lead.nextAction||['visite','devis','planifier'].includes(lead.nextAction.type))) {
     if(lead.scheduledTime)return {key:'mission',label:lead.scheduledTime.slice(0,10)<today?'Vérifier le déménagement':'Préparer la mission',reason:lead.scheduledTime.replace('T',' à '),priority:lead.scheduledTime.slice(0,10)<today?0:lead.scheduledTime.slice(0,10)===today?1:5,target:'move'};
-    return {key:'planning',label:'Planifier le déménagement',reason:'Dossier accepté, créneau à confirmer',priority:2,target:'move'};
+    return {key:'planning',label:'Organiser le déménagement',reason:'Dossier accepté, créneau à confirmer',priority:2,target:'move'};
   }
   if ((!lead.nextAction||lead.nextAction.type==='visite')&&lead.visitStatus==='effectuee') {
     if(lead.nextAction)return {key:'stale',label:'Mettre à jour le suivi',reason:'Visite effectuée · action de suivi encore ouverte',priority:2,target:'summary'};
@@ -61,7 +61,7 @@ export function nextStep(lead, today = parisToday()) {
         }
       : {
           key: 'planning',
-          label: 'Planifier le déménagement',
+          label: 'Organiser le déménagement',
           reason: 'Dossier accepté, créneau à confirmer',
           priority: 2,
           target: 'move',

@@ -1,3 +1,4 @@
+import CrmMissionAgreement from './CrmMissionAgreement';
 import {resourceAbsence,absenceLabels} from '../../shared/resourceAvailability.mjs';
 import CrmVisitPhotos from './CrmVisitPhotos';
 import CrmVisitReport from './CrmVisitReport';
@@ -39,7 +40,13 @@ export default function CrmBookingEditor({
   lead,
   onClose,
   onSaved,
+  canEdit,
+  onQuote,
+  onEdit,
 }: {
+  canEdit:boolean;
+  onQuote:()=>void;
+  onEdit:()=>void;
   lead: QuoteLead;
   onClose: () => void;
   onSaved: (lead: QuoteLead) => void;
@@ -63,12 +70,13 @@ export default function CrmBookingEditor({
     [dirty, setDirty] = useState(false),
     [success, setSuccess] = useState("");
   const [closureDirty,setClosureDirty]=useState(false);
-  useUnsavedChanges(dirty || closureDirty || busy);
+  const [agreementDirty,setAgreementDirty]=useState(false),[agreementBusy,setAgreementBusy]=useState(false);
+  useUnsavedChanges(dirty || closureDirty || agreementDirty || busy || agreementBusy);
   const booking = data?.bookings.find((b) => b.leadId === lead.id);
   const close = () => {
     if (
-      !busy &&
-      (!(dirty || closureDirty) ||
+      !busy && !agreementBusy &&
+      (!(dirty || closureDirty || agreementDirty) ||
         window.confirm("Fermer sans enregistrer la fiche déménagement ?"))
     )
       onClose();
@@ -141,13 +149,15 @@ export default function CrmBookingEditor({
       unavailable.has(id) ||
       !data?.registry.resources.some((r) => r.id === id && r.active),
   );
-  const fields = dossier?.quote?.document?.fields || {};
+  const fields = (dossier?.acceptance?.quote || dossier?.quote)?.document?.fields || {};
+  const leave=(action:()=>void)=>{if(!busy&&!agreementBusy&&(!(dirty||closureDirty||agreementDirty)||window.confirm("Quitter sans enregistrer les modifications ?")))action();};
+  const jump=(id:string)=>{const section=dialog.current?.querySelector<HTMLElement>("#"+id);section?.scrollIntoView({block:"start",behavior:"smooth"});section?.focus({preventScroll:true});};
   const changeOperation = <K extends keyof MoveOperations>(
     key: K,
     value: MoveOperations[K],
   ) => setOperations((current) => ({ ...current, [key]: value }));
   const save = async (cancel = false) => {
-    if (!data || lock.current || loading) return;
+    if (!canEdit || !data || lock.current || loading || agreementBusy || agreementDirty) return;
     if (
       cancel &&
       !window.confirm(
@@ -193,6 +203,7 @@ export default function CrmBookingEditor({
         setEnd("");
         setIds([]);
       }
+      setDossier(current=>current?{...current,lead:result.lead}:null);
       onSaved(result.lead);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Enregistrement impossible.");
@@ -206,7 +217,7 @@ export default function CrmBookingEditor({
     setDownloading(true);
     setDocumentError("");
     try {
-      await downloadCrmPdf(dossier.quote.id, type);
+      await downloadCrmPdf(dossier.quote.id, type, dossier.acceptance?.quoteRevision);
     } catch (e) {
       setDocumentError(
         e instanceof Error ? e.message : "Document indisponible.",
@@ -229,12 +240,12 @@ export default function CrmBookingEditor({
         <div>
           <span className="crm-eyebrow">FICHE DÉMÉNAGEMENT</span>
           <h2 id="booking-title">{lead.fullName}</h2>
-          <p>Une mission, toutes les informations utiles.</p>
+          <p>Du devis accepté au départ, sans ressaisie.</p>
         </div>
         <button
           type="button"
           aria-label="Fermer la mission"
-          disabled={busy}
+          disabled={busy||agreementBusy}
           onClick={close}
         >
           <X size={21} />
@@ -286,6 +297,7 @@ export default function CrmBookingEditor({
           </ul>
         </details>
       )}
+      {!loading&&dossier&&<><nav className="mission-guide" aria-label="Préparer le déménagement">{[["mission-agreement", "Accord client",!!dossier.acceptance],["mission-slot","Créneau",!!booking&&!booking.cancelled],["mission-team","Équipe",!!booking&&!booking.cancelled&&booking.resources.some(r=>r.kind==="person")],["mission-preparation","Préparation",!!booking&&!issues.length],["mission-documents","Documents",false]].map(([id,label,done],i)=><button type="button" key={String(id)} data-done={!!done} onClick={()=>jump(String(id))}><span>{i+1}</span>{String(label)}</button>)}</nav><div id="mission-agreement" tabIndex={-1}><CrmMissionAgreement dossier={dossier} canEdit={canEdit} disabled={busy||dirty||closureDirty||loading} onDirty={setAgreementDirty} onBusy={setAgreementBusy} onQuote={()=>leave(onQuote)} onSaved={result=>{setDossier({...dossier,quote:result.quote,lead:result.lead,acceptance:result.acceptance,acceptanceHistory:[result.quote.clientAcceptance!,...(dossier.acceptanceHistory||[])].slice(0,20)});onSaved(result.lead);}}/></div><button type="button" className="crm-quiet-action" disabled={busy||agreementBusy} onClick={()=>leave(onEdit)}>Compléter les informations du dossier<ArrowRight size={14}/></button></>}
       <CrmVisitReport lead={lead}/>
       <details className="technical-visit-access"><summary>Photos de la visite</summary><CrmVisitPhotos leadId={lead.id} readOnly/></details>
       <section className="mission-addresses" aria-label="Adresses et accès">
@@ -351,10 +363,10 @@ export default function CrmBookingEditor({
         }}
       >
         <fieldset
-          disabled={busy || closureDirty || !!booking?.closure || loading || !data || lead.status !== "confirme"}
+          disabled={!canEdit || busy || agreementBusy || agreementDirty || closureDirty || !!booking?.closure || loading || !data || lead.status !== "confirme"}
           className="mission-fields"
         >
-          <section className="mission-section">
+          <section className="mission-section" id="mission-slot" tabIndex={-1}>
             <h3>
               <span>01</span>Créneau de la mission
             </h3>
@@ -390,7 +402,7 @@ export default function CrmBookingEditor({
               </label>
             </div>
           </section>
-          <section className="mission-section">
+          <section className="mission-section" id="mission-team" tabIndex={-1}>
             <h3>
               <span>02</span>Équipe et moyens
             </h3>
@@ -486,7 +498,7 @@ export default function CrmBookingEditor({
                 </button>
               ))}
           </section>
-          <section className="mission-section">
+          <section className="mission-section" id="mission-preparation" tabIndex={-1}>
             <h3>
               <span>03</span>Préparation et consignes
             </h3>
@@ -575,7 +587,7 @@ export default function CrmBookingEditor({
             </label>
           </section>
         </fieldset>
-        <section className="mission-section">
+        <section className="mission-section" id="mission-documents" tabIndex={-1}>
           <h3>
             <span>04</span>Documents liés
           </h3>
@@ -587,7 +599,7 @@ export default function CrmBookingEditor({
           {dossier?.quote ? (
             <>
               <p>
-                Devis {dossier.quote.reference} · PDF issus du devis enregistré.
+                Devis {dossier.quote.reference} · {dossier.acceptance?`Version acceptée ${dossier.acceptance.quoteRevision}`:"Accord sur une version à enregistrer avant de préparer les documents"}.
                 Les consignes de préparation restent dans cette fiche.
               </p>
               <div className="mission-documents">
@@ -601,7 +613,7 @@ export default function CrmBookingEditor({
                   <button
                     key={type}
                     type="button"
-                    disabled={downloading || busy}
+                    disabled={downloading || busy || dirty || closureDirty || agreementBusy || agreementDirty || !dossier.acceptance}
                     onClick={() => void download(type)}
                   >
                     <Download size={15} />
@@ -650,7 +662,7 @@ export default function CrmBookingEditor({
           <div>
             <button
               disabled={
-                busy || closureDirty || !!booking?.closure ||
+                !canEdit || agreementBusy || agreementDirty || busy || closureDirty || !!booking?.closure ||
                 loading ||
                 !data ||
                 !ids.length ||
@@ -683,7 +695,7 @@ export default function CrmBookingEditor({
           )}
         </footer>
       </form>
-      {!loading && booking && !booking.cancelled && ['confirme','termine'].includes(lead.status) && <CrmMoveClosure key={booking.leadId} booking={booking} disabled={busy || dirty} onBusy={setBusy} onDirty={()=>setClosureDirty(true)} onSaved={(updated,nextLead)=>{setData(current=>current?{...current,bookings:current.bookings.map(b=>b.leadId===updated.leadId?updated:b)}:current);setClosureDirty(false);onSaved(nextLead);}}/>}
+      {!loading && booking && !booking.cancelled && ['confirme','termine'].includes(lead.status) && <CrmMoveClosure key={booking.leadId} booking={booking} disabled={!canEdit || busy || dirty || agreementDirty || agreementBusy} onBusy={setBusy} onDirty={()=>setClosureDirty(true)} onSaved={(updated,nextLead)=>{setData(current=>current?{...current,bookings:current.bookings.map(b=>b.leadId===updated.leadId?updated:b)}:current);setClosureDirty(false);setDossier(current=>current?{...current,lead:nextLead}:null);onSaved(nextLead);}}/>}
     </dialog>
   );
 }
