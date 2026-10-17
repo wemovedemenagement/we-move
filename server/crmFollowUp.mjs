@@ -2,7 +2,8 @@ import {randomUUID} from 'node:crypto';
 import {draftError} from './crmDraftModel.mjs';
 import {crmMembers} from './crmAuth.mjs';
 import {contactOutcomes,contactChannels} from '../shared/commercialContact.mjs';
-export const followUpLabels={rappeler:'Rappeler',visite:'Prévoir une visite',devis:'Préparer un devis',relancer:'Relancer le client',planifier:'Planifier le déménagement',facturer:'Préparer la facturation'};
+import {actionLabels} from '../shared/followUp.mjs';
+export const followUpLabels=actionLabels;
 export function updateFollowUp(current,payload,actor){
   if(!payload||typeof payload!=='object'||Array.isArray(payload))draftError(400,'Suivi invalide.');
   if(Object.keys(payload).some(key=>!['revision','assigneeId','action','complete','contact'].includes(key)))draftError(400,'Champ de suivi invalide.');
@@ -29,6 +30,7 @@ export function updateFollowUp(current,payload,actor){
       if(!nextAction||!Object.hasOwn(followUpLabels,nextAction.type)||typeof nextAction.dueDate!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(nextAction.dueDate)||!Number.isFinite(Date.parse(nextAction.dueDate))||new Date(nextAction.dueDate).toISOString().slice(0,10)!==nextAction.dueDate)draftError(400,'Choisissez une action et une date valide.');
       if(typeof nextAction.note!=='string'||nextAction.note.length>1000)draftError(400,'Précision trop longue.');
       nextAction={type:nextAction.type,dueDate:nextAction.dueDate,note:nextAction.note.trim()};
+      if(nextAction.type==='documents'&&current.status!=='confirme')draftError(409,'Le suivi des pièces avant départ concerne les dossiers acceptés.');
     }
     description=nextAction?'Prochaine action : '+followUpLabels[nextAction.type]+' le '+nextAction.dueDate+'.':'Prochaine action effacée.';
     description+=' Responsable : '+(assigneeName||'non attribué')+'.';

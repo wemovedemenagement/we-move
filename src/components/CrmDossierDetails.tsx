@@ -71,7 +71,7 @@ export default function CrmDossierDetails({
     }
   };
   const action=data?dossierAction(data,canInvoice):null;
-  const actions:Record<string,()=>void>={quote:onQuote,visit:onVisit,move:onMove,invoice:onInvoice,followup:onFollowUp,contact:onContact};
+  const actions:Record<string,()=>void>={quote:onQuote,visit:onVisit,move:onMove,documents:onDocuments,invoice:onInvoice,followup:onFollowUp,contact:onContact};
   const stages=data?dossierStages(data,canInvoice):[];
   const stageActions:Record<string,()=>void>={visit:onVisit,quote:onQuote,acceptance:onEdit,move:onMove,invoice:onInvoice};
   const events = data

@@ -231,5 +231,5 @@ export type CrmQuoteDraftUpdate = Pick<CrmQuoteDraft, 'revision' | 'items' | 'ta
 
 export interface CrmMember {id:string;email:string;name:string;role:'gerant'|'commercial'|'secretaire';active:boolean}
 export interface CrmIdentity {mode:'local'|'firebase';id:string|null;email:string|null;name:string;role:CrmMember['role']}
-export interface RequestAction {type:'rappeler'|'visite'|'devis'|'relancer'|'planifier'|'facturer';dueDate:string;note:string}
+export interface RequestAction {type:'rappeler'|'visite'|'devis'|'relancer'|'planifier'|'facturer'|'documents';dueDate:string;note:string}
 export interface FollowUpUpdate {revision:number;assigneeId?:string;action?:RequestAction|null;complete?:boolean;contact?:{channel:'phone'|'email'|'other';outcome:'no_answer'|'exchanged'|'changes'|'callback';note:string}}

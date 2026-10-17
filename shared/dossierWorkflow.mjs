@@ -24,7 +24,7 @@ export function dossierAction(data,canInvoice=true,today=parisToday()){
   const step=nextStep(lead,today);
   if(step.target==='invoice'&&!canInvoice)return {target:'followup',label:'Consulter le suivi',reason:'Action de facturation à traiter par le gérant ou le secrétariat.',tone:'active'};
   const overdue=action.dueDate<today;
-  return {...step,reason:`${action.note? action.note+' · ':''}Échéance : ${action.dueDate}`,target:step.target==='summary'?'followup':step.target,tone:overdue?'attention':'active',badge:overdue?'En retard':action.dueDate===today?'Aujourd’hui':'À venir'};
+  return {...step,reason:action.type==='documents'?step.reason:`${action.note? action.note+' · ':''}Échéance : ${action.dueDate}`,target:step.target==='summary'?'followup':step.target,tone:overdue?'attention':'active',badge:overdue?'En retard':action.dueDate===today?'Aujourd’hui':'À venir'};
  }
  if(lead.status==='confirme')return moveAction();
  if(lead.visitDate&&lead.visitStatus!=='effectuee')return visitAction();

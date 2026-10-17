@@ -1,5 +1,6 @@
 import { parisToday, actionLabels } from './followUp.mjs';
 import {moveFollowUpStep} from './moveFollowUp.mjs';
+import {documentChecklistIssues} from './documentChecklist.mjs';
 export function nextStep(lead, today = parisToday()) {
   const aftercare=moveFollowUpStep(lead,today);
   if(aftercare)return aftercare;
@@ -35,11 +36,13 @@ export function nextStep(lead, today = parisToday()) {
     const a = lead.nextAction;
     return {
       key: 'action',
-      label: actionLabels[a.type] || 'Ouvrir le suivi',
-      reason: `${a.note ? a.note+' · ' : ''}Échéance : ${a.dueDate}`,
+      label: a.type==='documents'&&!documentChecklistIssues(lead).length?'Vérifier le suivi des pièces':actionLabels[a.type] || 'Ouvrir le suivi',
+      reason: `${a.type==='documents'&&!documentChecklistIssues(lead).length?'Les réceptions sont renseignées ; vérifiez puis terminez l’action. · ':a.note ? a.note+' · ' : ''}Échéance : ${a.dueDate}`,
       priority: a.dueDate < today ? 0 : a.dueDate === today ? 1 : 5,
       target:
-        a.type === 'visite'
+        a.type === 'documents'
+          ? 'documents'
+          : a.type === 'visite'
           ? 'visit'
           : a.type === 'devis'
             ? 'quote'

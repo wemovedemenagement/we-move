@@ -1,0 +1,40 @@
+import assert from 'node:assert/strict';
+import {mkdtempSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import path from 'node:path';
+import {documentReminderText,documentFollowUpNote} from '../shared/documentReminder.mjs';
+import {nextStep,workQueue} from '../shared/crmWorkflow.mjs';
+import {dossierAction} from '../shared/dossierWorkflow.mjs';
+import {crmNotifications} from '../shared/crmNotifications.mjs';
+import {parisToday} from '../shared/followUp.mjs';
+const today=parisToday(),quote={reference:'TEST-INTERNE',revision:2};
+const sample={status:'confirme',fullName:'Client\nDe contrôle',acceptedQuoteRevision:2,documentChecklist:{signedQuote:{received:true,quoteRevision:2},valueDeclaration:{received:false}}};
+const original=structuredClone(sample),message=documentReminderText(sample,quote);
+assert.ok(message.includes('Bonjour Client De contrôle,'));assert.ok(message.includes('TEST-INTERNE (version 2)'));assert.ok(message.includes('déclaration de valeur complétée'));assert.ok(!message.includes('votre devis signé'));
+assert.ok(documentFollowUpNote(sample).includes('Déclaration de valeur'));assert.ok(!documentFollowUpNote(sample).includes('Devis signé'));
+assert.deepEqual(sample,original);
+assert.equal(documentReminderText(sample,null),'');assert.equal(documentReminderText({...sample,status:'termine'},quote),'');
+const complete={...sample,documentChecklist:{signedQuote:{received:true,quoteRevision:2},valueDeclaration:{received:true,quoteRevision:2}}};assert.equal(documentReminderText(complete,quote),'');
+assert.ok(documentReminderText({...complete,acceptedQuoteRevision:3},{...quote,revision:3}).includes('version actualisée de votre devis signé'));
+process.env.NODE_ENV='test';process.env.CRM_STORAGE='sqlite';process.env.CRM_LOCAL_ACCESS='true';process.env.CRM_DATA_DIR=mkdtempSync(path.join(tmpdir(),'wemove-document-followup-'));process.env.CRM_LEAD_NOTIFICATIONS='false';process.env.CRM_CUSTOMER_RECEIPTS='false';process.env.CRM_BILLING_LIVE_ENABLED='false';
+const store=await import('../server/crmStore.mjs'),{createApp}=await import('../server.mjs');
+let lead=await store.createQuoteLead({fullName:'Suivi documentaire isolé',email:'test@example.invalid',departureAddress:'Paris',arrivalAddress:'Versailles'});
+const server=createApp().listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));const base='http://127.0.0.1:'+server.address().port,route='/api/quotes/'+lead.id+'/follow-up';
+const api=async(body)=>{const r=await fetch(base+route,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return {status:r.status,data:await r.json()};};
+try {
+  const members=(await (await fetch(base+'/api/crm/members')).json()).members;
+  const data={revision:0,assigneeId:members[0].id,action:{type:'documents',dueDate:today,note:documentFollowUpNote(lead)}};
+  process.env.CRM_LOCAL_ACCESS='false';assert.equal((await api(data)).status,401);process.env.CRM_LOCAL_ACCESS='true';
+  assert.equal((await api(data)).status,409,'No pre-departure document task for an unaccepted dossier');
+  lead=await store.updateQuoteLead(lead.id,{status:'confirme'});
+  assert.equal((await api({...data,assigneeId:'unavailable'})).status,400);
+  assert.equal((await api({...data,action:{...data.action,dueDate:'2026-02-30'}})).status,400);
+  const attempts=await Promise.all([api(data),api(data)]);assert.deepEqual(attempts.map(r=>r.status).sort(),[200,409]);lead=attempts.find(r=>r.status===200).data.quote;
+  assert.equal(lead.nextAction.type,'documents');assert.equal(lead.nextAction.dueDate,today);assert.equal(lead.documentChecklist,undefined);assert.equal(lead.status,'confirme');
+  assert.equal(nextStep(lead,today).target,'documents');assert.equal(dossierAction({lead},true,today).target,'documents');assert.equal(workQueue([lead],today)[0].bucket,'today');assert.equal(crmNotifications([lead],today)[0].label,'Réunir les pièces client');
+  const receivedLead={...lead,...complete,status:'confirme'};assert.equal(nextStep(receivedLead,today).label,'Vérifier le suivi des pièces');assert.equal(dossierAction({lead:receivedLead},true,today).target,'documents');assert.equal(receivedLead.nextAction.type,'documents','Receipt checks never complete an action automatically');
+  const before=structuredClone(lead);documentReminderText(lead,quote);assert.deepEqual(lead,before);assert.equal((await store.getQuoteMails(lead.id)).length,0);assert.equal((await store.getPlanning()).bookings.length,0);assert.equal((await store.getBillingRelated(lead.id)).length,0);
+  for(const status of ['termine','refuse']){await store.updateQuoteLead(lead.id,{status});assert.equal((await api({...data,revision:lead.followUpRevision})).status,409);}
+  const done=await api({revision:lead.followUpRevision,complete:true});assert.equal(done.status,200);assert.equal(done.data.quote.nextAction,null);
+  console.log('Demande de pièces : texte ciblé sans envoi, version acceptée, action datée, droits, concurrence, navigation, notifications et clôture explicite vérifiés.');
+} finally {server.closeAllConnections();await new Promise(r=>server.close(r));}
