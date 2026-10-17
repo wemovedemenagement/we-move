@@ -2,7 +2,8 @@ import CrmDocumentReminder from './CrmDocumentReminder';
 import {documentChecklistIssues} from '../../shared/documentChecklist.mjs';
 import CrmDocumentChecklist from './CrmDocumentChecklist';
 import CrmMissionAgreement from './CrmMissionAgreement';
-import {resourceAbsence,absenceLabels} from '../../shared/resourceAvailability.mjs';
+import CrmMissionResources from './CrmMissionResources';
+import {missionResourceAvailability} from '../../shared/missionResources.mjs';
 import CrmVisitPhotos from './CrmVisitPhotos';
 import CrmVisitReport from './CrmVisitReport';
 import CrmMoveClosure from './CrmMoveClosure';
@@ -10,8 +11,6 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   X,
   CalendarDays,
-  Truck,
-  Users,
   MapPin,
   Phone,
   Box,
@@ -77,6 +76,7 @@ export default function CrmBookingEditor({
     [success, setSuccess] = useState("");
   const [closureDirty,setClosureDirty]=useState(false);
   const [reminderDirty,setReminderDirty]=useState(false),[reminderBusy,setReminderBusy]=useState(false);
+  const [resourcesStale,setResourcesStale]=useState(false);
   const [documentDirty,setDocumentDirty]=useState(false),[documentBusy,setDocumentBusy]=useState(false);
   const [agreementDirty,setAgreementDirty]=useState(false),[agreementBusy,setAgreementBusy]=useState(false);
   useUnsavedChanges(dirty || closureDirty || agreementDirty || documentDirty || reminderDirty || busy || agreementBusy || documentBusy || reminderBusy);
@@ -108,13 +108,16 @@ export default function CrmBookingEditor({
       } as MoveOperations);
       setDirty(false);
       setError("");
+      setResourcesStale(false);
       setSuccess("");
-    } else
+    } else {
+      setResourcesStale(true);
       setError(
         planning.reason instanceof Error
           ? planning.reason.message
           : "Chargement de la mission impossible.",
       );
+    }
     if (documents.status === "fulfilled") {
       setDossier(documents.value);
       setDocumentDirty(false);setAgreementDirty(false);setReminderDirty(false);
@@ -141,17 +144,8 @@ export default function CrmBookingEditor({
     const frame=window.requestAnimationFrame(()=>{const section=dialog.current?.querySelector<HTMLElement>('#mission-'+initialSection);if(section){section.scrollIntoView({block:'start'});section.focus({preventScroll:true});sectionOpened.current=true;}});
     return ()=>window.cancelAnimationFrame(frame);
   },[initialSection,loading,dossier]);
-  const overlaps =
-    data?.bookings.filter(
-      (b) =>
-        !b.cancelled &&
-        b.leadId !== lead.id &&
-        start &&
-        end &&
-        b.start < end &&
-        b.end > start,
-    ) || [];
-  const unavailable = new Set([...overlaps.flatMap((b) => b.resourceIds),...(data?.registry.resources.filter(r=>resourceAbsence(r,start,end)).map(r=>r.id)||[])]);
+  const resourceAvailability=missionResourceAvailability(data?.registry.resources||[],data?.bookings||[],start,end,lead.id);
+  const unavailable=new Set(resourceAvailability.rows.filter((row:{state:string})=>row.state!=='available').map((row:{resource:{id:string}})=>row.resource.id));
   const issues = data
     ? movePreparation(
         lead,
@@ -167,6 +161,20 @@ export default function CrmBookingEditor({
   const fields = (dossier?.acceptance?.quote || dossier?.quote)?.document?.fields || {};
   const leave=(action:()=>void)=>{if(!busy&&!agreementBusy&&!documentBusy&&!reminderBusy&&(!(dirty||closureDirty||agreementDirty||documentDirty||reminderDirty)||window.confirm("Quitter sans enregistrer les modifications ?")))action();};
   const jump=(id:string)=>{const section=dialog.current?.querySelector<HTMLElement>("#"+id);section?.scrollIntoView({block:"start",behavior:"smooth"});section?.focus({preventScroll:true});};
+  const refreshResources=async()=>{
+    if(lock.current||busy||loading)return;
+    lock.current=true;setBusy(true);
+    try{
+      const fresh=await fetchPlanning();
+      if(!alive.current)return;
+      // Refresh other reservations and the registry, but keep the revision of
+      // this mission that the user originally loaded. Never silently rebase a
+      // concurrent modification or replace the user's selection and dates.
+      setData(current=>current?{...fresh,bookings:[...fresh.bookings.filter(b=>b.leadId!==lead.id),...current.bookings.filter(b=>b.leadId===lead.id)]}:current);
+      setResourcesStale(false);setError('');
+    }catch{if(alive.current){setResourcesStale(true);setError('Disponibilités non actualisées. Vos dates et affectations sont conservées.');}}
+    finally{if(alive.current)setBusy(false);lock.current=false;}
+  };
   const changeOperation = <K extends keyof MoveOperations>(
     key: K,
     value: MoveOperations[K],
@@ -221,6 +229,7 @@ export default function CrmBookingEditor({
       setDossier(current=>current?{...current,lead:result.lead}:null);
       onSaved(result.lead);
     } catch (e) {
+      setResourcesStale(true);
       setError(e instanceof Error ? e.message : "Enregistrement impossible.");
     } finally {
       lock.current = false;
@@ -429,71 +438,7 @@ export default function CrmBookingEditor({
                 ajustez le créneau.
               </p>
             )}
-            <div className="mission-resource-groups">
-              {(["person", "vehicle", "lift"] as const).map((kind) => (
-                <fieldset key={kind}>
-                  <legend>
-                    {kind === "person" ? (
-                      <Users size={16} />
-                    ) : (
-                      <Truck size={16} />
-                    )}{" "}
-                    {kind === "person"
-                      ? "Équipe"
-                      : kind === "vehicle"
-                        ? "Véhicules"
-                        : "Monte-meubles"}
-                  </legend>
-                  {data?.registry.resources
-                    .filter(
-                      (r) =>
-                        r.kind === kind && (r.active || ids.includes(r.id)),
-                    )
-                    .map((r) => (
-                      <label
-                        key={r.id}
-                        className="mission-resource"
-                        data-selected={ids.includes(r.id)}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={ids.includes(r.id)}
-                          disabled={
-                            (!r.active || unavailable.has(r.id)) &&
-                            !ids.includes(r.id)
-                          }
-                          onChange={(e) =>
-                            setIds((old) =>
-                              e.target.checked
-                                ? [...old, r.id]
-                                : old.filter((id) => id !== r.id),
-                            )
-                          }
-                        />
-                        <span>
-                          {r.name}
-                          <small>
-                            {!r.active
-                              ? "Désactivé"
-                              : resourceAbsence(r,start,end)
-                                ? absenceLabels[resourceAbsence(r,start,end)!.reason as keyof typeof absenceLabels]
-                              : unavailable.has(r.id)
-                                ? "Déjà réservé"
-                                : !start||!end||end<=start?"Choisissez un créneau pour vérifier": "Disponible sur ce créneau"}
-                          </small>
-                        </span>
-                      </label>
-                    ))}
-                  {!data?.registry.resources.some(
-                    (r) => r.kind === kind && (r.active || ids.includes(r.id)),
-                  ) && (
-                    <p className="mission-hint">
-                      Aucune ressource. À renseigner dans « Équipes et flotte ».
-                    </p>
-                  )}
-                </fieldset>
-              ))}
-            </div>
+            {data&&<CrmMissionResources stale={resourcesStale} onRefresh={()=>void refreshResources()} data={data} lead={dossier?.lead||lead} start={start} end={end} ids={ids} onSelection={selected=>{setIds(selected);setDirty(true);setSuccess('');}}/>}
             {ids
               .filter(
                 (id) => !data?.registry.resources.some((r) => r.id === id),
@@ -680,7 +625,9 @@ export default function CrmBookingEditor({
                 !canEdit || agreementBusy || agreementDirty || documentBusy || documentDirty || reminderBusy || reminderDirty || busy || closureDirty || !!booking?.closure ||
                 loading ||
                 !data ||
-                !ids.length ||
+                !resourceAvailability.valid ||
+                resourcesStale ||
+                !ids.some(id=>data?.registry.resources.some(r=>r.id===id&&r.kind==='vehicle')) ||
                 selectedUnavailable ||
                 lead.status !== "confirme"
               }

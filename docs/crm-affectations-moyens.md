@@ -1,0 +1,15 @@
+# Affecter les moyens d'une mission
+
+La section « Équipe et moyens » réutilise le calcul de disponibilité du planning, sur l'intégralité du créneau de Paris. La réservation propre à la mission est exclue, les autres réservations non annulées et les indisponibilités restent prises en compte. Les cartes présentent les ressources libres en premier, la sélection, les qualifications renseignées et les contraintes datées consultables.
+
+La recherche et le filtre des moyens libres ne modifient pas le dossier. Les moyens déjà sélectionnés restent visibles, même hors filtre ou désactivés, pour pouvoir les retirer. Sans créneau valide, aucune nouvelle affectation n'est présentée comme libre. Les totaux libres concernent les ressources actives de chaque catégorie, indépendamment des filtres. Le nombre d'équipiers sélectionnés n'est pas une recommandation automatique d'effectif.
+
+« Actualiser les disponibilités » relit le registre et les autres réservations sans perdre les dates, consignes et sélections en cours. La version de la mission initialement chargée est conservée : cette actualisation ne permet pas d'écraser une modification concurrente du même dossier. Après un échec d'enregistrement, les disponibilités sont marquées à revérifier. L'utilisateur doit les actualiser avant de confirmer. En cas d'erreur de lecture, la saisie reste conservée et les moyens ne sont pas affichés comme disponibles.
+
+Le gérant peut renseigner la capacité volumique d'un véhicule dans « Équipes et flotte » : champ facultatif `capacityM3`, nombre strictement positif jusqu'à 200 m³, deux décimales maximum ; `null` efface explicitement la valeur. Un ancien client omettant ce champ conserve sa valeur existante. Aucune capacité n'est déduite des précisions en texte libre. L'ajout utilise la transaction et la révision du registre existant, pour SQLite comme pour Firestore ; aucune règle ni collection supplémentaire n'est créée.
+
+La comparaison additionne les capacités renseignées des véhicules sélectionnés. Elle distingue volume inconnu, véhicule manquant, capacité partiellement inconnue, volume supérieur et capacité volumique couvrant le volume. Une capacité inconnue empêche d'affirmer que le volume est couvert. L'indication ne bloque pas les rotations décidées par le professionnel et ne garantit ni charge utile, ni dimensions, ni passage des meubles. Elle utilise le volume actuel du dossier et le registre chargé, sans modifier le devis ou ses documents.
+
+Les écritures gardent les droits existants : registre réservé au gérant ; réservation au gérant et au secrétariat. Chaque sauvegarde vérifie à nouveau ressources actives, absences, chevauchements et version de la mission dans la transaction existante. Aucun envoi client ni émission de facture n'est ajouté.
+
+Validation : calculs multi-véhicules, ancien registre, capacités inconnues, contrôle des nombres et des droits, persistance et révisions concurrentes ; parcours Chrome isolé avec conflit créé après la sélection, conservation des saisies, édition gérant, mobile et thème sombre.

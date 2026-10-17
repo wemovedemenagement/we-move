@@ -23,10 +23,11 @@ export default function CrmResources({ identity }: { identity: CrmIdentity }) {
     [kind, setKind] = useState('all');
   const lock = useRef(false);
   const [dirty,setDirty]=useState(false),[editRevision,setEditRevision]=useState(0);
+  const [editKind,setEditKind]=useState<CrmResource['kind']>('vehicle');
   useUnsavedChanges(dirty||busy);
   const beginEdit=(value:CrmResource|null|undefined)=>{
     if(busy||dirty&&!window.confirm('Fermer sans enregistrer les modifications de cette ressource ?'))return;
-    setEdit(value);setEditRevision(data?.registry.revision||0);setDirty(false);
+    setEdit(value);setEditKind(value?.kind||'vehicle');setEditRevision(data?.registry.revision||0);setDirty(false);
   };
   const load = async () => {
     try {
@@ -53,6 +54,7 @@ export default function CrmResources({ identity }: { identity: CrmIdentity }) {
         name: String(form.get('name')),
         detail: String(form.get('detail')),
         kind: String(form.get('kind')) as CrmResource['kind'],
+        ...(form.get('kind')==='vehicle'?{capacityM3:form.get('capacityM3')?Number(form.get('capacityM3')):null}:{}),
         active: form.has('active'),
       });
       setData({ ...data, registry });
@@ -115,7 +117,7 @@ export default function CrmResources({ identity }: { identity: CrmIdentity }) {
             </label>
             <label>
               Type
-              <select name="kind" defaultValue={edit?.kind || 'vehicle'}>
+              <select name="kind" value={editKind} onChange={e=>setEditKind(e.target.value as CrmResource['kind'])}>
                 {Object.entries(labels)
                   .filter(([key]) => !edit || key === edit.kind)
                   .map(([key, label]) => (
@@ -125,13 +127,14 @@ export default function CrmResources({ identity }: { identity: CrmIdentity }) {
                   ))}
               </select>
             </label>
+            {editKind==='vehicle'&&<label>Capacité volumique (m³) · facultatif<input name="capacityM3" type="number" min="0.01" max="200" step="0.01" defaultValue={edit?.capacityM3??''} placeholder="Ex. 20"/><small>Laissez vide si elle n’est pas connue. Cette valeur aide à comparer les moyens au volume du dossier.</small></label>}
             <label>
               Précision
               <input
                 name="detail"
                 maxLength={200}
                 defaultValue={edit?.detail}
-                placeholder="Capacité, qualification…"
+                placeholder="Équipement, qualification…"
               />
             </label>
             <label>
@@ -214,6 +217,7 @@ export default function CrmResources({ identity }: { identity: CrmIdentity }) {
                 <p className="mt-2 text-sm text-slate-500">
                   {r.detail || 'Aucune précision'}
                 </p>
+                {r.kind==='vehicle'&&<p className="mt-2 text-sm">{r.capacityM3?`${r.capacityM3.toLocaleString('fr-FR')} m³ · capacité renseignée`:'Capacité non renseignée'}</p>}
                 <p className="mt-4 text-sm">
                   {r.active
                     ? 'Active · disponibilité selon le planning'

@@ -113,7 +113,7 @@ export async function saveDocumentChecks(id:string,payload:{revision:number;acce
 export async function fetchDocumentCheckHistory(id:string,before?:number){return request<{events:DocumentCheckEvent[];next:number|null}>('/api/crm/dossiers/'+encodeURIComponent(id)+'/document-checks'+(before?'?before='+before:''));}
 
 export interface ResourceAbsence {start:string;end:string;reason:"conges"|"maintenance"|"autre";}
-export interface CrmResource {unavailablePeriods?:ResourceAbsence[];id:string;name:string;kind:'vehicle'|'person'|'lift';detail:string;active:boolean;}
+export interface CrmResource {capacityM3?:number|null;unavailablePeriods?:ResourceAbsence[];id:string;name:string;kind:'vehicle'|'person'|'lift';detail:string;active:boolean;}
 export interface ResourceRegistry {revision:number;resources:CrmResource[];}
 export interface MoveOperations {departureParking:'a_verifier'|'confirme'|'sans_objet';arrivalParking:'a_verifier'|'confirme'|'sans_objet';accessVerified:boolean;equipmentReady:boolean;equipmentNotes:string;instructions:string;}
 export interface MoveClosure {resolved?:boolean;actualStart:string;actualEnd:string;observations:string;reservations:string;letterReceived:boolean;missingDocuments:string;followUp:string;owner:string;due:string;updatedAt?:string;updatedBy?:string;}

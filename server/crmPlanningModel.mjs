@@ -12,7 +12,7 @@ export function reviseRegistry(current, payload, actor, bookings=[]) {
   if (
     Object.keys(payload).some(
       (k) =>
-        !['revision', 'id', 'name', 'kind', 'active', 'detail', 'unavailablePeriods'].includes(k),
+        !['revision', 'id', 'name', 'kind', 'active', 'detail', 'unavailablePeriods', 'capacityM3'].includes(k),
     )
   )
     draftError(400, 'Champ de ressource invalide.');
@@ -35,6 +35,9 @@ export function reviseRegistry(current, payload, actor, bookings=[]) {
       400,
       'Le type d’une ressource existante ne peut pas être changé.',
     );
+  const capacityM3=payload.capacityM3===undefined?previous?.capacityM3??null:payload.capacityM3;
+  if(capacityM3!==null&&(payload.kind!=='vehicle'||typeof capacityM3!=='number'||!Number.isFinite(capacityM3)||capacityM3<0.01||capacityM3>200||Math.abs(capacityM3*100-Math.round(capacityM3*100))>0.000001))
+    draftError(400,'La capacité du véhicule doit être comprise entre 0,01 et 200 m³, avec deux décimales maximum.');
   if (
     current.resources.some(
       (r) =>
@@ -56,6 +59,7 @@ export function reviseRegistry(current, payload, actor, bookings=[]) {
     name: payload.name.trim(),
     kind: payload.kind,
     detail: payload.detail.trim(),
+    ...(payload.kind==='vehicle'?{capacityM3}:{}),
     active: payload.active,
     updatedAt: new Date().toISOString(),
     updatedBy: actor.email || actor.name,
