@@ -1,31 +1,20 @@
 import CrmPlanningQueue from './CrmPlanningQueue';
 import CrmMissionTimeline from './CrmMissionTimeline';
 import CrmDocumentQueue from './CrmDocumentQueue';
-import {useEffect, useState} from 'react';
 import {ArrowUpRight, RefreshCw} from 'lucide-react';
 import CrmDepartureReadiness from './CrmDepartureReadiness';
-import {fetchPlanning, type PlanningData} from '../services/crmService';
+import type {PlanningData} from '../services/crmService';
 import type {QuoteLead,MovePreparationTarget} from '../types/crm';
 
 type Target=MovePreparationTarget;
-// Bind planning results to the lead snapshot used for the request. A refresh or
-// failed lead read must never leave old preparation counts presented as current.
-export default function CrmTodayDepartures({leads,available,today,onOpen,onPlanning}:{leads:QuoteLead[];available:boolean;today:string;onOpen:(lead:QuoteLead,target:Target)=>void;onPlanning:()=>void}) {
-  const [snapshot,setSnapshot]=useState<{leads:QuoteLead[];data:PlanningData}|null>(null);
-  const [error,setError]=useState(''),[attempt,setAttempt]=useState(0),[loading,setLoading]=useState(true);
-  useEffect(()=>{
-    let active=true;
-    setLoading(true);setError('');
-    if(available)void fetchPlanning().then(data=>{if(active)setSnapshot({leads,data});}).catch(e=>{if(active)setError(e instanceof Error?e.message:'Planning indisponible.');}).finally(()=>{if(active)setLoading(false);});
-    return ()=>{active=false;};
-  },[leads,available,attempt]);
-  const current=available&&snapshot?.leads===leads&&!loading&&!error;
+// All operational panels receive the same verified snapshot as the priorities.
+export default function CrmTodayDepartures({leads,available,today,onOpen,onPlanning,data,loading,error,onRetry}:{data:PlanningData|null;loading:boolean;error:string;onRetry:()=>void;leads:QuoteLead[];available:boolean;today:string;onOpen:(lead:QuoteLead,target:Target)=>void;onPlanning:()=>void}) {
   return <section className="crm-today-departures" aria-label="Préparation des prochains déménagements">
     <div className="crm-worklist-head"><div><h3>Vos missions au quotidien</h3><p>Préparez les départs et retrouvez les comptes rendus à compléter.</p></div><button type="button" className="crm-quiet-action" onClick={onPlanning}>Ouvrir le planning<ArrowUpRight size={15}/></button></div>
-    <CrmPlanningQueue data={current?snapshot.data:null} leads={leads} loading={!error&&!current} error={!available?'Dossiers non vérifiés.':error} today={today} onOpen={lead=>onOpen(lead,'slot')}/>
-    <CrmMissionTimeline data={current?snapshot.data:null} leads={leads} loading={!error&&!current} error={!available?'Dossiers non vérifiés.':error} onOpen={onOpen}/>
-    <CrmDepartureReadiness initiallyOpen data={current?snapshot.data:null} leads={leads} today={today} loading={!error&&!current} error={!available?'Dossiers non vérifiés.':error} onOpen={onOpen}/>
-    <CrmDocumentQueue leads={leads} data={current?snapshot.data:null} loading={!error&&!current} error={!available?'Dossiers non vérifiés.':error} today={today} onOpen={lead=>onOpen(lead,'documents')}/>
-    {available&&error&&<button type="button" className="crm-quiet-action" onClick={()=>setAttempt(v=>v+1)}><RefreshCw size={14}/>Actualiser</button>}
+    <CrmPlanningQueue data={data} leads={leads} loading={loading} error={error} today={today} onOpen={lead=>onOpen(lead,'slot')}/>
+    <CrmMissionTimeline data={data} leads={leads} loading={loading} error={error} onOpen={onOpen}/>
+    <CrmDepartureReadiness initiallyOpen data={data} leads={leads} today={today} loading={loading} error={error} onOpen={onOpen}/>
+    <CrmDocumentQueue leads={leads} data={data} loading={loading} error={error} today={today} onOpen={lead=>onOpen(lead,'documents')}/>
+    {available&&error&&<button type="button" className="crm-quiet-action" onClick={onRetry}><RefreshCw size={14}/>Actualiser</button>}
   </section>;
 }

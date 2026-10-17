@@ -1,11 +1,11 @@
 import {useState} from 'react';
 import {CalendarPlus,Search,ArrowUpRight} from 'lucide-react';
-import {planningQueue} from '../../shared/planningQueue.mjs';
+import {planningQueue,planningSituationLabels} from '../../shared/planningQueue.mjs';
 import {requestCity} from '../../shared/requestCity.mjs';
 import type {PlanningData} from '../services/crmService';
 import type {QuoteLead} from '../types/crm';
 import './crmPlanningQueue.css';
-const states={waiting:'Sans réservation',cancelled:'Réservation annulée',legacy:'Ancienne date à confirmer',invalid:'Créneau enregistré à vérifier'};
+const states=planningSituationLabels;
 const timings={past:'Date souhaitée passée',today:'Date souhaitée aujourd’hui',week:'Date souhaitée sous 7 jours',upcoming:'Date souhaitée à venir',undated:'Date à convenir'};
 type Row={lead:QuoteLead;situation:keyof typeof states;bucket:keyof typeof timings;date:string};
 export default function CrmPlanningQueue({data,leads,loading,error,today,onOpen}:{data:PlanningData|null;leads:QuoteLead[];loading:boolean;error:string;today:string;onOpen:(lead:QuoteLead)=>void}){

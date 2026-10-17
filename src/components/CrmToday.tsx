@@ -1,4 +1,6 @@
-import { useState, type ReactNode } from 'react';
+import { useState,useRef, type ReactNode } from 'react';
+import {useCrmPlanningSnapshot} from '../hooks/useCrmPlanningSnapshot';
+import {planningWorkQueue} from '../../shared/planningQueue.mjs';
 import { ArrowUpRight, Search, Plus, CheckCircle2, Clock3 } from 'lucide-react';
 import { workQueue, matchesWorkFilter } from '../../shared/crmWorkflow.mjs';
 import { parisToday } from '../../shared/followUp.mjs';
@@ -31,16 +33,22 @@ export default function CrmToday({
     [limit, setLimit] = useState(12),[timing,setTiming]=useState('all'),[owner,setOwner]=useState('all');
   const today = parisToday();
   const available=loaded&&!error;
+  const planning=useCrmPlanningSnapshot(leads,available);
+  const planningRows=planning.data?planningWorkQueue(leads,planning.data.bookings,today):[];
+  const worklist=useRef<HTMLDivElement>(null);
+  const listAvailable=available&&(filter!=='planning'||!!planning.data);
+  const listError=error||(filter==='planning'&&available?planning.error:'');
   const work=workQueue(leads,today);
   const responsible=(l:QuoteLead)=>l.moveFollowUp?{id:'mission:'+l.moveFollowUp.owner,name:l.moveFollowUp.owner}:{id:l.assigneeId||'',name:l.assigneeName||'Responsable enregistré'};
   const owners=Array.from(new Map(leads.map(responsible).filter(r=>r.id).map(r=>[r.id,r.name])).entries()).sort((a,b)=>a[1].localeCompare(b[1],'fr'));
   const counts=Object.fromEntries(['urgent','new','visit','planning','followup','aftercare'].map(key=>[key,work.filter((row:{lead:QuoteLead;step:{key:string};bucket:string})=>matchesWorkFilter(row,key,today)).length]));
-  const queue = (work as {lead:QuoteLead;step:{priority:number;reason:string;label:string;target:string};bucket:string;date:string}[]).filter(
+  counts.planning=planningRows.length;
+  const queue = ((filter==='planning'?planningRows:work) as {lead:QuoteLead;step:{priority:number;reason:string;label:string;target:string};bucket:string;date:string}[]).filter(
     row => {
       const {lead:l,bucket}=row;
-      return (timing==='all'||timing===bucket)&&
+      return (filter==='planning'||timing==='all'||timing===bucket)&&
       (owner==='all'||(owner==='unassigned'?!responsible(l).id:responsible(l).id===owner))&&
-      matchesWorkFilter(row,filter,today)&&
+      (filter==='planning'||matchesWorkFilter(row,filter,today))&&
       [
         l.fullName,
         l.email,
@@ -98,23 +106,24 @@ export default function CrmToday({
               setFilter(filter === id ? 'all' : id);
               setTiming('all');setOwner('all');setQuery('');
               setLimit(12);
+              window.requestAnimationFrame(()=>{worklist.current?.scrollIntoView({block:'start',behavior:'smooth'});worklist.current?.focus({preventScroll:true});});
             }}
           >
             <span>
               {label}
               <ArrowUpRight size={17} />
             </span>
-            <strong>{available ? counts[id] : '—'}</strong>
+            <strong>{available&&(id!=='planning'||planning.data) ? counts[id] : '—'}</strong>
             <small>Voir les dossiers</small>
           </button>
         ))}
       </div>
-      <CrmTodayDepartures leads={leads} available={available} today={today} onOpen={onPrepare} onPlanning={onPlanning}/>
-      <div className="crm-worklist">
+      <CrmTodayDepartures data={planning.data} loading={planning.loading} error={planning.error} onRetry={planning.retry} leads={leads} available={available} today={today} onOpen={onPrepare} onPlanning={onPlanning}/>
+      <div ref={worklist} tabIndex={-1} className="crm-worklist" aria-label="Dossiers de la priorité sélectionnée" style={{scrollMarginTop:90}}>
         <div className="crm-worklist-head">
           <div>
             <h3>Votre liste de travail</h3>
-            <p>Les actions en retard et du jour apparaissent en premier.</p>
+            <p>{filter==='planning'?'Dossiers acceptés sans réservation active vérifiée. Une date souhaitée n’est pas une échéance de suivi.':'Les actions en retard et du jour apparaissent en premier.'}</p>
           </div>
           <button
             className="crm-quiet-action"
@@ -139,10 +148,10 @@ export default function CrmToday({
             }}
           />
         </label>
-        <div className="crm-work-timing"><label>Échéances<select aria-label="Filtrer les échéances" value={timing} onChange={e=>{setTiming(e.target.value);setLimit(12);}}><option value="all">Toutes les échéances</option><option value="overdue">En retard</option><option value="today">Aujourd’hui</option><option value="upcoming">À venir</option><option value="undated">Sans échéance</option></select></label><label>Responsable<select aria-label="Filtrer par responsable" value={owner} onChange={e=>{setOwner(e.target.value);setLimit(12);}}><option value="all">Tous les responsables</option><option value="unassigned">Non attribués</option>{owners.map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label><span aria-live="polite">{available?`${queue.length} dossier${queue.length>1?'s':''}`:error?'Dossiers non vérifiés':'Chargement…'}</span></div>
-        {error ? <p className="p-6" role="status">La liste de travail n’est pas vérifiée. Utilisez l’actualisation en haut de page pour réessayer.</p> : !loaded ? (
+        <div className="crm-work-timing"><label>Échéances<select aria-label="Filtrer les échéances" disabled={filter==='planning'} title={filter==='planning'?'Les dates souhaitées se filtrent dans Réservations à organiser.':undefined} value={timing} onChange={e=>{setTiming(e.target.value);setLimit(12);}}><option value="all">Toutes les échéances</option><option value="overdue">En retard</option><option value="today">Aujourd’hui</option><option value="upcoming">À venir</option><option value="undated">Sans échéance</option></select></label><label>Responsable<select aria-label="Filtrer par responsable" value={owner} onChange={e=>{setOwner(e.target.value);setLimit(12);}}><option value="all">Tous les responsables</option><option value="unassigned">Non attribués</option>{owners.map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label><span aria-live="polite">{listAvailable?`${queue.length} dossier${queue.length>1?'s':''}`:listError?'Dossiers non vérifiés':'Chargement…'}</span></div>
+        {listError ? <div className="p-6" role="status">{error?'La liste de travail n’est pas vérifiée. Utilisez l’actualisation en haut de page pour réessayer.':'Les réservations ne sont pas vérifiées. Réessayez pour afficher les dossiers à planifier.'}{!error&&<button type="button" className="crm-quiet-action" onClick={planning.retry}>Revérifier les réservations</button>}</div> : !listAvailable ? (
           <p className="p-6" role="status">
-            Chargement des dossiers…
+            {filter==='planning'?'Vérification des réservations…':'Chargement des dossiers…'}
           </p>
         ) : !queue.length ? (
           <div className="crm-work-empty">
@@ -162,7 +171,7 @@ export default function CrmToday({
                   {requestCity(lead.arrivalAddress) || 'Arrivée à préciser'}
                 </span>
               </button>
-              <div className="crm-work-reason"><span className="crm-work-badge" data-timing={bucket}>{bucket==='overdue'?'En retard':bucket==='today'?'Aujourd’hui':bucket==='upcoming'?'À venir':'Sans échéance'}</span>
+              <div className="crm-work-reason"><span className="crm-work-badge" data-timing={bucket}>{filter==='planning'?'À organiser':bucket==='overdue'?'En retard':bucket==='today'?'Aujourd’hui':bucket==='upcoming'?'À venir':'Sans échéance'}</span>
                 <small data-urgent={step.priority === 0}>
                   <Clock3 size={13} />
                   {step.reason}
@@ -179,7 +188,7 @@ export default function CrmToday({
             </article>
           ))
         )}
-        {available && queue.length > limit && (
+        {listAvailable && queue.length > limit && (
           <button
             className="crm-quiet-action m-5"
             onClick={() => setLimit(limit + 12)}

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {planningQueue,requestedDate} from '../shared/planningQueue.mjs';
+import {planningQueue,requestedDate,planningWorkQueue} from '../shared/planningQueue.mjs';
 const today='2026-10-17',make=(id,extra={})=>({id,fullName:id,status:'confirme',createdAt:'2026-10-01',...extra});
 const leads=[make('waiting',{moveDate:today}),make('legacy',{scheduledTime:'2026-10-18T08:00',moveDate:'2026-10-18'}),make('cancelled',{scheduledTime:'2026-10-17T08:00',moveDate:'2026-10-16'}),make('invalid',{moveDate:'2026-10-24'}),make('active',{scheduledTime:''}),make('closed'),make('done',{status:'termine'}),make('refused',{status:'refuse'}),make('new',{status:'nouveau'}),make('undated',{moveDate:'2026-02-30'}),make('owner',{fullName:'Élodie Martin',assigneeId:'agent',assigneeName:'Émilie',departureAddress:'Paris',arrivalAddress:'Lyon',moveDate:'2026-10-23'})];
 const booking=leadId=>({leadId,start:today+'T08:00',end:today+'T18:00',cancelled:false});
@@ -21,4 +21,10 @@ assert.equal(planningQueue(leads,[...bookings,booking('waiting')],today).some(r=
 for(const date of ['2026-02-30','2026-13-01','invalid',''])assert.equal(requestedDate(date),'');
 assert.equal(requestedDate('2028-02-29'),'2028-02-29');assert.deepEqual(planningQueue(leads,bookings,'invalid'),[]);
 assert.deepEqual({leads,bookings},before);
+const dashboard=planningWorkQueue(leads,bookings,today);
+assert.deepEqual(dashboard.map(r=>r.lead.id),rows.map(r=>r.lead.id),'Priority count and its rows must share the reservation rule');
+assert.ok(dashboard.every(r=>r.bucket==='undated'&&r.date===''&&r.step.target==='slot'),'Requested dates never become overdue follow-up deadlines');
+assert.equal(dashboard.find(r=>r.lead.id==='cancelled').step.label,'Replanifier le déménagement');
+assert.equal(dashboard.find(r=>r.lead.id==='waiting').step.label,'Réserver les moyens');
+assert.match(dashboard.find(r=>r.lead.id==='legacy').step.reason,/Ancienne date à confirmer/);
 console.log('À planifier : réservations réelles, annulations, dates historiques, dates souhaitées distinctes, filtres, recherche, bornes de période et absence de mutation vérifiés.');
