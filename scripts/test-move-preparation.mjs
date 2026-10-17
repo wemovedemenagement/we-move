@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {movePreparation} from '../shared/movePreparation.mjs';
+import {movePreparation,movePreparationDetails} from '../shared/movePreparation.mjs';
 const lead={status:'confirme',departureAddress:'Paris',arrivalAddress:'Versailles',phone:'0100000000',volume:20,acceptedQuoteRevision:1,documentChecklist:{signedQuote:{received:true,quoteRevision:1},valueDeclaration:{received:true,quoteRevision:1}}};
 const registry={resources:[{id:'v',kind:'vehicle',active:true},{id:'p',kind:'person',active:true}]};
 const booking={resourceIds:['v','p'],cancelled:false,operations:{departureParking:'confirme',arrivalParking:'sans_objet',accessVerified:true,equipmentReady:true}};
@@ -17,3 +17,16 @@ console.log('Préparation : coordonnées, volume, affectations actives, dossiers
 
 assert.equal(movePreparation({...lead,documentChecklist:undefined},booking,registry).length,2);
 assert.equal(movePreparation({...lead,acceptedQuoteRevision:2},booking,registry).filter(s=>s.includes('à revérifier')).length,2);
+
+const input={lead:{...lead,volume:0,documentChecklist:undefined},booking:{...booking,resourceIds:[],operations:undefined},registry};
+const before=structuredClone(input);
+const directed=movePreparationDetails(input.lead,input.booking,input.registry);
+assert.equal(directed.find(i=>i.label==='Volume à préciser').target,'details');
+assert.ok(directed.filter(i=>i.label.includes('à affecter')).every(i=>i.target==='team'));
+assert.equal(directed.find(i=>i.label==='Matériel à préparer').target,'preparation');
+assert.equal(directed.find(i=>i.label==='Stationnement au départ à vérifier').target,'preparation');
+assert.equal(directed.find(i=>i.label.startsWith('Devis signé')).target,'documents');
+assert.equal(directed.find(i=>i.label.startsWith('Déclaration')).target,'documents');
+assert.equal(movePreparationDetails(lead,booking,{resources:[registry.resources[0],{...registry.resources[1],active:false}]}).find(i=>i.label==='Ressource supprimée ou désactivée').target,'team');
+assert.deepEqual(input,before);
+console.log('Corrections dirigées : dossier, moyens, organisation et pièces client sans modification des données.');

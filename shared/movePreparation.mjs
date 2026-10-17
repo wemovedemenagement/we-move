@@ -13,12 +13,12 @@ export function movePreparationDetails(lead, booking, registry) {
   if(!lead.phone?.trim()&&!lead.email?.trim())add('Contact client à compléter','details');
   if(lead.unknownVolume||!(Number(lead.volume)>0))add('Volume à préciser','details');
   const resources=booking.resourceIds.map(id=>registry.resources.find(r=>r.id===id)).filter(Boolean);
-  if(!resources.some(r=>r.kind==='vehicle'&&r.active))add('Véhicule à affecter');
-  if(!resources.some(r=>r.kind==='person'&&r.active))add('Intervenant à affecter');
-  if(booking.resourceIds.some(id=>!registry.resources.some(r=>r.id===id&&r.active)))add('Ressource supprimée ou désactivée');
-  if(resources.some(r=>resourceAbsence(r,booking.start,booking.end)))add('Indisponibilité sur le créneau réservé');
-  for(const label of moveOperationIssues(booking.operations))add(label);
-  for(const label of documentChecklistIssues(lead))add(label);
+  if(!resources.some(r=>r.kind==='vehicle'&&r.active))add('Véhicule à affecter','team');
+  if(!resources.some(r=>r.kind==='person'&&r.active))add('Intervenant à affecter','team');
+  if(booking.resourceIds.some(id=>!registry.resources.some(r=>r.id===id&&r.active)))add('Ressource supprimée ou désactivée','team');
+  if(resources.some(r=>resourceAbsence(r,booking.start,booking.end)))add('Indisponibilité sur le créneau réservé','team');
+  for(const label of moveOperationIssues(booking.operations))add(label,'preparation');
+  for(const label of documentChecklistIssues(lead))add(label,'documents');
   return issues;
 }
 export function movePreparation(lead,booking,registry) {

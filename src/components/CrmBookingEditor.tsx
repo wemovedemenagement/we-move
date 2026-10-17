@@ -48,7 +48,7 @@ export default function CrmBookingEditor({
   onEdit,
   initialSection,
 }: {
-  initialSection?:'documents';
+  initialSection?:'documents'|'team'|'preparation';
   canEdit:boolean;
   onQuote:()=>void;
   onEdit:()=>void;
@@ -137,8 +137,8 @@ export default function CrmBookingEditor({
     };
   }, []);
   useEffect(()=>{
-    if(initialSection!=='documents'||loading||!dossier||sectionOpened.current)return;
-    const frame=window.requestAnimationFrame(()=>{const section=dialog.current?.querySelector<HTMLElement>('#mission-documents');if(section){section.scrollIntoView({block:'start'});section.focus({preventScroll:true});sectionOpened.current=true;}});
+    if(!initialSection||loading||sectionOpened.current||initialSection==='documents'&&!dossier)return;
+    const frame=window.requestAnimationFrame(()=>{const section=dialog.current?.querySelector<HTMLElement>('#mission-'+initialSection);if(section){section.scrollIntoView({block:'start'});section.focus({preventScroll:true});sectionOpened.current=true;}});
     return ()=>window.cancelAnimationFrame(frame);
   },[initialSection,loading,dossier]);
   const overlaps =

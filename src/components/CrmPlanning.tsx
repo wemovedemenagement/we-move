@@ -16,7 +16,7 @@ import { fetchPlanning, type PlanningData } from '../services/crmService';
 import { parisToday } from '../../shared/followUp.mjs';
 import { calendarDays,shiftCalendar } from '../../shared/visitCalendar.mjs';
 import { requestCity } from '../../shared/requestCity.mjs';
-import type { QuoteLead } from '../types/crm';
+import type { QuoteLead,MovePreparationTarget } from '../types/crm';
 export default function CrmPlanning({
   leads,
   onOpen,
@@ -26,7 +26,7 @@ export default function CrmPlanning({
   leads: QuoteLead[];
   onOpen: (lead: QuoteLead) => void;
   onFollowUp: (lead: QuoteLead) => void;
-  onPrepare: (lead: QuoteLead,target:'summary'|'details'|'move'|'documents') => void;
+  onPrepare: (lead: QuoteLead,target:MovePreparationTarget) => void;
 }) {
   const [day, setDay] = useState(parisToday()),
     [resource, setResource] = useState('all'),

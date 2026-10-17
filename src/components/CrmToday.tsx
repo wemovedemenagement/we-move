@@ -3,7 +3,7 @@ import { ArrowUpRight, Search, Plus, CheckCircle2, Clock3 } from 'lucide-react';
 import { workQueue, matchesWorkFilter } from '../../shared/crmWorkflow.mjs';
 import { parisToday } from '../../shared/followUp.mjs';
 import { requestCity } from '../../shared/requestCity.mjs';
-import type { QuoteLead } from '../types/crm';
+import type { QuoteLead,MovePreparationTarget } from '../types/crm';
 import CrmTodayDepartures from './CrmTodayDepartures';
 export default function CrmToday({
   leads,
@@ -23,7 +23,7 @@ export default function CrmToday({
   onCreate: () => void;
   finance?: ReactNode;
   error?: string;
-  onPrepare: (lead:QuoteLead,target:'summary'|'details'|'move'|'documents')=>void;
+  onPrepare: (lead:QuoteLead,target:MovePreparationTarget)=>void;
   onPlanning: ()=>void;
 }) {
   const [filter, setFilter] = useState('all'),

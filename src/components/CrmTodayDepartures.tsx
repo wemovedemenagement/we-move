@@ -3,9 +3,9 @@ import {useEffect, useState} from 'react';
 import {ArrowUpRight, RefreshCw} from 'lucide-react';
 import CrmDepartureReadiness from './CrmDepartureReadiness';
 import {fetchPlanning, type PlanningData} from '../services/crmService';
-import type {QuoteLead} from '../types/crm';
+import type {QuoteLead,MovePreparationTarget} from '../types/crm';
 
-type Target='summary'|'details'|'move'|'documents';
+type Target=MovePreparationTarget;
 // Bind planning results to the lead snapshot used for the request. A refresh or
 // failed lead read must never leave old preparation counts presented as current.
 export default function CrmTodayDepartures({leads,available,today,onOpen,onPlanning}:{leads:QuoteLead[];available:boolean;today:string;onOpen:(lead:QuoteLead,target:Target)=>void;onPlanning:()=>void}) {
