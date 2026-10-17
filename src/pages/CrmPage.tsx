@@ -59,7 +59,7 @@ function CrmWorkspace({identity,onConnect,onLogout}:{identity:CrmIdentity;onConn
   const [syncedAt,setSyncedAt] = useState('');
   const [create,setCreate] = useState(false);
   const [selected,setSelected] = useState<QuoteLead|null>(null);
-  const [editorSection,setEditorSection] = useState<'summary'|'details'|'visit'|'move'|'documents'|'team'|'preparation'>('summary');
+  const [editorSection,setEditorSection] = useState<'summary'|'details'|'visit'|'move'|'documents'|'team'|'preparation'|'closure'>('summary');
   const lock = useRef(false);
   const refresh = async () => {
     if(lock.current) return;
@@ -105,7 +105,7 @@ function CrmWorkspace({identity,onConnect,onLogout}:{identity:CrmIdentity;onConn
         {tab==='storage' && loaded && <CrmStorage leads={leads} identity={identity} onLeadSaved={saved=>{setLeads(current=>current.map(l=>l.id===saved.id?saved:l));void refresh();}} onOpen={lead=>open(lead)}/>}
         {tab==='statistics'&&loaded&&<CrmStatistics leads={leads}/>}
         {tab==='fleet'&&<CrmResources identity={identity}/>}
-        {tab==='planning'&&loaded&&<CrmPlanning leads={leads} onOpen={lead=>open(lead)} onFollowUp={lead=>open(lead,'move')} onPrepare={(lead,target)=>open(lead,target)}/>}
+        {tab==='planning'&&loaded&&<CrmPlanning leads={leads} onOpen={lead=>open(lead)} onFollowUp={lead=>open(lead,'closure')} onPrepare={(lead,target)=>open(lead,target)}/>}
         {tab==='invoices' && <CrmInvoices leads={leads} identity={identity} initialLeadId={invoiceLeadId} initialDocumentId={invoiceDocumentId}/>}
         {unavailableModule && <><h2>{current.label}</h2>{empty(unavailableModule.title,unavailableModule.detail)}</>}
         {tab==='settings' && (identity.role==='gerant'?<CrmPricingSettings/>:<><h2>Paramètres</h2><p>La grille tarifaire est configurée par le gérant. Les propositions sont disponibles dans l’édition des devis.</p></>)}
@@ -115,7 +115,7 @@ function CrmWorkspace({identity,onConnect,onLogout}:{identity:CrmIdentity;onConn
     </div>
     {create && <NewRequestDialog onClose={()=>setCreate(false)} onSave={async payload=>{const saved=await submitQuoteLead(payload);setLeads(current=>[saved,...current.filter(l=>l.id!==saved.id)]);setCreate(false);setSelected(saved);setEditorSection('summary');setTab('requests');void refresh();}}/>}
     {selected && editorSection==='summary' && <CrmRequestSummary lead={selected} canInvoice={identity.role!=='commercial'} onDocuments={()=>setEditorSection('documents')} onMove={()=>setEditorSection('move')} onInvoice={()=>{setInvoiceDocumentId(undefined);setInvoiceLeadId(selected.id);setSelected(null);choose('invoices');}} onSaveFollowUp={async payload=>{const saved=await saveRequestFollowUp(selected.id,payload);setSelected(saved);setLeads(current=>current.map(l=>l.id===saved.id?saved:l));}} onClose={()=>setSelected(null)} onEdit={()=>setEditorSection('details')} onVisit={()=>setEditorSection('visit')} onQuote={()=>{const lead=selected;setSelected(null);void prepareQuote(lead);}}/>}
-    {selected && (['move','documents','team','preparation'].includes(editorSection)) && <CrmBookingEditor initialSection={editorSection==='documents'||editorSection==='team'||editorSection==='preparation'?editorSection:undefined} canEdit={identity.role!=='commercial'} onEdit={()=>setEditorSection('details')} onQuote={()=>{const lead=selected;setSelected(null);void prepareQuote(lead);}} lead={selected} onClose={()=>setEditorSection('summary')} onSaved={saved=>{setSelected(saved);setLeads(current=>current.map(l=>l.id===saved.id?saved:l));void refresh();}}/>}
+    {selected && (['move','documents','team','preparation','closure'].includes(editorSection)) && <CrmBookingEditor initialSection={editorSection==='documents'||editorSection==='team'||editorSection==='preparation'||editorSection==='closure'?editorSection:undefined} canEdit={identity.role!=='commercial'} onEdit={()=>setEditorSection('details')} onQuote={()=>{const lead=selected;setSelected(null);void prepareQuote(lead);}} lead={selected} onClose={()=>setEditorSection('summary')} onSaved={saved=>{setSelected(saved);setLeads(current=>current.map(l=>l.id===saved.id?saved:l));void refresh();}}/>}
     {selected && (editorSection==='details'||editorSection==='visit') && <RequestEditor key={selected.id+editorSection} onQuote={()=>{const lead=selected;setSelected(null);void prepareQuote(lead);}} lead={selected} section={editorSection} onClose={()=>setEditorSection('summary')} onSave={async updates=>{const saved=await updateQuoteLead(selected.id,updates);if(!saved)throw new Error('Le dossier est introuvable.');setLeads(current=>current.map(l=>l.id===saved.id?saved:l));setSelected(saved);void refresh();}}/>}
   </div>;
 }

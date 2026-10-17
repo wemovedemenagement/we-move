@@ -1,3 +1,4 @@
+import CrmMissionTimeline from './CrmMissionTimeline';
 import CrmDocumentQueue from './CrmDocumentQueue';
 import CrmAftercare from './CrmAftercare';
 import CrmDepartureReadiness from './CrmDepartureReadiness';
@@ -92,6 +93,7 @@ export default function CrmPlanning({
           {loading?'Actualisation…':'Actualiser'}
         </button>
       </header>
+      <CrmMissionTimeline data={data} leads={leads} loading={loading} error={error} onOpen={onPrepare}/>
       <CrmDepartureReadiness data={data} loading={loading} error={error} leads={leads} today={today} onOpen={onPrepare}/>
       <CrmDocumentQueue data={data} loading={loading} error={error} leads={leads} today={today} onOpen={lead=>onPrepare(lead,'documents')}/>
       <CrmAftercare data={data} loading={loading} error={error} leads={leads} today={today} onOpen={onFollowUp}/>

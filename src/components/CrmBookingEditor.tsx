@@ -47,7 +47,7 @@ export default function CrmBookingEditor({
   onEdit,
   initialSection,
 }: {
-  initialSection?:'documents'|'team'|'preparation';
+  initialSection?:'documents'|'team'|'preparation'|'closure';
   canEdit:boolean;
   onQuote:()=>void;
   onEdit:()=>void;
@@ -141,7 +141,7 @@ export default function CrmBookingEditor({
   }, []);
   useEffect(()=>{
     if(!initialSection||loading||sectionOpened.current||initialSection==='documents'&&!dossier)return;
-    const frame=window.requestAnimationFrame(()=>{const section=dialog.current?.querySelector<HTMLElement>('#mission-'+initialSection);if(section){section.scrollIntoView({block:'start'});section.focus({preventScroll:true});sectionOpened.current=true;}});
+    const frame=window.requestAnimationFrame(()=>{const section=dialog.current?.querySelector<HTMLElement>('#mission-'+initialSection);if(section){if(initialSection==='closure'){const panel=section.querySelector('details');if(panel)panel.open=true;}section.scrollIntoView({block:'start'});section.focus({preventScroll:true});sectionOpened.current=true;}});
     return ()=>window.cancelAnimationFrame(frame);
   },[initialSection,loading,dossier]);
   const resourceAvailability=missionResourceAvailability(data?.registry.resources||[],data?.bookings||[],start,end,lead.id);
@@ -658,7 +658,7 @@ export default function CrmBookingEditor({
         </footer>
       </form>
       {!loading&&dossier&&<div id="mission-documents" tabIndex={-1}><CrmDocumentChecklist onAgreement={()=>jump("mission-agreement")} key={lead.id+'-'+(dossier.lead.documentChecklist?.revision||0)+'-'+(dossier.acceptance?.quoteRevision||0)} lead={dossier.lead} acceptedRevision={dossier.acceptance?.quoteRevision||0} canEdit={canEdit} disabled={busy||dirty||closureDirty||agreementDirty||agreementBusy||reminderDirty||reminderBusy} onReload={()=>{if(!documentDirty||window.confirm("Recharger les pièces et abandonner cette saisie ?"))void load();}} onDirty={setDocumentDirty} onBusy={setDocumentBusy} onSaved={updated=>{setDocumentDirty(false);setDossier(current=>current?{...current,lead:updated}:null);onSaved(updated);setSuccess('Réceptions enregistrées. Les pièces restent dans votre messagerie ou votre dossier papier.');}}/><CrmDocumentReminder key={'reminder-'+lead.id+'-'+(dossier.lead.documentChecklist?.revision||0)+'-'+(dossier.acceptance?.quoteRevision||0)} dossier={dossier} canEdit={canEdit} disabled={busy||dirty||closureDirty||agreementDirty||agreementBusy||documentDirty||documentBusy} onDirty={setReminderDirty} onBusy={setReminderBusy} onAgreement={()=>jump('mission-agreement')} onReload={()=>{if(!reminderDirty||window.confirm('Recharger le suivi et abandonner cette saisie ?'))void load();}} onSaved={saved=>{setDossier(current=>current?{...current,lead:saved}:null);onSaved(saved);}}/></div>}
-      {!loading && booking && !booking.cancelled && ['confirme','termine'].includes(lead.status) && <CrmMoveClosure key={booking.leadId} booking={booking} disabled={!canEdit || busy || dirty || agreementDirty || agreementBusy || documentDirty || documentBusy || reminderDirty || reminderBusy} onBusy={setBusy} onDirty={()=>setClosureDirty(true)} onSaved={(updated,nextLead)=>{setData(current=>current?{...current,bookings:current.bookings.map(b=>b.leadId===updated.leadId?updated:b)}:current);setClosureDirty(false);setDossier(current=>current?{...current,lead:nextLead}:null);onSaved(nextLead);}}/>}
+      {!loading && booking && !booking.cancelled && ['confirme','termine'].includes(lead.status) && <section id="mission-closure" tabIndex={-1}><CrmMoveClosure key={booking.leadId} booking={booking} disabled={!canEdit || busy || dirty || agreementDirty || agreementBusy || documentDirty || documentBusy || reminderDirty || reminderBusy} onBusy={setBusy} onDirty={()=>setClosureDirty(true)} onSaved={(updated,nextLead)=>{setData(current=>current?{...current,bookings:current.bookings.map(b=>b.leadId===updated.leadId?updated:b)}:current);setClosureDirty(false);setDossier(current=>current?{...current,lead:nextLead}:null);onSaved(nextLead);}}/></section>}
     </dialog>
   );
 }
