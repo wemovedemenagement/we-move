@@ -1,3 +1,4 @@
+import CrmPlanningQueue from './CrmPlanningQueue';
 import CrmMissionTimeline from './CrmMissionTimeline';
 import CrmDocumentQueue from './CrmDocumentQueue';
 import {useEffect, useState} from 'react';
@@ -21,6 +22,7 @@ export default function CrmTodayDepartures({leads,available,today,onOpen,onPlann
   const current=available&&snapshot?.leads===leads&&!loading&&!error;
   return <section className="crm-today-departures" aria-label="Préparation des prochains déménagements">
     <div className="crm-worklist-head"><div><h3>Vos missions au quotidien</h3><p>Préparez les départs et retrouvez les comptes rendus à compléter.</p></div><button type="button" className="crm-quiet-action" onClick={onPlanning}>Ouvrir le planning<ArrowUpRight size={15}/></button></div>
+    <CrmPlanningQueue data={current?snapshot.data:null} leads={leads} loading={!error&&!current} error={!available?'Dossiers non vérifiés.':error} today={today} onOpen={lead=>onOpen(lead,'slot')}/>
     <CrmMissionTimeline data={current?snapshot.data:null} leads={leads} loading={!error&&!current} error={!available?'Dossiers non vérifiés.':error} onOpen={onOpen}/>
     <CrmDepartureReadiness initiallyOpen data={current?snapshot.data:null} leads={leads} today={today} loading={!error&&!current} error={!available?'Dossiers non vérifiés.':error} onOpen={onOpen}/>
     <CrmDocumentQueue leads={leads} data={current?snapshot.data:null} loading={!error&&!current} error={!available?'Dossiers non vérifiés.':error} today={today} onOpen={lead=>onOpen(lead,'documents')}/>

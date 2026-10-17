@@ -5,6 +5,7 @@ import path from 'node:path';
 
 // Each suite gets its own process and local data directory. No production writes.
 const suites=[
+  'test-planning-queue',
   'test-mission-timeline',
   'test-mission-resources',
   'test-document-reminder',

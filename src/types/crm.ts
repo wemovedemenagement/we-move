@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export type MovePreparationTarget = 'summary'|'details'|'move'|'documents'|'team'|'preparation'|'closure';
+export type MovePreparationTarget = 'summary'|'details'|'move'|'documents'|'team'|'preparation'|'closure'|'slot';
 
 export type QuoteStatus = 'nouveau' | 'prise_contact' | 'visite_technique' | 'devis_brouillon' | 'devis_envoye' | 'confirme' | 'refuse' | 'termine';
 export type FormulaType = 'conseil' | 'economique' | 'economique-plus' | 'standard' | 'confort' | 'premium';

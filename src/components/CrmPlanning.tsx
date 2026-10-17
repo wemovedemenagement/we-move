@@ -1,3 +1,4 @@
+import CrmPlanningQueue from './CrmPlanningQueue';
 import CrmMissionTimeline from './CrmMissionTimeline';
 import CrmDocumentQueue from './CrmDocumentQueue';
 import CrmAftercare from './CrmAftercare';
@@ -71,15 +72,6 @@ export default function CrmPlanning({
   const bookings=periodBookings.filter(b=>!preparationOnly||checks(b).length>0);
   const shown=selectedDay?bookings.filter(b=>overlaps(b,selectedDay)):bookings;
   const formatDay=(date:string)=>new Date(date+'T12:00:00Z').toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
-  const waiting = leads.filter(
-      (l) => l.status === 'confirme' && !l.scheduledTime,
-    ),
-    legacy = leads.filter(
-      (l) =>
-        l.scheduledTime &&
-        l.status === 'confirme' &&
-        !data?.bookings.some((b) => b.leadId === l.id && !b.cancelled),
-    );
   return (
     <section className="space-y-5 crm-visits crm-move-calendar" aria-label="Planning des déménagements">
       <header className="crm-worklist-head">
@@ -93,6 +85,7 @@ export default function CrmPlanning({
           {loading?'Actualisation…':'Actualiser'}
         </button>
       </header>
+      <CrmPlanningQueue data={data} leads={leads} loading={loading} error={error} today={today} onOpen={lead=>onPrepare(lead,'slot')}/>
       <CrmMissionTimeline data={data} leads={leads} loading={loading} error={error} onOpen={onPrepare}/>
       <CrmDepartureReadiness data={data} loading={loading} error={error} leads={leads} today={today} onOpen={onPrepare}/>
       <CrmDocumentQueue data={data} loading={loading} error={error} leads={leads} today={today} onOpen={lead=>onPrepare(lead,'documents')}/>
@@ -154,53 +147,6 @@ export default function CrmPlanning({
           ))}
         </div>
       ) : null}
-      {data && legacy.length > 0 && (
-        <div className="crm-surface border p-5">
-          <h3>Affectations existantes à confirmer</h3>
-          <p className="mt-2 text-sm text-slate-500">
-            Ces saisies anciennes ne réservent pas encore les ressources du
-            registre. Vérifiez-les avant de confirmer de nouvelles missions.
-          </p>
-          {legacy.map((l) => (
-            <button
-              key={l.id}
-              className="crm-quiet-action mt-3 mr-3"
-              onClick={() => onOpen(l)}
-            >
-              {l.fullName} · {l.assignedTruckName}
-            </button>
-          ))}
-        </div>
-      )}
-      <div className="crm-worklist">
-        <div className="crm-worklist-head">
-          <h3>
-            À planifier <span className="text-slate-500">{waiting.length}</span>
-          </h3>
-        </div>
-        {waiting.length ? (
-          waiting.map((l) => (
-            <article key={l.id} className="crm-work-row">
-              <div>
-                <strong>{l.fullName}</strong>
-                <p className="mt-2 text-sm text-slate-500">
-                  {requestCity(l.departureAddress)} →{' '}
-                  {requestCity(l.arrivalAddress)} ·{' '}
-                  {l.moveDate || 'Date à convenir'}
-                </p>
-              </div>
-              <button className="crm-quiet-action" onClick={() => onOpen(l)}>
-                Ouvrir le dossier
-                <ArrowUpRight size={15} />
-              </button>
-            </article>
-          ))
-        ) : (
-          <p className="p-5 text-sm text-slate-500">
-            Tous les dossiers acceptés ont un créneau renseigné.
-          </p>
-        )}
-      </div>
     </section>
   );
 }

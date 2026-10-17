@@ -47,7 +47,7 @@ export default function CrmBookingEditor({
   onEdit,
   initialSection,
 }: {
-  initialSection?:'documents'|'team'|'preparation'|'closure';
+  initialSection?:'documents'|'team'|'preparation'|'closure'|'slot';
   canEdit:boolean;
   onQuote:()=>void;
   onEdit:()=>void;
