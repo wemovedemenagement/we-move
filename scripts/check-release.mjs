@@ -26,10 +26,13 @@ const suites=[
   'test-crm-technical-visit',
   'test-crm-move-operations','test-crm-auth','test-server','test-seo','test-crm-cache','test-crm-version',
   'test-crm','test-crm-drafts','test-crm-follow-up','test-crm-visits',
-  'test-crm-workspace','test-crm-invoices','test-crm-billing',
+  'test-crm-workspace','test-crm-invoices','test-crm-test-billing','test-crm-billing',
+  'test-crm-billing-search','test-crm-billing-reminder',
   'test-crm-billing-overview','test-crm-billing-export','test-crm-pricing',
   'test-crm-dossier-workflow','test-crm-dossier-stages','test-crm-work-priorities',
   'test-move-preparation','test-crm-search','test-crm-notifications',
+  'test-crm-dates','test-crm-mail','test-crm-resend',
+  'test-crm-lead-notification','test-crm-customer-receipt',
 ];
 for(const suite of suites){
   console.log('\nVérification : '+suite);

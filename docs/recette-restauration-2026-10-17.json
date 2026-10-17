@@ -1,0 +1,25 @@
+{
+  "project": "wemove-b0057",
+  "databaseId": "crm-restore-check-20261017",
+  "databaseUid": "fe64900f-ae2e-4991-9c87-408f522c6ca9",
+  "backup": "projects/wemove-b0057/locations/europe-west9/backups/0ab125eb-e328-4d86-b3b1-e265383d3270",
+  "snapshotTime": "2026-10-17T06:38:28.314340Z",
+  "startedAt": "2026-10-17T12:53:52.162Z",
+  "verifiedAt": "2026-10-17T13:05:30.607Z",
+  "elapsedSeconds": 698,
+  "restoreCompleted": true,
+  "location": "europe-west9",
+  "documentsRead": 22,
+  "countsByCollectionId": {
+    "crm_mail_limits": 7,
+    "crm_quote_drafts": 5,
+    "crm_requests": 10
+  },
+  "linksChecked": 5,
+  "missingLinks": 0,
+  "sourceMetadataUnchanged": true,
+  "scope": "Restored database only; selected relationship fields, no client contact data or PDF read. Not an application-level end-to-end recovery or byte-for-byte comparison.",
+  "cleanup": "deleted",
+  "cleanedAt": "2026-10-17T13:05:32.350Z",
+  "sourceMetadataUnchangedAfterCleanup": true
+}

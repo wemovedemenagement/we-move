@@ -1,0 +1,170 @@
+{
+  "checkedAt": "2026-10-17T12:38:02.191Z",
+  "origin": "https://we-move.fr",
+  "scope": "Read-only HTTP checks; no authenticated access, writes, messages or live invoices.",
+  "crm": {
+    "status": 200,
+    "cache": "private, no-store, max-age=0",
+    "frameOptions": "DENY",
+    "contentTypeOptions": "nosniff",
+    "entry": "/assets/index-DvP0aTb6.js"
+  },
+  "results": [
+    {
+      "path": "/api/quotes",
+      "authentication": "anonymous",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/quotes",
+      "authentication": "invalid-token",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/crm/session",
+      "authentication": "anonymous",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/crm/session",
+      "authentication": "invalid-token",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/crm/members",
+      "authentication": "anonymous",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/crm/members",
+      "authentication": "invalid-token",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/crm/planning",
+      "authentication": "anonymous",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/crm/planning",
+      "authentication": "invalid-token",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/crm/pricing",
+      "authentication": "anonymous",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/crm/pricing",
+      "authentication": "invalid-token",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/crm/storage",
+      "authentication": "anonymous",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/crm/storage",
+      "authentication": "invalid-token",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/crm/billing/settings",
+      "authentication": "anonymous",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/crm/billing/settings",
+      "authentication": "invalid-token",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/crm/billing/documents",
+      "authentication": "anonymous",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/crm/billing/documents",
+      "authentication": "invalid-token",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/crm/billing/export",
+      "authentication": "anonymous",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/crm/billing/export",
+      "authentication": "invalid-token",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/crm/invoice-tests",
+      "authentication": "anonymous",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/crm/invoice-tests",
+      "authentication": "invalid-token",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/crm/dossiers/preproduction-check",
+      "authentication": "anonymous",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/crm/dossiers/preproduction-check",
+      "authentication": "invalid-token",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/crm/dossiers/preproduction-check/photos",
+      "authentication": "anonymous",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/crm/dossiers/preproduction-check/photos",
+      "authentication": "invalid-token",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/crm/dossiers/preproduction-check/document-checks",
+      "authentication": "anonymous",
+      "status": 401,
+      "cache": "no-store"
+    },
+    {
+      "path": "/api/crm/dossiers/preproduction-check/document-checks",
+      "authentication": "invalid-token",
+      "status": 401,
+      "cache": "no-store"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {searchCrmLeads} from '../shared/crmSearch.mjs';
+import {searchCrmLeads,createCrmLeadMatcher} from '../shared/crmSearch.mjs';
 const leads=[{id:'WM-001',fullName:'Élodie Martin',phone:'06 12 34 56 78',email:'elodie@example.invalid',departureAddress:'Paris',arrivalAddress:'Versailles',updatedAt:'2026-09-01'},...Array.from({length:20},(_,i)=>({id:'WM-'+(i+2),fullName:'Autre client '+i,updatedAt:'2026-10-01'}))];
 assert.equal(searchCrmLeads(leads,'elodie')[0].id,'WM-001');
 assert.equal(searchCrmLeads(leads,'martin paris')[0].id,'WM-001');
@@ -15,4 +15,17 @@ assert.equal(searchCrmLeads(leads,'introuvable').length,0);
 assert.equal(searchCrmLeads(leads,'').length,8);
 assert.equal(searchCrmLeads(leads,'client',3).length,3);
 assert.equal(searchCrmLeads([{...leads[0],fullName:'Martin Élodie'},{...leads[0],id:'exact',fullName:'Martin'}],'martin')[0].id,'exact');
+const before=structuredClone(leads);
+for(const query of ['elodie paris','martin versailles','0612345678','+33 6 12 34 56 78','0033612345678','elodie 0612345678','martin +33612345678','elodie@example.invalid','wm-001','']){
+  const filtered=leads.filter(createCrmLeadMatcher(query));
+  assert.deepEqual(new Set(filtered.map(l=>l.id)),new Set(searchCrmLeads(leads,query,leads.length).map(l=>l.id)),'All three entry points must use the same matching rule');
+  assert.ok(filtered.some(l=>l.id==='WM-001'));
+}
+assert.equal(createCrmLeadMatcher('elodie 0612345678')({...leads[0],phone:'+33 6 12 34 56 78'}),true);
+assert.equal(createCrmLeadMatcher('elodie 0033612345678')({...leads[0],phone:'+33 6 12 34 56 78'}),true);
+assert.equal(createCrmLeadMatcher('0612345678')({...leads[0],phone:'+33 (0)6 12 34 56 78'}),true);
+assert.equal(createCrmLeadMatcher('+32 6 12 34 56 78')(leads[0]),false);
+assert.equal(createCrmLeadMatcher('elodie lyon')(leads[0]),false);
+const reversed=[...leads].reverse();assert.deepEqual(reversed.filter(createCrmLeadMatcher('client')).map(l=>l.id),reversed.filter(l=>l.fullName.includes('client')).map(l=>l.id),'Filtering keeps the module sort order');
+assert.deepEqual(leads,before);
 console.log('Recherche rapide : accents, plusieurs mots, téléphone, e-mail, référence, pertinence et limite validés.');

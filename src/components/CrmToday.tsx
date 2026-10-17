@@ -1,4 +1,5 @@
 import { useState,useRef, type ReactNode } from 'react';
+import {createCrmLeadMatcher} from '../../shared/crmSearch.mjs';
 import {useCrmPlanningSnapshot} from '../hooks/useCrmPlanningSnapshot';
 import {planningWorkQueue} from '../../shared/planningQueue.mjs';
 import { ArrowUpRight, Search, Plus, CheckCircle2, Clock3 } from 'lucide-react';
@@ -39,6 +40,7 @@ export default function CrmToday({
   const listAvailable=available&&(filter!=='planning'||!!planning.data);
   const listError=error||(filter==='planning'&&available?planning.error:'');
   const work=workQueue(leads,today);
+  const matches=createCrmLeadMatcher(query);
   const responsible=(l:QuoteLead)=>l.moveFollowUp?{id:'mission:'+l.moveFollowUp.owner,name:l.moveFollowUp.owner}:{id:l.assigneeId||'',name:l.assigneeName||'Responsable enregistré'};
   const owners=Array.from(new Map(leads.map(responsible).filter(r=>r.id).map(r=>[r.id,r.name])).entries()).sort((a,b)=>a[1].localeCompare(b[1],'fr'));
   const counts=Object.fromEntries(['urgent','new','visit','planning','followup','aftercare'].map(key=>[key,work.filter((row:{lead:QuoteLead;step:{key:string};bucket:string})=>matchesWorkFilter(row,key,today)).length]));
@@ -49,18 +51,7 @@ export default function CrmToday({
       return (filter==='planning'||timing==='all'||timing===bucket)&&
       (owner==='all'||(owner==='unassigned'?!responsible(l).id:responsible(l).id===owner))&&
       (filter==='planning'||matchesWorkFilter(row,filter,today))&&
-      [
-        l.fullName,
-        l.email,
-        l.phone,
-        l.id,
-        l.departureAddress,
-        l.arrivalAddress,
-      ].some((s) =>
-        s
-          ?.toLocaleLowerCase('fr')
-          .includes(query.trim().toLocaleLowerCase('fr')),
-      );
+      matches(l);
     },
   );
   return (

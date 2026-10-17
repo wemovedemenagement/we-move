@@ -1,3 +1,4 @@
+import {createCrmLeadMatcher} from '../../shared/crmSearch.mjs';
 import {useUnsavedChanges} from '../hooks/useUnsavedChanges';
 import {requestCity} from '../../shared/requestCity.mjs';
 import {actionLabels,followUpBucket,parisToday} from '../../shared/followUp.mjs';
@@ -36,7 +37,8 @@ export default function CrmRequests({leads,loading,error,syncedAt,onRefresh,onCr
   useEffect(()=>{setPage(1);setLimit(9);setSelected([]);},[search,channel,status,sort,dueFilter,view,pageSize]);
   useEffect(()=>{setSelected(ids=>ids.filter(id=>leads.some(l=>l.id===id)));},[leads]);
   const query=search.trim().toLocaleLowerCase('fr');
-  const rows=leads.filter(lead=>(dueFilter==='all'||followUpBucket(lead,today)===dueFilter)&&(status==='all'||lead.status===status)&&(channel==='all'||requestChannel(lead.source)===channel)&&[lead.fullName,lead.phone,lead.email,lead.id,lead.departureAddress,lead.arrivalAddress].some(value=>(value||'').toLocaleLowerCase('fr').includes(query))).sort((a,b)=>{
+  const matches=createCrmLeadMatcher(search);
+  const rows=leads.filter(lead=>(dueFilter==='all'||followUpBucket(lead,today)===dueFilter)&&(status==='all'||lead.status===status)&&(channel==='all'||requestChannel(lead.source)===channel)&&matches(lead)).sort((a,b)=>{
     const date=b.createdAt.localeCompare(a.createdAt);
     return (sort==='oldest'?-date:sort==='az'?a.fullName.localeCompare(b.fullName,'fr'):sort==='za'?b.fullName.localeCompare(a.fullName,'fr'):sort==='source'?channelName(a.source).localeCompare(channelName(b.source),'fr')||date:date)||a.id.localeCompare(b.id);
   });
@@ -65,7 +67,7 @@ export default function CrmRequests({leads,loading,error,syncedAt,onRefresh,onCr
       <fieldset className="requests-toolbar" disabled={busy}>
         <label className="requests-search"><Search size={18}/><span className="sr-only">Rechercher une demande</span><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher un client, une ville…"/>{search&&<button type="button" aria-label="Effacer la recherche" onClick={()=>setSearch('')}><X size={15}/></button>}</label>
         <button className="requests-filter-toggle" type="button" aria-expanded={showFilters} aria-controls="request-advanced-filters" onClick={()=>setShowFilters(!showFilters)}><SlidersHorizontal size={16}/>Filtres{(status!=='all'||channel!=='all')&&<span>{Number(status!=='all')+Number(channel!=='all')}</span>}</button>
-        <label className="requests-sort"><span className="sr-only">Trier par</span><select value={sort} onChange={e=>setSort(e.target.value)}><option value="newest">Plus récent d’abord</option><option value="oldest">Plus ancien d’abord</option><option value="az">Nom : A → Z</option><option value="za">Nom : Z → A</option><option value="source">Par source</option></select></label>
+        <label className="requests-sort"><span className="sr-only">Trier par</span><select aria-label="Trier par" value={sort} onChange={e=>setSort(e.target.value)}><option value="newest">Plus récent d’abord</option><option value="oldest">Plus ancien d’abord</option><option value="az">Nom : A → Z</option><option value="za">Nom : Z → A</option><option value="source">Par source</option></select></label>
       </fieldset>
       {showFilters&&<fieldset id="request-advanced-filters" className="requests-advanced" disabled={busy}><label>Statut<select aria-label="Statut" value={status} onChange={e=>setStatus(e.target.value)}><option value="all">Tous les statuts</option>{Object.entries(requestStatus).map(([id,label])=><option key={id} value={id}>{label}</option>)}</select></label><label>Source<select aria-label="Source" value={channel} onChange={e=>setChannel(e.target.value)}><option value="all">Toutes les sources</option>{requestChannels.map(([id,label])=><option key={id} value={id}>{label}</option>)}</select></label></fieldset>}
       {filtered&&<div className="requests-active-filters" aria-label="Filtres actifs">{status!=='all'&&<button disabled={busy} onClick={()=>setStatus('all')}>{requestStatus[status as QuoteStatus]}<X size={13}/></button>}{channel!=='all'&&<button disabled={busy} onClick={()=>setChannel('all')}>{channelName(channel)}<X size={13}/></button>}{dueFilter!=='all'&&<button disabled={busy} onClick={()=>setDueFilter('all')}>{dueFilter==='today'?'Aujourd’hui':'En retard'}<X size={13}/></button>}<button disabled={busy} onClick={reset}>Tout effacer</button></div>}
