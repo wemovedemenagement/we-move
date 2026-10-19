@@ -45,12 +45,14 @@ export default function CrmBookingEditor({
   canEdit,
   onQuote,
   onEdit,
+  onVisit,
   initialSection,
 }: {
   initialSection?:'documents'|'team'|'preparation'|'closure'|'slot';
   canEdit:boolean;
   onQuote:()=>void;
   onEdit:()=>void;
+  onVisit:()=>void;
   lead: QuoteLead;
   onClose: () => void;
   onSaved: (lead: QuoteLead) => void;
@@ -321,7 +323,7 @@ export default function CrmBookingEditor({
           </ul>
         </details>
       )}
-      {!loading&&dossier&&<><nav className="mission-guide" aria-label="Préparer le déménagement">{[["mission-agreement", "Accord client",!!dossier.acceptance],["mission-slot","Créneau",!!booking&&!booking.cancelled],["mission-team","Équipe",!!booking&&!booking.cancelled&&booking.resources.some(r=>r.kind==="person")],["mission-preparation","Préparation",!!booking&&!issues.length],["mission-documents","Pièces client",documentChecklistIssues(lead).length===0]].map(([id,label,done],i)=><button type="button" key={String(id)} data-done={!!done} onClick={()=>jump(String(id))}><span>{i+1}</span>{String(label)}</button>)}</nav><div id="mission-agreement" tabIndex={-1}><CrmMissionAgreement dossier={dossier} canEdit={canEdit} disabled={busy||dirty||closureDirty||loading||documentDirty||documentBusy||reminderDirty||reminderBusy} onDirty={setAgreementDirty} onBusy={setAgreementBusy} onQuote={()=>leave(onQuote)} onSaved={result=>{setDossier({...dossier,quote:result.quote,lead:result.lead,acceptance:result.acceptance,acceptanceHistory:[result.quote.clientAcceptance!,...(dossier.acceptanceHistory||[])].slice(0,20)});onSaved(result.lead);}}/></div><button type="button" className="crm-quiet-action" disabled={busy||agreementBusy||documentBusy||reminderBusy} onClick={()=>leave(onEdit)}>Compléter les informations du dossier<ArrowRight size={14}/></button></>}
+      {!loading&&dossier&&<><nav className="mission-guide" aria-label="Préparer le déménagement">{[["mission-agreement", "Accord client",!!dossier.acceptance],["mission-slot","Créneau",!!booking&&!booking.cancelled],["mission-team","Équipe",!!booking&&!booking.cancelled&&booking.resources.some(r=>r.kind==="person")],["mission-preparation","Préparation",!!booking&&!issues.length],["mission-documents","Pièces client",documentChecklistIssues(lead).length===0]].map(([id,label,done],i)=><button type="button" key={String(id)} data-done={!!done} onClick={()=>jump(String(id))}><span>{i+1}</span>{String(label)}</button>)}</nav><div id="mission-agreement" tabIndex={-1}><CrmMissionAgreement booking={booking||null} onReview={target=>{if(target==='slot')jump('mission-slot');else leave(target==='quote'?onQuote:target==='visit'?onVisit:onEdit);}} dossier={dossier} canEdit={canEdit} disabled={busy||dirty||closureDirty||loading||documentDirty||documentBusy||reminderDirty||reminderBusy} onDirty={setAgreementDirty} onBusy={setAgreementBusy} onQuote={()=>leave(onQuote)} onSaved={result=>{setDossier({...dossier,quote:result.quote,lead:result.lead,acceptance:result.acceptance,acceptanceHistory:[result.quote.clientAcceptance!,...(dossier.acceptanceHistory||[])].slice(0,20)});onSaved(result.lead);}}/></div><button type="button" className="crm-quiet-action" disabled={busy||agreementBusy||documentBusy||reminderBusy} onClick={()=>leave(onEdit)}>Compléter les informations du dossier<ArrowRight size={14}/></button></>}
       <CrmVisitReport lead={lead}/>
       <details className="technical-visit-access"><summary>Photos de la visite</summary><CrmVisitPhotos leadId={lead.id} readOnly/></details>
       <section className="mission-addresses" aria-label="Adresses et accès">

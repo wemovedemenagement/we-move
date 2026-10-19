@@ -8,6 +8,7 @@ const suites=[
   'test-crm-deployment',
   'test-planning-queue',
   'test-mission-timeline',
+  'test-mission-handover',
   'test-mission-resources',
   'test-document-reminder',
   'test-document-queue',
