@@ -33,6 +33,7 @@ export async function customerReceiptTransaction(id,action) {return (await store
 export async function getInvoicePreparations(){return (await store()).getInvoicePreparations();}
 export async function createInvoicePreparation(id,actor,expectedQuoteRevision){return (await store()).createInvoicePreparation(id,actor,expectedQuoteRevision);}
 export async function saveInvoicePreparation(id,payload,actor){return (await store()).saveInvoicePreparation(id,payload,actor);}
+export async function refreshInvoicePreparation(id,payload,actor){return (await store()).refreshInvoicePreparation(id,payload,actor);}
 
 export async function getInvoiceTestState(){return (await store()).getInvoiceTestState();}
 export async function changeInvoiceTestState(payload,actor){return (await store()).changeInvoiceTestState(payload,actor);}

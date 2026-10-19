@@ -14,6 +14,7 @@ const suites=[
   'test-crm-document-checklist',
   'test-crm-quote-acceptance',
   'test-crm-business-journey',
+  'test-crm-invoice-source-refresh',
   'test-crm-storage-stays',
   'test-visit-checks',
   'test-crm-commercial-contact','test-crm-quote-follow-up',

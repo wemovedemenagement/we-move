@@ -1,4 +1,4 @@
-import {newInvoicePreparation,reviseInvoicePreparation,checkInvoiceSourceRevision} from './crmInvoiceModel.mjs';
+import {newInvoicePreparation,reviseInvoicePreparation,checkInvoiceSourceRevision,assertInvoiceReference,refreshInvoiceSource} from './crmInvoiceModel.mjs';
 import {reviseDocumentChecklist} from './crmDocumentChecklist.mjs';
 import {recordClientAgreement,acceptanceRevision} from './crmQuoteAcceptance.mjs';
 import {reviseStorageStay,historyBefore} from './crmStorageStay.mjs';
@@ -202,6 +202,16 @@ export async function createInvoicePreparation(id,actor,expectedQuoteRevision){
   tx.create(ref,result);return result;
  });
 }
+export async function refreshInvoicePreparation(id,payload,actor){
+ const ref=invoicePreparations().doc(draftId(id));
+ return firestore().runTransaction(async tx=>{
+  const current=await tx.get(ref),q=await tx.get(drafts().doc(id)),lead=await tx.get(requests().doc(id)),quote=q.data();
+  const accepted=quote?.clientAcceptance?await tx.get(acceptances(id).doc(String(quote.clientAcceptance.quoteRevision))):null;
+  const issued=await tx.get(billingDocs().where('invoiceId','==',id).limit(1));
+  const result=refreshInvoiceSource(current.data(),quote,lead.data(),accepted?.data(),payload,actor,!issued.empty);
+  tx.set(ref,result);return result;
+ });
+}
 export async function saveInvoicePreparation(id,payload,actor){const ref=invoicePreparations().doc(draftId(id));return firestore().runTransaction(async tx=>{const current=await tx.get(ref);if(!current.exists)draftError(404,'Brouillon introuvable.');const result=reviseInvoicePreparation(current.data(),payload,actor);tx.set(ref,result);return result;});}
 
 import {initialInvoiceTestState,invoiceTestChange} from './crmInvoiceTestModel.mjs';
@@ -255,7 +265,7 @@ export async function getBillingDocument(id){const d=await billingDocs().doc(dra
 export async function getBillingRelated(invoiceId){return (await billingDocs().where('invoiceId','==',invoiceId).get()).docs.map(d=>d.data());}
 export async function getBillingOverviewRecords(invoiceId){let q=billingDocs();if(invoiceId)q=q.where('invoiceId','==',invoiceId);return (await q.select('id','number','mode','kind','invoiceId','leadId','snapshot.clientName','dueDate','issueDate','createdAt','amountHT','taxAmount','quoteReference','creditNumber','amountTTC','creditedTTC','payments').get()).docs.map(d=>d.data());}
 export async function listBillingDocuments(cursor){let q=billingDocs().orderBy('createdAt','desc');if(cursor){const last=await billingDocs().doc(draftId(cursor)).get();if(!last.exists)draftError(400,'Page introuvable.');q=q.startAfter(last);}const docs=(await q.limit(41).get()).docs;return {documents:docs.slice(0,40).map(d=>d.data()),cursor:docs.length>40?docs[39].id:null};}
-export async function commitBilling({revision,nextState,documents=[],sourceCheck,event}){return firestore().runTransaction(async tx=>{const s=await tx.get(billingRoot());const current=s.exists?s.data():initialBilling();if(current.revision!==revision)draftError(409,'La facturation a changé. Actualisez et réessayez.');if(sourceCheck){const i=await tx.get(invoicePreparations().doc(sourceCheck.id));if(!i.exists||i.data().revision!==sourceCheck.revision)draftError(409,'Le brouillon a changé.');}const state={...(nextState||current),revision:current.revision+1};tx.set(billingRoot(),state);for(const d of documents)tx.set(billingDocs().doc(d.id),d);tx.create(billingRoot().collection('events').doc(String(state.revision)),event);return state;});}
+export async function commitBilling({revision,nextState,documents=[],sourceCheck,event}){return firestore().runTransaction(async tx=>{const s=await tx.get(billingRoot());const current=s.exists?s.data():initialBilling();if(current.revision!==revision)draftError(409,'La facturation a changé. Actualisez et réessayez.');if(sourceCheck){const i=await tx.get(invoicePreparations().doc(sourceCheck.id));if(!i.exists||i.data().revision!==sourceCheck.revision)draftError(409,'Le brouillon a changé.');const q=await tx.get(drafts().doc(i.data().quoteId));assertInvoiceReference(i.data(),q.data());}const state={...(nextState||current),revision:current.revision+1};tx.set(billingRoot(),state);for(const d of documents)tx.set(billingDocs().doc(d.id),d);tx.create(billingRoot().collection('events').doc(String(state.revision)),event);return state;});}
 import {emptyPricing,revisePricing} from './crmPricing.mjs';
 const pricingRef=()=>firestore().collection(collectionName('crm_configuration')).doc('pricing');
 export async function getPricingSettings(){return (await pricingRef().get()).data()||emptyPricing();}

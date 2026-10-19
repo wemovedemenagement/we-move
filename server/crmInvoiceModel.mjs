@@ -5,6 +5,21 @@ export function checkInvoiceSourceRevision(revision,expected){
  if(!Number.isSafeInteger(expected)||expected<1)draftError(400,'Version de devis attendue invalide.');
  if(revision!==expected)draftError(409,'Le devis de référence a changé. Vérifiez le nouvel aperçu avant de créer le brouillon.');
 }
+export function assertInvoiceReference(current,quote){
+ if(!current||!quote||current.quoteId!==quote.id||current.leadId!==quote.leadId||current.quoteRevision!==(quote.clientAcceptance?.quoteRevision||quote.revision))draftError(409,'Ce brouillon ne correspond plus au devis de référence. Actualisez sa source avant de facturer. Si un document a déjà été émis, faites vérifier le dossier avant de poursuivre.');
+}
+export function refreshInvoiceSource(current,quote,lead,acceptance,payload,actor,hasIssued){
+ if(!['gerant','secretaire'].includes(actor?.role))draftError(403,'Action réservée au gérant et au secrétariat.');
+ if(!current)draftError(404,'Brouillon introuvable.');
+ if(!payload||typeof payload!=='object'||Array.isArray(payload)||Object.keys(payload).some(k=>!['revision','expectedQuoteRevision','confirm'].includes(k))||payload.confirm!==true||!Number.isSafeInteger(payload.expectedQuoteRevision)||payload.expectedQuoteRevision<1)draftError(400,'Confirmez la mise à jour et sa version de référence.');
+ if(current.revision!==payload.revision)draftError(409,'Ce brouillon a changé. Actualisez avant de réessayer.');
+ if(current.status!=='brouillon'||hasIssued)draftError(409,'Un document comptable existe déjà pour ce brouillon. Sa source ne peut plus être remplacée. Faites vérifier le dossier.');
+ const fresh=newInvoicePreparation(quote,lead,actor,acceptance,payload.expectedQuoteRevision);
+ if(fresh.id!==current.id||fresh.leadId!==current.leadId)draftError(409,'La source de ce brouillon est incohérente. Faites vérifier le dossier.');
+ if(fresh.quoteRevision===current.quoteRevision)draftError(409,'Ce brouillon utilise déjà cette version de référence.');
+ if((current.sourceHistory||[]).length>=50)draftError(409,'Historique de source complet. Faites vérifier le dossier.');
+ return {...fresh,createdAt:current.createdAt,createdBy:current.createdBy,revision:current.revision+1,dueDate:current.dueDate,notes:current.notes,updatedBy:actor.email||actor.name,sourceHistory:[...(current.sourceHistory||[]),{quoteRevision:current.quoteRevision,quoteReference:current.quoteReference,amountTTC:current.amountTTC,replacedAt:fresh.updatedAt,replacedBy:actor.email||actor.name}]};
+}
 export function newInvoicePreparation(quote,lead,actor,acceptance,expectedQuoteRevision){
  if(!quote||!lead)draftError(404,'Devis ou dossier introuvable.');
  // Never invoice a working amendment that the client has not accepted.

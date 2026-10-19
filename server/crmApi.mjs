@@ -25,7 +25,7 @@ import {notifyWebsiteLead,notifyCustomerLead} from './crmLeadNotification.mjs';
 import {authenticateCrm,crmMembers,firebaseWebConfig} from './crmAuth.mjs';
 import express from 'express';
 import {getInvoiceTestState,changeInvoiceTestState} from './crmStore.mjs';
-import {getInvoicePreparations,createInvoicePreparation,saveInvoicePreparation} from './crmStore.mjs';
+import {getInvoicePreparations,createInvoicePreparation,saveInvoicePreparation,refreshInvoicePreparation} from './crmStore.mjs';
 import { getAllQuotes, createQuoteLead, updateQuoteLead, deleteQuoteLead, getCrmStats, getQuoteDrafts, createQuoteDraft, saveQuoteDraft, saveFollowUp } from './crmStore.mjs';
 
 const route = handler => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
@@ -100,6 +100,7 @@ export function crmRouter() {
   router.get('/api/crm/invoice-preparations',route(async(req,res)=>res.json({success:true,invoices:await getInvoicePreparations()})));
   router.post('/api/crm/invoice-preparations',route(async(req,res)=>res.status(201).json({success:true,invoice:await createInvoicePreparation(req.body?.quoteId,req.crmIdentity,req.body?.expectedQuoteRevision)})));
   router.patch('/api/crm/invoice-preparations/:id',route(async(req,res)=>res.json({success:true,invoice:await saveInvoicePreparation(req.params.id,req.body,req.crmIdentity)})));
+  router.post('/api/crm/invoice-preparations/:id/refresh-source',route(async(req,res)=>res.json({success:true,invoice:await refreshInvoicePreparation(req.params.id,req.body,req.crmIdentity)})));
   router.get('/api/crm/members', (_req,res)=>res.json({success:true,members:crmMembers()}));
   router.patch('/api/quotes/:id/follow-up', route(async(req,res)=>{
     const quote=await saveFollowUp(req.params.id,req.body,req.crmIdentity);

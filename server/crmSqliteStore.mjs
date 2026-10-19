@@ -1,4 +1,4 @@
-import {newInvoicePreparation,reviseInvoicePreparation,checkInvoiceSourceRevision} from './crmInvoiceModel.mjs';
+import {newInvoicePreparation,reviseInvoicePreparation,checkInvoiceSourceRevision,assertInvoiceReference,refreshInvoiceSource} from './crmInvoiceModel.mjs';
 import {reviseDocumentChecklist} from './crmDocumentChecklist.mjs';
 import {recordClientAgreement,acceptanceRevision} from './crmQuoteAcceptance.mjs';
 import {reviseStorageStay,historyBefore} from './crmStorageStay.mjs';
@@ -201,6 +201,17 @@ export function createInvoicePreparation(id,actor,expectedQuoteRevision){
  const result=newInvoicePreparation(quote,l&&JSON.parse(l.data),actor,accepted&&JSON.parse(accepted.data),expectedQuoteRevision);
  c.prepare('INSERT INTO invoice_preparations(id,data) VALUES(?,?)').run(id,JSON.stringify(result));return result;});
 }
+export function refreshInvoicePreparation(id,payload,actor){
+ draftId(id);getInvoicePreparations();acceptanceTable();billingTables();
+ return draftTransaction(c=>{
+  const read=table=>{const row=c.prepare(`SELECT data FROM ${table} WHERE id=?`).get(id);return row?JSON.parse(row.data):null;};
+  const current=read('invoice_preparations'),quote=read('quote_drafts');
+  const accepted=quote?.clientAcceptance?c.prepare('SELECT data FROM quote_acceptances WHERE id=? AND revision=?').get(id,quote.clientAcceptance.quoteRevision):null;
+  const issued=c.prepare('SELECT data FROM billing_documents').all().some(row=>JSON.parse(row.data).invoiceId===id);
+  const result=refreshInvoiceSource(current,quote,read('requests'),accepted?JSON.parse(accepted.data):null,payload,actor,issued);
+  c.prepare('UPDATE invoice_preparations SET data=? WHERE id=?').run(JSON.stringify(result),id);return result;
+ });
+}
 export function saveInvoicePreparation(id,payload,actor){draftId(id);getInvoicePreparations();return draftTransaction(c=>{const r=c.prepare('SELECT data FROM invoice_preparations WHERE id=?').get(id);if(!r)draftError(404,'Brouillon introuvable.');const result=reviseInvoicePreparation(JSON.parse(r.data),payload,actor);c.prepare('UPDATE invoice_preparations SET data=? WHERE id=?').run(JSON.stringify(result),id);return result;});}
 
 import {initialInvoiceTestState,invoiceTestChange} from './crmInvoiceTestModel.mjs';
@@ -255,7 +266,7 @@ export function getBillingDocument(id){billingTables();const r=db().prepare('SEL
 export function getBillingRelated(invoiceId){billingTables();return db().prepare('SELECT data FROM billing_documents').all().map(r=>JSON.parse(r.data)).filter(d=>d.invoiceId===invoiceId);}
 export function getBillingOverviewRecords(invoiceId){billingTables();return db().prepare('SELECT data FROM billing_documents').all().map(r=>JSON.parse(r.data)).filter(d=>!invoiceId||d.invoiceId===invoiceId).map(d=>{const {id,number,mode,kind,invoiceId,leadId,dueDate,issueDate,createdAt,amountHT,taxAmount,quoteReference,creditNumber,amountTTC,creditedTTC,payments}=d;return {id,number,mode,kind,invoiceId,leadId,dueDate,issueDate,createdAt,amountHT,taxAmount,quoteReference,creditNumber,amountTTC,creditedTTC,payments,snapshot:{clientName:d.snapshot.clientName}};});}
 export function listBillingDocuments(cursor){billingTables();const all=db().prepare('SELECT data FROM billing_documents').all().map(r=>JSON.parse(r.data)).sort((a,b)=>b.createdAt.localeCompare(a.createdAt)||b.id.localeCompare(a.id));const offset=cursor?all.findIndex(d=>d.id===cursor)+1:0;const documents=all.slice(offset,offset+40);return {documents,cursor:offset+40<all.length?documents.at(-1).id:null};}
-export function commitBilling({revision,nextState,documents=[],sourceCheck,event}){billingTables();getInvoicePreparations();return draftTransaction(c=>{const current=getBillingState();if(current.revision!==revision)draftError(409,'La facturation a changé. Actualisez et réessayez.');if(sourceCheck){const r=c.prepare('SELECT data FROM invoice_preparations WHERE id=?').get(sourceCheck.id);if(!r||JSON.parse(r.data).revision!==sourceCheck.revision)draftError(409,'Le brouillon a changé.');}const state={...(nextState||current),revision:current.revision+1};c.prepare('INSERT OR REPLACE INTO billing_state(id,data) VALUES(?,?)').run('main',JSON.stringify(state));for(const d of documents)c.prepare('INSERT OR REPLACE INTO billing_documents(id,data) VALUES(?,?)').run(d.id,JSON.stringify(d));c.prepare('INSERT INTO billing_events(id,data) VALUES(?,?)').run(state.revision,JSON.stringify(event));return state;});}
+export function commitBilling({revision,nextState,documents=[],sourceCheck,event}){billingTables();getInvoicePreparations();return draftTransaction(c=>{const current=getBillingState();if(current.revision!==revision)draftError(409,'La facturation a changé. Actualisez et réessayez.');if(sourceCheck){const r=c.prepare('SELECT data FROM invoice_preparations WHERE id=?').get(sourceCheck.id);if(!r||JSON.parse(r.data).revision!==sourceCheck.revision)draftError(409,'Le brouillon a changé.');const preparation=JSON.parse(r.data);const q=c.prepare('SELECT data FROM quote_drafts WHERE id=?').get(preparation.quoteId);assertInvoiceReference(preparation,q?JSON.parse(q.data):null);}const state={...(nextState||current),revision:current.revision+1};c.prepare('INSERT OR REPLACE INTO billing_state(id,data) VALUES(?,?)').run('main',JSON.stringify(state));for(const d of documents)c.prepare('INSERT OR REPLACE INTO billing_documents(id,data) VALUES(?,?)').run(d.id,JSON.stringify(d));c.prepare('INSERT INTO billing_events(id,data) VALUES(?,?)').run(state.revision,JSON.stringify(event));return state;});}
 import {emptyPricing,revisePricing} from './crmPricing.mjs';
 function pricingTable(){db().exec('CREATE TABLE IF NOT EXISTS pricing_settings (id TEXT PRIMARY KEY,data TEXT NOT NULL)');}
 export function getPricingSettings(){pricingTable();return JSON.parse(db().prepare('SELECT data FROM pricing_settings WHERE id=?').get('current')?.data||'null')||emptyPricing();}

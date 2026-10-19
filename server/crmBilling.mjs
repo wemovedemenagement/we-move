@@ -5,6 +5,7 @@ import {
   getBillingRelated,
   commitBilling,
   getInvoicePreparations,
+  getDossierRecords,
 } from './crmStore.mjs';
 import {
   reviseBillingSettings,
@@ -16,6 +17,7 @@ import {
 } from './crmBillingModel.mjs';
 import { generateBillingPdf } from './crmBillingPdf.mjs';
 import { draftError } from './crmDraftModel.mjs';
+import {assertInvoiceReference} from './crmInvoiceModel.mjs';
 import { mailConfiguration } from './crmMail.mjs';
 import { resendSend } from './crmResend.mjs';
 import { billingReminder } from './crmBillingReminder.mjs';
@@ -69,6 +71,7 @@ export async function prepareBillingDocument(
     actor,
     { preview, liveAllowed: liveAllowed() },
   );
+  if(source)assertInvoiceReference(source,(await getDossierRecords(source.leadId)).quote);
   const pdf = await generateBillingPdf(result.document, { preview });
   if (preview) return { pdf };
   result.document.pdfBase64 = pdf.toString('base64');
