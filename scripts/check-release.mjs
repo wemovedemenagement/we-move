@@ -20,6 +20,7 @@ const suites=[
   'test-crm-storage-stays',
   'test-visit-checks',
   'test-visit-catalogue',
+  'test-visit-report',
   'test-crm-commercial-contact','test-crm-quote-follow-up',
   'test-quote-readiness',
   'test-departure-readiness',

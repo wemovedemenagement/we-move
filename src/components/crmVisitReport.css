@@ -1,0 +1,23 @@
+.visit-report{color:var(--crm-ink);overflow-wrap:anywhere}
+.visit-summary-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:20px}
+.visit-summary-heading span{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:650}
+.visit-summary-heading p,.visit-summary-feedback{font-size:12px;color:var(--crm-muted);margin-top:6px}
+.visit-summary-heading button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 14px;border:1px solid var(--crm-line);background:var(--crm-surface);border-radius:10px;font-size:12px;font-weight:650;flex-shrink:0}
+.visit-summary-volumes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}
+.visit-summary-volumes>div{display:grid;gap:7px;padding:16px;background:var(--crm-soft);border:1px solid var(--crm-line);border-radius:12px}
+.visit-summary-volumes span,.visit-summary-volumes small{font-size:12px;color:var(--crm-muted)}
+.visit-summary-volumes strong{font-size:21px;font-weight:650}
+.visit-report-access section{min-width:0;border:1px solid var(--crm-line);border-radius:12px;padding:14px}
+.visit-report-access dl>div{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid var(--crm-line)}
+.visit-report-access dt{color:var(--crm-muted)}.visit-report-access dd{text-align:right}
+.visit-summary-inventory section{margin-top:18px;font-size:13px}
+.visit-summary-inventory h4{display:flex;justify-content:space-between;gap:12px;font-weight:650;padding-bottom:8px}
+.visit-summary-inventory h4 span{font-weight:450;color:var(--crm-muted)}
+.visit-summary-inventory section>div{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-top:1px solid var(--crm-line)}
+.visit-summary-inventory strong{white-space:nowrap;font-weight:500}
+.visit-summary-notes,.visit-summary-checks{font-size:13px;line-height:1.65;margin-top:18px;padding:14px;border-radius:12px;background:var(--crm-soft)}
+.visit-summary-checks h4,.visit-summary-notes h4{font-weight:650;margin-bottom:6px}
+.visit-summary-checks ul{list-style:disc;padding-left:18px}
+.visit-summary-text label{display:grid;gap:8px;font-size:12px;margin-top:12px}
+.visit-summary-text textarea{width:100%;min-width:0;padding:12px;border:1px solid var(--crm-line);border-radius:10px;background:var(--crm-surface);color:var(--crm-ink);font-size:13px;line-height:1.6;resize:vertical}
+@media(max-width:520px){.visit-summary-heading{align-items:stretch;flex-direction:column}.visit-summary-volumes{grid-template-columns:1fr}}
