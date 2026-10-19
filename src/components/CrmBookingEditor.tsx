@@ -3,7 +3,7 @@ import {documentChecklistIssues} from '../../shared/documentChecklist.mjs';
 import CrmDocumentChecklist from './CrmDocumentChecklist';
 import CrmMissionAgreement from './CrmMissionAgreement';
 import CrmMissionResources from './CrmMissionResources';
-import {missionResourceAvailability} from '../../shared/missionResources.mjs';
+import {missionSelectionReview} from '../../shared/missionResources.mjs';
 import CrmVisitPhotos from './CrmVisitPhotos';
 import CrmVisitReport from './CrmVisitReport';
 import CrmMoveClosure from './CrmMoveClosure';
@@ -17,7 +17,6 @@ import {
   ClipboardCheck,
   Download,
   ArrowRight,
-  AlertCircle,
 } from "lucide-react";
 import { useUnsavedChanges } from "../hooks/useUnsavedChanges";
 import {
@@ -146,8 +145,8 @@ export default function CrmBookingEditor({
     const frame=window.requestAnimationFrame(()=>{const section=dialog.current?.querySelector<HTMLElement>('#mission-'+initialSection);if(section){if(initialSection==='closure'){const panel=section.querySelector('details');if(panel)panel.open=true;}section.scrollIntoView({block:'start'});section.focus({preventScroll:true});sectionOpened.current=true;}});
     return ()=>window.cancelAnimationFrame(frame);
   },[initialSection,loading,dossier]);
-  const resourceAvailability=missionResourceAvailability(data?.registry.resources||[],data?.bookings||[],start,end,lead.id);
-  const unavailable=new Set(resourceAvailability.rows.filter((row:{state:string})=>row.state!=='available').map((row:{resource:{id:string}})=>row.resource.id));
+  const selectionReview=missionSelectionReview(data?.registry.resources||[],data?.bookings||[],start,end,lead.id,ids,resourcesStale);
+  const resourceAvailability=selectionReview.availability;
   const issues = data
     ? movePreparation(
         lead,
@@ -155,11 +154,7 @@ export default function CrmBookingEditor({
         data.registry,
       )
     : [];
-  const selectedUnavailable = ids.some(
-    (id) =>
-      unavailable.has(id) ||
-      !data?.registry.resources.some((r) => r.id === id && r.active),
-  );
+  const selectedUnavailable = selectionReview.issues.length>0;
   const fields = (dossier?.acceptance?.quote || dossier?.quote)?.document?.fields || {};
   const leave=(action:()=>void)=>{if(!busy&&!agreementBusy&&!documentBusy&&!reminderBusy&&(!(dirty||closureDirty||agreementDirty||documentDirty||reminderDirty)||window.confirm("Quitter sans enregistrer les modifications ?")))action();};
   const jump=(id:string)=>{const section=dialog.current?.querySelector<HTMLElement>("#"+id);section?.scrollIntoView({block:"start",behavior:"smooth"});section?.focus({preventScroll:true});};
@@ -433,32 +428,7 @@ export default function CrmBookingEditor({
               <span>02</span>Équipe et moyens
             </h3>
             <p>Les réservations, congés et maintenances sont vérifiés sur toute la durée de la mission.</p>
-            {selectedUnavailable && (
-              <p className="mission-warning" role="alert">
-                <AlertCircle size={16} />
-                Une ressource sélectionnée est indisponible. Retirez-la ou
-                ajustez le créneau.
-              </p>
-            )}
-            {data&&<CrmMissionResources stale={resourcesStale} onRefresh={()=>void refreshResources()} data={data} lead={dossier?.lead||lead} start={start} end={end} ids={ids} onSelection={selected=>{setIds(selected);setDirty(true);setSuccess('');}}/>}
-            {ids
-              .filter(
-                (id) => !data?.registry.resources.some((r) => r.id === id),
-              )
-              .map((id) => (
-                <button
-                  type="button"
-                  key={id}
-                  className="crm-quiet-action"
-                  onClick={() => {
-                    setIds((old) => old.filter((v) => v !== id));
-                    setDirty(true);
-                    setSuccess("");
-                  }}
-                >
-                  Retirer la ressource supprimée
-                </button>
-              ))}
+            {data&&<CrmMissionResources review={selectionReview} stale={resourcesStale} onRefresh={()=>void refreshResources()} data={data} lead={dossier?.lead||lead} start={start} end={end} ids={ids} onSelection={selected=>{setIds(selected);setDirty(true);setSuccess('');}}/>}
           </section>
           <section className="mission-section" id="mission-preparation" tabIndex={-1}>
             <h3>
@@ -613,7 +583,7 @@ export default function CrmBookingEditor({
             {success}
           </p>
         )}
-        <footer className="mission-footer">
+        <footer className="mission-footer">{selectedUnavailable&&<div className="mission-selection-footer"><p>{selectionReview.issues.length} moyen{selectionReview.issues.length>1?'s':''} sélectionné{selectionReview.issues.length>1?'s':''} à vérifier avant d’enregistrer.</p><button type="button" className="crm-quiet-action" onClick={()=>jump('mission-team')}>Vérifier les moyens sélectionnés<ArrowRight size={14}/></button></div>}
           <p aria-live="polite">
             {busy
               ? "Enregistrement…"

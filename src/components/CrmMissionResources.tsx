@@ -2,7 +2,7 @@ import {useState} from 'react';
 import {Users,Truck,Search,Check,Clock3,Box,RefreshCw} from 'lucide-react';
 import type {PlanningData,CrmResource,MoveBooking,ResourceAbsence} from '../services/crmService';
 import type {QuoteLead} from '../types/crm';
-import {missionResourceAvailability,missionCapacity} from '../../shared/missionResources.mjs';
+import {missionSelectionReview,missionCapacity} from '../../shared/missionResources.mjs';
 import {absenceLabels} from '../../shared/resourceAvailability.mjs';
 import './crmMissionResources.css';
 
@@ -13,10 +13,10 @@ const dateTime=(value:string)=>`${value.slice(8,10)}/${value.slice(5,7)}/${value
 const number=(value:number)=>value.toLocaleString('fr-FR',{maximumFractionDigits:2});
 const fold=(value:string)=>value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('fr');
 
-export default function CrmMissionResources({data,lead,start,end,ids,onSelection,stale,onRefresh}:{data:PlanningData;lead:QuoteLead;start:string;end:string;ids:string[];onSelection:(ids:string[])=>void;stale:boolean;onRefresh:()=>void}){
+export default function CrmMissionResources({data,lead,start,end,ids,onSelection,stale,onRefresh,review}:{review:ReturnType<typeof missionSelectionReview>;data:PlanningData;lead:QuoteLead;start:string;end:string;ids:string[];onSelection:(ids:string[])=>void;stale:boolean;onRefresh:()=>void}){
   const [query,setQuery]=useState(''),[onlyFree,setOnlyFree]=useState(false),[limit,setLimit]=useState(12);
-  const availability=missionResourceAvailability(data.registry.resources,data.bookings,start,end,lead.id) as {valid:boolean;rows:AvailabilityRow[]};
-  const verified=availability.valid&&!stale;
+  const availability=review.availability as {valid:boolean;rows:AvailabilityRow[]};
+  const verified=review.verified;
   // Invalid dates never imply availability. Keep saved selections removable.
   const rows=verified?availability.rows:data.registry.resources.map(resource=>({resource,state:'unchecked',reservations:[],absences:[]} as AvailabilityRow));
   const capacity=missionCapacity(lead,data.registry.resources,ids);
@@ -24,6 +24,7 @@ export default function CrmMissionResources({data,lead,start,end,ids,onSelection
   const words=fold(query).trim().split(/\s+/).filter(Boolean);
   return <div className="crm-mission-resources">
     <div className="mission-selection-summary" aria-label="Moyens sélectionnés"><span><Users size={17}/><strong>{selected.filter(r=>r.kind==='person').length}</strong> équipier(s)</span><span><Truck size={17}/><strong>{selected.filter(r=>r.kind==='vehicle').length}</strong> véhicule(s)</span><span><Box size={17}/>{capacity.volumeM3===null?'Volume à préciser':`${number(capacity.volumeM3)} m³ à transporter`}</span></div>
+    {!!review.issues.length&&<section className="mission-selection-review" aria-label="Moyens sélectionnés à vérifier"><header aria-live="polite"><strong>{review.issues.length} moyen{review.issues.length>1?'s':''} à vérifier</strong><p>Retirez ou remplacez les moyens signalés. La sélection ne sera enregistrée qu’après votre confirmation de la mission.</p></header><ul>{review.issues.map(issue=><li key={issue.id}><div><strong>{issue.name}</strong><span>{issue.message}</span>{issue.state==='missing'&&<small>Référence : {issue.id}</small>}</div><button type="button" className="crm-quiet-action" aria-label={'Retirer '+issue.name+' de la sélection'} onClick={()=>onSelection(ids.filter(id=>id!==issue.id))}>Retirer de la sélection</button></li>)}</ul>{!verified&&<p>Les disponibilités restent à actualiser. Aucun moyen n’est déclaré libre à partir d’anciennes données.</p>}</section>}
     <div className="mission-capacity" data-state={capacity.state} aria-live="polite"><strong>{capacity.state==='no_vehicle'?'Choisissez au moins un véhicule':capacity.state==='no_volume'?'Précisez le volume pour comparer les moyens':capacity.state==='unknown'?'Capacité à compléter dans le registre':capacity.state==='short'?'Volume supérieur à la capacité sélectionnée':'Capacité volumique renseignée couvrant le volume'}</strong><p>{capacity.vehicleCount>0&&`${number(capacity.capacityM3)} m³ renseignés pour ${capacity.vehicleCount} véhicule(s) sélectionné(s). `}{capacity.missing>0&&`${capacity.missing} capacité(s) non renseignée(s). `}{capacity.state==='short'?'Prévoyez un autre véhicule ou organisez les rotations. ':''}Cette comparaison ne valide ni la charge utile ni le passage du mobilier.</p></div>
     {!availability.valid&&<p className="mission-hint" role="status">Choisissez un début et une fin valides pour vérifier les disponibilités et sélectionner les moyens.</p>}
     {stale&&<p className="mission-warning" role="status">Actualisez les disponibilités avant de confirmer. Vos dates et votre sélection restent conservées.</p>}

@@ -1,0 +1,27 @@
+import assert from 'node:assert/strict';
+import {missionSelectionReview} from '../shared/missionResources.mjs';
+
+const start='2026-11-10T08:00',end='2026-11-10T18:00';
+const resources=[{id:'free',name:'Camion libre',kind:'vehicle',active:true},{id:'busy',name:'Camion réservé',kind:'vehicle',active:true},{id:'absent',name:'Équipier absent',kind:'person',active:true,unavailablePeriods:[{start,end,reason:'conges'}]},{id:'inactive',name:'Camion désactivé',kind:'vehicle',active:false}];
+const bookings=[{leadId:'self',start,end,resourceIds:['free','missing'],resources:[{id:'missing',name:'Ancien camion',kind:'vehicle'}]},{leadId:'other',start,end,resourceIds:['busy']}];
+const ids=['free','busy','absent','inactive','missing','missing'];
+const before=JSON.stringify({resources,bookings,ids});
+const review=(selected=ids,stale=false,from=start,to=end,all=bookings)=>missionSelectionReview(resources,all,from,to,'self',selected,stale);
+const result=review();
+assert.equal(result.verified,true);
+assert.deepEqual(result.issues.map(r=>[r.id,r.state]),[['busy','busy'],['absent','unavailable'],['inactive','inactive'],['missing','missing']]);
+assert.equal(result.issues.find(r=>r.id==='missing').name,'Ancien camion');
+assert.equal(result.issues.find(r=>r.id==='busy').message,'Déjà réservé sur ce créneau');
+assert.equal(result.issues.filter(r=>r.id==='missing').length,1);
+assert.equal(result.issues.some(r=>r.id==='free'),false,'La mission ne doit pas être en conflit avec elle-même');
+assert.deepEqual(review(['free']).issues,[]);
+assert.equal(review([],true).verified,false);
+assert.deepEqual(review(ids,true).issues.map(r=>r.state),['missing'],'Les anciens états ne doivent pas devenir des conflits actualisés');
+assert.equal(review(ids,false,'',end).availability.valid,false);
+assert.deepEqual(review(ids,false,'',end).issues.map(r=>r.state),['missing']);
+assert.deepEqual(review(['busy'],false,'2026-11-10T18:00','2026-11-10T20:00').issues,[],'Bornes adjacentes sans chevauchement');
+assert.deepEqual(review(['busy'],false,start,end,bookings.map(b=>b.leadId==='other'?{...b,cancelled:true}:b)).issues,[]);
+assert.equal(review(['unknown']).issues[0].name,'Ressource non retrouvée');
+assert.equal(review(['missing'],false,start,end,[]).issues[0].name,'Ressource non retrouvée');
+assert.equal(JSON.stringify({resources,bookings,ids}),before,'La revue ne doit modifier ni les affectations ni le registre');
+console.log('Sélection des moyens : conflits ciblés, propre mission exclue, ressources historiques absentes, doublons, dates invalides, données anciennes et absence de mutation vérifiés.');

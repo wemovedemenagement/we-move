@@ -10,6 +10,7 @@ const suites=[
   'test-mission-timeline',
   'test-mission-handover',
   'test-mission-resources',
+  'test-mission-selection',
   'test-document-reminder',
   'test-document-queue',
   'test-crm-document-checklist',
