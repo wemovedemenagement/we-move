@@ -59,11 +59,16 @@ try {
   const booking=(await api('/api/crm/planning/'+lead.id,'PUT',{revision:0,start:yesterday+'T08:00',end:yesterday+'T18:00',resourceIds:[registry.resources[0].id]})).booking;
   // Historical actual times avoid assuming the test runs after today's move.
   await api('/api/crm/planning/'+lead.id,'PUT',{revision:booking.revision,closure:{actualStart:yesterday+'T08:30',actualEnd:yesterday+'T17:00',observations:'Livraison vérifiée en recette',reservations:'',letterReceived:true,missingDocuments:'',followUp:'',owner:'',due:''}});
-  const source=(await api('/api/crm/invoice-preparations','POST',{quoteId:lead.id},201)).invoice;
+  for(const expectedQuoteRevision of [0,'2',null])await api('/api/crm/invoice-preparations','POST',{quoteId:lead.id,expectedQuoteRevision},400);
+  await api('/api/crm/invoice-preparations','POST',{quoteId:lead.id,expectedQuoteRevision:quote.revision},409);
+  assert.equal((await store.getInvoicePreparations()).length,0,'Un aperçu périmé ne doit pas créer de brouillon');
+  const source=(await api('/api/crm/invoice-preparations','POST',{quoteId:lead.id,expectedQuoteRevision:acceptedRevision},201)).invoice;
   assert.equal(source.quoteRevision,acceptedRevision,'La facture doit reprendre la version acceptée, pas le devis de travail');
   assert.equal(source.amountTTC,1481.48);
   assert.deepEqual(source.items,accepted.acceptance.quote.items);
   assert.equal((await api('/api/crm/invoice-preparations','POST',{quoteId:lead.id},201)).invoice.revision,source.revision);
+  await api('/api/crm/invoice-preparations','POST',{quoteId:lead.id,expectedQuoteRevision:quote.revision},409);
+  assert.equal((await store.getInvoicePreparations()).length,1);
   const payload=async()=>({revision:(await store.getBillingState()).revision,invoiceId:source.id,sourceRevision:source.revision,kind:'facture',depositRate:30,dueDate:today,details:{clientType:'particulier',serviceDate:yesterday,clientSiren:'',clientVat:'',orderNumber:'',deliveryAddress:lead.arrivalAddress},confirm:true});
   const before=await store.getBillingState();
   const preview=await billing.prepareBillingDocument(await payload(),actor,{preview:true});

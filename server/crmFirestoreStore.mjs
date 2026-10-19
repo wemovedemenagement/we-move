@@ -1,4 +1,4 @@
-import {newInvoicePreparation,reviseInvoicePreparation} from './crmInvoiceModel.mjs';
+import {newInvoicePreparation,reviseInvoicePreparation,checkInvoiceSourceRevision} from './crmInvoiceModel.mjs';
 import {reviseDocumentChecklist} from './crmDocumentChecklist.mjs';
 import {recordClientAgreement,acceptanceRevision} from './crmQuoteAcceptance.mjs';
 import {reviseStorageStay,historyBefore} from './crmStorageStay.mjs';
@@ -192,13 +192,13 @@ export async function saveFollowUp(id,payload,actor) {
 
 const invoicePreparations=()=>firestore().collection(collectionName('crm_invoice_preparations'));
 export async function getInvoicePreparations(){return (await invoicePreparations().orderBy('updatedAt','desc').get()).docs.map(d=>d.data());}
-export async function createInvoicePreparation(id,actor){
+export async function createInvoicePreparation(id,actor,expectedQuoteRevision){
  const ref=invoicePreparations().doc(draftId(id));
  return firestore().runTransaction(async tx=>{
-  const existing=await tx.get(ref);if(existing.exists)return existing.data();
+  const existing=await tx.get(ref);if(existing.exists){checkInvoiceSourceRevision(existing.data().quoteRevision,expectedQuoteRevision);return existing.data();}
   const q=await tx.get(drafts().doc(id)),l=await tx.get(requests().doc(id)),quote=q.data();
   const accepted=quote?.clientAcceptance?await tx.get(acceptances(id).doc(String(quote.clientAcceptance.quoteRevision))):null;
-  const result=newInvoicePreparation(quote,l.data(),actor,accepted?.data());
+  const result=newInvoicePreparation(quote,l.data(),actor,accepted?.data(),expectedQuoteRevision);
   tx.create(ref,result);return result;
  });
 }

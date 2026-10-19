@@ -98,7 +98,7 @@ export function crmRouter() {
   router.post('/api/crm/invoice-tests',route(async(req,res)=>res.json({success:true,state:await changeInvoiceTestState(req.body,req.crmIdentity)})));
   router.use('/api/crm/invoice-preparations',(req,res,next)=>req.crmIdentity.role==='gerant'||req.crmIdentity.role==='secretaire'?next():res.status(403).json({success:false,error:'Facturation réservée au gérant et au secrétariat.'}));
   router.get('/api/crm/invoice-preparations',route(async(req,res)=>res.json({success:true,invoices:await getInvoicePreparations()})));
-  router.post('/api/crm/invoice-preparations',route(async(req,res)=>res.status(201).json({success:true,invoice:await createInvoicePreparation(req.body?.quoteId,req.crmIdentity)})));
+  router.post('/api/crm/invoice-preparations',route(async(req,res)=>res.status(201).json({success:true,invoice:await createInvoicePreparation(req.body?.quoteId,req.crmIdentity,req.body?.expectedQuoteRevision)})));
   router.patch('/api/crm/invoice-preparations/:id',route(async(req,res)=>res.json({success:true,invoice:await saveInvoicePreparation(req.params.id,req.body,req.crmIdentity)})));
   router.get('/api/crm/members', (_req,res)=>res.json({success:true,members:crmMembers()}));
   router.patch('/api/quotes/:id/follow-up', route(async(req,res)=>{

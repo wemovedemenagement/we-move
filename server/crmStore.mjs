@@ -31,7 +31,7 @@ export async function getQuoteMails(id) {return (await store()).getQuoteMails(id
 export async function leadNotificationTransaction(id,action) {return (await store()).leadNotificationTransaction(id,action);}
 export async function customerReceiptTransaction(id,action) {return (await store()).customerReceiptTransaction(id,action);}
 export async function getInvoicePreparations(){return (await store()).getInvoicePreparations();}
-export async function createInvoicePreparation(id,actor){return (await store()).createInvoicePreparation(id,actor);}
+export async function createInvoicePreparation(id,actor,expectedQuoteRevision){return (await store()).createInvoicePreparation(id,actor,expectedQuoteRevision);}
 export async function saveInvoicePreparation(id,payload,actor){return (await store()).saveInvoicePreparation(id,payload,actor);}
 
 export async function getInvoiceTestState(){return (await store()).getInvoiceTestState();}

@@ -94,7 +94,7 @@ export async function downloadCrmPdf(id:string,type:CrmPdfType,acceptedRevision?
 }
 export interface InvoicePreparation {id:string;quoteId:string;quoteReference:string;quoteRevision:number;revision:number;clientName:string;clientAddress:string;clientEmail:string;amountHT:number;taxAmount:number;amountTTC:number;taxRate:number;status:'brouillon';number:null;dueDate:string;notes:string;updatedAt:string;items:{description:string;quantity:number;unitPriceHT:number}[];}
 export async function fetchInvoicePreparations(){return (await request<{invoices:InvoicePreparation[]}>('/api/crm/invoice-preparations')).invoices;}
-export async function createInvoicePreparation(quoteId:string){return (await request<{invoice:InvoicePreparation}>('/api/crm/invoice-preparations',{method:'POST',body:JSON.stringify({quoteId})})).invoice;}
+export async function createInvoicePreparation(quoteId:string,expectedQuoteRevision?:number){return (await request<{invoice:InvoicePreparation}>('/api/crm/invoice-preparations',{method:'POST',body:JSON.stringify({quoteId,expectedQuoteRevision})})).invoice;}
 export async function saveInvoicePreparation(invoice:InvoicePreparation,dueDate:string,notes:string){return (await request<{invoice:InvoicePreparation}>('/api/crm/invoice-preparations/'+encodeURIComponent(invoice.id),{method:'PATCH',body:JSON.stringify({revision:invoice.revision,dueDate,notes})})).invoice;}
 
 export interface InvoiceTestState {mode:'test';session:number;counter:number;revision:number;lastNumber:string|null;}

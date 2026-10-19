@@ -1,6 +1,11 @@
 import {draftError} from './crmDraftModel.mjs';
 import {quoteTotals} from '../shared/quoteTotals.mjs';
-export function newInvoicePreparation(quote,lead,actor,acceptance){
+export function checkInvoiceSourceRevision(revision,expected){
+ if(expected===undefined)return;
+ if(!Number.isSafeInteger(expected)||expected<1)draftError(400,'Version de devis attendue invalide.');
+ if(revision!==expected)draftError(409,'Le devis de référence a changé. Vérifiez le nouvel aperçu avant de créer le brouillon.');
+}
+export function newInvoicePreparation(quote,lead,actor,acceptance,expectedQuoteRevision){
  if(!quote||!lead)draftError(404,'Devis ou dossier introuvable.');
  // Never invoice a working amendment that the client has not accepted.
  // Legacy dossiers without a recorded version retain their existing workflow.
@@ -8,6 +13,7 @@ export function newInvoicePreparation(quote,lead,actor,acceptance){
   if(!acceptance?.quote||acceptance.quoteRevision!==quote.clientAcceptance.quoteRevision||acceptance.quote.revision!==acceptance.quoteRevision||acceptance.quote.id!==quote.id||acceptance.quote.leadId!==lead.id)draftError(409,'La version acceptée est introuvable ou incohérente. Rechargez le dossier avant de préparer la facture.');
   quote=acceptance.quote;
  }
+ checkInvoiceSourceRevision(quote.revision,expectedQuoteRevision);
  if(!['confirme','termine'].includes(lead.status))draftError(409,'Le dossier doit être marqué accepté ou déménagement effectué.');
  const totals=quoteTotals(quote.items,quote.taxRate,quote.depositRate);
  if(!quote.items?.length||totals.amountTTC===null||totals.amountTTC<=0)draftError(400,'Enregistrez un devis chiffré avec une TVA définie.');
