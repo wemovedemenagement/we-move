@@ -13,7 +13,8 @@ const repositoryPattern = /^projects\/(wemove-b0057|694105269612)\/locations\/eu
 export function parseDeploymentArgs(args) {
   if (args.length === 0 || (args.length === 1 && args[0] === '--check')) return {commit: null};
   if (args.length === 2 && args[0] === '--commit' && /^[a-f0-9]{40}$/.test(args[1])) return {commit: args[1]};
-  throw new Error('Usage : npm run deploy:crm -- --check ou --commit <SHA Git complet de 40 caractères>.');
+  if (args.length === 2 && args[0] === '--verify' && /^[a-f0-9]{40}$/.test(args[1])) return {commit: args[1],verifyOnly:true};
+  throw new Error('Usage : npm run deploy:crm -- --check, --commit <SHA complet> ou --verify <SHA complet>.');
 }
 
 export function rolloutArgs(commit) {
@@ -57,7 +58,12 @@ export function verifyPublishedBuild(traffic, build, commit) {
   requireState(build?.name === splits[0].build && /^projects\/(wemove-b0057|694105269612)\/locations\/europe-west4\/backends\/we-move\/builds\/[^/]+$/.test(build.name), 'Build servi hors du backend attendu.');
   requireState(build.state === 'READY', 'Build servi non prêt.');
   requireState(build.source?.codebase?.hash === commit, 'Le commit effectivement servi ne correspond pas au commit demandé.');
-  requireState(repositoryPattern.test(build.source.codebase.repository||''), 'Dépôt du build servi inattendu.');
+  const codebase=build.source.codebase;
+  // Firebase may omit repository on resolved builds; its exact GitHub URI is
+  // another authoritative provenance field. Reject conflicting metadata.
+  requireState(codebase.repository!==undefined || codebase.uri!==undefined, 'Provenance du dépôt du build servi absente.');
+  if(codebase.repository!==undefined)requireState(repositoryPattern.test(codebase.repository), 'Dépôt du build servi inattendu.');
+  if(codebase.uri!==undefined)requireState(codebase.uri===`https://github.com/wemovedemenagement/we-move/commit/${commit}`, 'Lien de provenance du build servi inattendu.');
   return {build: build.name, commit, trafficPercent: 100};
 }
 
@@ -67,12 +73,12 @@ export async function runVerifiedDeployment(options, io) {
   if (!options.commit) return {mode: 'check', before, public: await io.checkPublic()};
   const ci = verifyCiRuns(await io.readCi(options.commit),options.commit);
   let launchError;
-  try { await io.launch(options.commit); } catch (error) { launchError = error; }
+  if(!options.verifyOnly)try { await io.launch(options.commit); } catch (error) { launchError = error; }
   let after;
   try { after = verifyCloudSnapshot(await io.readCloud()); }
   catch (error) { throw new Error('Contrôle après tentative de publication échoué : ' + error.message + (launchError ? ' Le lancement a également échoué.' : ' La version peut déjà être publiée ; intervention nécessaire.')); }
   if (launchError) throw new Error('La commande de publication a échoué ; les protections cloud ont été recontrôlées.');
   const {traffic, build} = await io.readPublished();
   const published = verifyPublishedBuild(traffic, build, options.commit);
-  return {mode: 'deploy', ci, before, after, published, public: await io.checkPublic()};
+  return {mode: options.verifyOnly?'verify':'deploy', ci, before, after, published, public: await io.checkPublic()};
 }

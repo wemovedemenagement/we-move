@@ -1,0 +1,52 @@
+{
+  "startedAt": "2026-10-19T03:59:14.102Z",
+  "finishedAt": "2026-10-19T03:59:17.871Z",
+  "status": "passed",
+  "mode": "verify",
+  "ci": {
+    "commit": "ece7e8d73a3e60b3eeb54a3968095294259ae2e7",
+    "runId": 39196682433,
+    "url": "https://github.com/wemovedemenagement/we-move/actions/runs/39196682433",
+    "conclusion": "success"
+  },
+  "before": {
+    "roles": [
+      "roles/datastore.user",
+      "roles/developerconnect.readTokenAccessor",
+      "roles/firebaseapphosting.computeRunner",
+      "roles/firebaseauth.viewer"
+    ],
+    "deleteProtection": true,
+    "pitr": true,
+    "firestore": true,
+    "localAccess": false,
+    "billingLive": false,
+    "totpAvailable": false
+  },
+  "after": {
+    "roles": [
+      "roles/datastore.user",
+      "roles/developerconnect.readTokenAccessor",
+      "roles/firebaseapphosting.computeRunner",
+      "roles/firebaseauth.viewer"
+    ],
+    "deleteProtection": true,
+    "pitr": true,
+    "firestore": true,
+    "localAccess": false,
+    "billingLive": false,
+    "totpAvailable": false
+  },
+  "published": {
+    "build": "projects/694105269612/locations/europe-west4/backends/we-move/builds/build-2026-10-19-001",
+    "commit": "ece7e8d73a3e60b3eeb54a3968095294259ae2e7",
+    "trafficPercent": 100
+  },
+  "public": {
+    "htmlStatus": 200,
+    "entry": "/assets/index-Un20uWKO.js",
+    "anonymousSessionStatus": 401,
+    "cache": "no-store",
+    "totpAvailable": false
+  }
+}

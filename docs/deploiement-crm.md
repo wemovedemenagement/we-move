@@ -40,7 +40,7 @@ Après les contrôles cloud et GitHub, le script lance le CLI officiel, attend s
 
 1. Relit les protections et les rôles, même si le lancement a échoué.
 2. Vérifie qu'un seul build `READY` reçoit 100 % du trafic, sans réconciliation en cours.
-3. Compare le hash source du build servi avec le SHA demandé et vérifie son dépôt.
+3. Compare le hash source du build servi avec le SHA demandé et vérifie son dépôt : référence Developer Connect lorsqu'elle est présente, ou lien GitHub exact du commit lorsque Firebase omet cette référence. Si les deux champs existent, tous deux doivent correspondre. Le dépôt lié au backend est aussi vérifié avant et après la tentative.
 4. Vérifie le HTML public et son asset principal, le cache CRM `no-store`, l'état MFA attendu et le refus 401 de la session sans authentification.
 
 Le résultat est écrit dans `tmp/crm-deployment-latest.json`, hors Git et hors des sources locales déployées. Un résultat `passed` décrit ces contrôles ciblés, pas une recette métier complète.
@@ -49,12 +49,22 @@ Le résultat est écrit dans `tmp/crm-deployment-latest.json`, hors Git et hors 
 
 Un échec avant lancement empêche la publication par cet outil. Un échec après lancement peut concerner une version déjà en ligne : il est signalé, mais le script ne rétablit ni une ancienne image ni des rôles plus larges automatiquement. Consulter l'état App Hosting et le rapport avant toute nouvelle tentative. Ne pas supposer qu'un délai d'attente équivaut à l'absence de publication.
 
+Pour terminer un contrôle interrompu sans reconstruire ni publier une seconde fois :
+
+```powershell
+npm run deploy:crm -- --verify <SHA-complet-attendu>
+```
+
+Ce mode relit la CI, les protections cloud, le build servi et les réponses publiques, mais ne lance aucun rollout. Il refuse de valider un autre commit même si celui-ci est plus récent.
+
 Les déploiements manuels depuis la console, les rollouts automatiques et les commandes directes contournent ce contrôle local. Leur existence n'est pas désactivée par le script. Toute autre voie doit assurer les mêmes vérifications.
 
 ## Validation
 
 `scripts/test-crm-deployment.mjs` utilise uniquement des données simulées. Il couvre notamment le mode lecture seule, la CI en échec/en cours, l'apparition d'un rôle large, les protections manquantes, le contrôle après échec du CLI, le trafic partagé, le mauvais commit et l'échec de la vérification HTTP. Cette suite est intégrée à la validation de livraison, qui passe de 50 à 51 suites.
 
-Contrôle réel en lecture seule réussi le 19 octobre 2026 : quatre rôles réduits présents, protection de suppression et PITR actifs, verrous de facturation/MFA conservés, page CRM HTTP 200 et session anonyme refusée en 401. Cela ne valide pas encore une publication réelle par la nouvelle commande ; cette preuve sera ajoutée après son premier usage.
+Contrôle réel en lecture seule réussi le 19 octobre 2026 : quatre rôles réduits présents, protection de suppression et PITR actifs, verrous de facturation/MFA conservés, page CRM HTTP 200 et session anonyme refusée en 401. Premier rollout GitHub du commit `ece7e8d73a3e60b3eeb54a3968095294259ae2e7` terminé : build prêt et hash exact servi à 100 %. Le premier contrôle final a refusé les métadonnées sans champ `repository` ; Firebase renvoyait le lien GitHub exact dans `uri`. Cette forme réelle est désormais couverte par la validation et ses tests, y compris le rejet d'une provenance contradictoire. Le rapport de la dernière exécution fait foi pour son résultat final.
+
+Le contrôle repris avec `--verify` a réussi : preuve conservée dans `deploiement-crm-verification-2026-10-19.json`. Il confirme le commit servi, les quatre rôles avant/après, les verrous de phase et le contrôle HTTP. Il ne comporte aucune écriture sur les dossiers clients, ni envoi réel.
 
 Références : [rollouts App Hosting](https://firebase.google.com/docs/app-hosting/rollouts), [source du build et hash Git servi](https://firebase.google.com/docs/reference/apphosting/rest/v1beta/projects.locations.backends.builds#BuildSource.CodebaseSource).
