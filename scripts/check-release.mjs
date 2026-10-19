@@ -10,6 +10,7 @@ const suites=[
   'test-mission-timeline',
   'test-mission-handover',
   'test-mission-field-sheet',
+  'test-mission-departure-check',
   'test-mission-resources',
   'test-mission-selection',
   'test-document-reminder',

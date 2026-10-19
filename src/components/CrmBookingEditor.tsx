@@ -295,7 +295,7 @@ export default function CrmBookingEditor({
         </p>
       </div>}
       <nav className="mission-mode-switch" aria-label="Vue de la mission"><button type="button" aria-pressed={view==='organisation'} onClick={()=>setView('organisation')}><CalendarDays size={16}/>Organisation</button><button type="button" aria-pressed={view==='terrain'} onClick={()=>setView('terrain')}><MapPin size={16}/>Terrain</button></nav>
-      {view==='terrain'&&(loading?<p role="status">Chargement de la fiche terrain…</p>:dossier&&data?<CrmMissionFieldSheet dossier={dossier} booking={booking||null} registry={data.registry} stale={resourcesStale} dirty={dirty||closureDirty||agreementDirty||documentDirty||reminderDirty} onOrganise={id=>{setView('organisation');window.requestAnimationFrame(()=>jump(id));}}/>:<p role="alert">Fiche terrain indisponible. Revenez à l’organisation pour vérifier le chargement du dossier et du planning.</p>)}
+      {view==='terrain'&&(loading?<p role="status">Chargement de la fiche terrain…</p>:dossier&&data?<CrmMissionFieldSheet dossier={dossier} booking={booking||null} registry={data.registry} planning={data} onReview={target=>leave(target==='visit'?onVisit:onEdit)} onRefresh={()=>void load()} refreshDisabled={busy||agreementBusy||documentBusy||reminderBusy||loading} stale={resourcesStale} dirty={dirty||closureDirty||agreementDirty||documentDirty||reminderDirty} onOrganise={id=>{setView('organisation');window.requestAnimationFrame(()=>jump(id));}}/>:<p role="alert">Fiche terrain indisponible. Revenez à l’organisation pour vérifier le chargement du dossier et du planning.</p>)}
       <div hidden={view==='terrain'}>
       {loading && (
         <p role="status" className="mission-hint">

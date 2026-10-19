@@ -1,15 +1,17 @@
 import {MapPin, Phone, Navigation, Truck, Users, CalendarDays, ArrowRight} from 'lucide-react';
-import type {CrmDossier, MoveBooking, ResourceRegistry} from '../services/crmService';
+import type {CrmDossier, MoveBooking, ResourceRegistry, PlanningData} from '../services/crmService';
 import {missionFieldSheet} from '../../shared/missionFieldSheet.mjs';
 import CrmVisitReport from './CrmVisitReport';
+import CrmMissionDepartureCheck from './CrmMissionDepartureCheck';
 import './crmMissionFieldSheet.css';
 
-export default function CrmMissionFieldSheet({dossier,booking,registry,dirty,stale,onOrganise}:{dossier:CrmDossier;booking:MoveBooking|null;registry:ResourceRegistry;dirty:boolean;stale:boolean;onOrganise:(section:string)=>void}) {
+export default function CrmMissionFieldSheet({dossier,booking,registry,dirty,stale,onOrganise,planning,onReview,onRefresh,refreshDisabled}:{dossier:CrmDossier;booking:MoveBooking|null;registry:ResourceRegistry;dirty:boolean;stale:boolean;onOrganise:(section:string)=>void;planning:PlanningData;onReview:(target:string)=>void;onRefresh:()=>void;refreshDisabled:boolean}) {
   const sheet=missionFieldSheet(dossier,booking,registry);
   return <section className="mission-field-sheet" aria-label="Fiche terrain">
     <div className="field-sheet-heading"><div><span className="crm-eyebrow">L’ESSENTIEL POUR L’ÉQUIPE</span><h3>Votre fiche terrain</h3><p>Informations enregistrées · horaires de Paris</p></div><span className="field-sheet-state" data-active={sheet.active}>{sheet.state}</span></div>
     {dirty&&<p className="field-sheet-notice" role="status">Des modifications ne sont pas enregistrées. Cette vue présente la dernière mission sauvegardée.</p>}
     {stale&&<p className="field-sheet-notice" role="status">Planning non actualisé. Vérifiez les moyens et le créneau avant de partir.</p>}
+    <CrmMissionDepartureCheck dossier={dossier} booking={booking} planning={planning} stale={stale} dirty={dirty} refreshDisabled={refreshDisabled} onRefresh={onRefresh} onCorrect={target=>{if(target==='details'||target==='visit')onReview(target);else onOrganise('mission-'+target);}}/>
     <div className="field-sheet-essential"><div><CalendarDays size={18}/><span>Début<strong>{sheet.start}</strong></span></div><div><CalendarDays size={18}/><span>Fin de réservation<strong>{sheet.end}</strong></span></div><div><Truck size={18}/><span>Volume du dossier<strong>{sheet.volume}</strong></span></div></div>
     <div className="field-sheet-client"><div><strong>{dossier.lead.fullName}</strong><span>Client du dossier</span></div>{sheet.phoneLink?<a href={sheet.phoneLink}><Phone size={16}/>Appeler le client</a>:<span>{sheet.phone||'Téléphone à compléter'}</span>}</div>
     <div className="field-sheet-addresses">{sheet.access.map(part=><article key={part.side}>
