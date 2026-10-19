@@ -6,6 +6,7 @@ import CrmMissionResources from './CrmMissionResources';
 import {missionSelectionReview} from '../../shared/missionResources.mjs';
 import CrmVisitPhotos from './CrmVisitPhotos';
 import CrmVisitReport from './CrmVisitReport';
+import CrmMissionFieldSheet from './CrmMissionFieldSheet';
 import CrmMoveClosure from './CrmMoveClosure';
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
@@ -60,6 +61,7 @@ export default function CrmBookingEditor({
     lock = useRef(false),
     alive = useRef(true);
   const sectionOpened=useRef(false);
+  const [view,setView]=useState<'organisation'|'terrain'>('organisation');
   const [data, setData] = useState<PlanningData | null>(null),
     [dossier, setDossier] = useState<CrmDossier | null>(null);
   const [start, setStart] = useState(lead.scheduledTime || ""),
@@ -272,7 +274,7 @@ export default function CrmBookingEditor({
           <X size={21} />
         </button>
       </header>
-      <div className="mission-overview">
+      {view==='organisation'&&<div className="mission-overview">
         <div>
           <strong>{requestCity(lead.departureAddress)}</strong>
           <ArrowRight size={18} />
@@ -291,7 +293,10 @@ export default function CrmBookingEditor({
           )}
           {fields.formula && <span>{fields.formula}</span>}
         </p>
-      </div>
+      </div>}
+      <nav className="mission-mode-switch" aria-label="Vue de la mission"><button type="button" aria-pressed={view==='organisation'} onClick={()=>setView('organisation')}><CalendarDays size={16}/>Organisation</button><button type="button" aria-pressed={view==='terrain'} onClick={()=>setView('terrain')}><MapPin size={16}/>Terrain</button></nav>
+      {view==='terrain'&&(loading?<p role="status">Chargement de la fiche terrain…</p>:dossier&&data?<CrmMissionFieldSheet dossier={dossier} booking={booking||null} registry={data.registry} stale={resourcesStale} dirty={dirty||closureDirty||agreementDirty||documentDirty||reminderDirty} onOrganise={id=>{setView('organisation');window.requestAnimationFrame(()=>jump(id));}}/>:<p role="alert">Fiche terrain indisponible. Revenez à l’organisation pour vérifier le chargement du dossier et du planning.</p>)}
+      <div hidden={view==='terrain'}>
       {loading && (
         <p role="status" className="mission-hint">
           Chargement de la mission…
@@ -631,6 +636,7 @@ export default function CrmBookingEditor({
       </form>
       {!loading&&dossier&&<div id="mission-documents" tabIndex={-1}><CrmDocumentChecklist onAgreement={()=>jump("mission-agreement")} key={lead.id+'-'+(dossier.lead.documentChecklist?.revision||0)+'-'+(dossier.acceptance?.quoteRevision||0)} lead={dossier.lead} acceptedRevision={dossier.acceptance?.quoteRevision||0} canEdit={canEdit} disabled={busy||dirty||closureDirty||agreementDirty||agreementBusy||reminderDirty||reminderBusy} onReload={()=>{if(!documentDirty||window.confirm("Recharger les pièces et abandonner cette saisie ?"))void load();}} onDirty={setDocumentDirty} onBusy={setDocumentBusy} onSaved={updated=>{setDocumentDirty(false);setDossier(current=>current?{...current,lead:updated}:null);onSaved(updated);setSuccess('Réceptions enregistrées. Les pièces restent dans votre messagerie ou votre dossier papier.');}}/><CrmDocumentReminder key={'reminder-'+lead.id+'-'+(dossier.lead.documentChecklist?.revision||0)+'-'+(dossier.acceptance?.quoteRevision||0)} dossier={dossier} canEdit={canEdit} disabled={busy||dirty||closureDirty||agreementDirty||agreementBusy||documentDirty||documentBusy} onDirty={setReminderDirty} onBusy={setReminderBusy} onAgreement={()=>jump('mission-agreement')} onReload={()=>{if(!reminderDirty||window.confirm('Recharger le suivi et abandonner cette saisie ?'))void load();}} onSaved={saved=>{setDossier(current=>current?{...current,lead:saved}:null);onSaved(saved);}}/></div>}
       {!loading && booking && !booking.cancelled && ['confirme','termine'].includes(lead.status) && <section id="mission-closure" tabIndex={-1}><CrmMoveClosure key={booking.leadId} booking={booking} disabled={!canEdit || busy || dirty || agreementDirty || agreementBusy || documentDirty || documentBusy || reminderDirty || reminderBusy} onBusy={setBusy} onDirty={()=>setClosureDirty(true)} onSaved={(updated,nextLead)=>{setData(current=>current?{...current,bookings:current.bookings.map(b=>b.leadId===updated.leadId?updated:b)}:current);setClosureDirty(false);setDossier(current=>current?{...current,lead:nextLead}:null);onSaved(nextLead);}}/></section>}
+      </div>
     </dialog>
   );
 }

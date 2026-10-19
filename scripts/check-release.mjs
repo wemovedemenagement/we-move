@@ -9,6 +9,7 @@ const suites=[
   'test-planning-queue',
   'test-mission-timeline',
   'test-mission-handover',
+  'test-mission-field-sheet',
   'test-mission-resources',
   'test-mission-selection',
   'test-document-reminder',
