@@ -1,3 +1,5 @@
+import CrmVisitCatalogue from './CrmVisitCatalogue';
+import {addVisitCatalogueItem} from '../../shared/visitCatalogue.mjs';
 import {visitChecks} from '../../shared/visitChecks.mjs';
 import './crmTechnicalVisitField.css';
 import {useRef,useState} from 'react';
@@ -11,6 +13,7 @@ export default function CrmTechnicalVisit({lead,onDirty}:{lead:QuoteLead;onDirty
     departure:{floor:lead.departureFloor==='À préciser'?'':lead.departureFloor,elevator:lead.departureElevator?'Oui':'',carry:'',notes:''},
     arrival:{floor:lead.arrivalFloor==='À préciser'?'':lead.arrivalFloor,elevator:lead.arrivalElevator?'Oui':'',carry:'',notes:''},
   });
+  const [catalogueError,setCatalogueError]=useState('');
   const [apply,setApply]=useState(false),[room,setRoom]=useState('Séjour'),[showAllChecks,setShowAllChecks]=useState(false);
   const [removed,setRemoved]=useState<{item:TechnicalVisit['items'][number];index:number}|null>(null);
   const root=useRef<HTMLElement>(null);
@@ -25,7 +28,9 @@ export default function CrmTechnicalVisit({lead,onDirty}:{lead:QuoteLead;onDirty
     <div className="visit-field-overview"><h4>{checks.length?checks.length+' point'+(checks.length>1?'s':'')+' à vérifier':'Inventaire et repères d’accès renseignés'}</h4><p>Complétez les informations connues pendant la visite. Les repères manquants restent à vérifier avec le client.</p>{!!checks.length&&<ul>{(showAllChecks?checks:checks.slice(0,4)).map(issue=><li key={issue.fieldId}><button type="button" onClick={()=>reveal(issue.fieldId)}>{issue.label}<ArrowRight size={14}/></button></li>)}</ul>}{checks.length>4&&<button type="button" onClick={()=>setShowAllChecks(v=>!v)}>{showAllChecks?'Réduire les points':'Voir les '+checks.length+' points'}</button>}</div>
     <div className="technical-visit-heading"><Package size={22}/><div><h3>Les biens à déménager</h3><p>Relevez les meubles et cartons, pièce par pièce.</p></div></div>
     {value.items.length===0&&<p className="technical-visit-empty">Aucun bien recensé. Ajoutez votre première ligne pour commencer l’estimation.</p>}
-    <div className="visit-inventory-toolbar"><label>Pièce à inventorier<select aria-label="Pièce du prochain bien" value={room} onChange={e=>setRoom(e.target.value)}>{visitRooms.map(r=><option key={r}>{r}</option>)}</select></label><button id="visit-add-item" type="button" className="technical-visit-add" disabled={value.items.length>=150} onClick={()=>{const index=value.items.length;update({...value,items:[...value.items,{room,label:'',quantity:1,unitVolume:0}]});reveal('visit-item-'+index+'-label');}}><Plus size={17}/> Ajouter un bien</button></div>
+    <div className="visit-inventory-toolbar"><label>Pièce à inventorier<select aria-label="Pièce du prochain bien" value={room} onChange={e=>{e.stopPropagation();setRoom(e.target.value);}}>{visitRooms.map(r=><option key={r}>{r}</option>)}</select></label><button id="visit-add-item" type="button" className="technical-visit-add" disabled={value.items.length>=150} onClick={()=>{const index=value.items.length;update({...value,items:[...value.items,{room,label:'',quantity:1,unitVolume:0}]});reveal('visit-item-'+index+'-label');}}><Plus size={17}/> Ajouter un bien</button></div>
+    <CrmVisitCatalogue room={room} items={value.items} onInspect={()=>{const index=value.items.findIndex(item=>item.room===room);if(index>=0)reveal('visit-item-'+index+'-volume');}} onAdd={item=>{try{const addition=addVisitCatalogueItem(value,item,room);update(addition.value);setCatalogueError('');return true;}catch(e){setCatalogueError(e instanceof Error?e.message:'Ajout impossible.');return false;}}}/>
+    {catalogueError&&<p role="alert" className="mission-warning">{catalogueError}</p>}
     {removed&&<div className="visit-undo" role="status"><span>{removed.item.label||'Bien'} retiré de l’inventaire.</span><button type="button" disabled={value.items.length>=150} onClick={()=>{const items=[...value.items];const index=Math.min(removed.index,items.length);items.splice(index,0,removed.item);update({...value,items});setRemoved(null);reveal('visit-item-'+index+'-label');}}><Undo2 size={15}/>Rétablir le bien</button></div>}
     {visitRooms.filter(r=>value.items.some(item=>item.room===r)).map(r=><details className="visit-room" key={r}><summary><span className="visit-room-title">{r}<ChevronDown size={16} aria-hidden="true"/></span><small>{value.items.filter(item=>item.room===r).length} ligne{value.items.filter(item=>item.room===r).length>1?'s':''} · {inventoryVolume(value.items.filter(item=>item.room===r)).toLocaleString('fr-FR')} m³ inventoriés</small></summary><div className="technical-visit-items">{value.items.map((item,index)=>item.room===r&&<fieldset key={index} className="technical-visit-item"><legend>Bien {index+1}</legend>
       <label>Pièce<select aria-label={`Pièce ${index+1}`} value={item.room} onChange={e=>itemChange(index,{room:e.target.value})}>{visitRooms.map(room=><option key={room}>{room}</option>)}</select></label>

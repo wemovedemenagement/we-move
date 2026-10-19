@@ -19,6 +19,7 @@ const suites=[
   'test-crm-invoice-source-refresh',
   'test-crm-storage-stays',
   'test-visit-checks',
+  'test-visit-catalogue',
   'test-crm-commercial-contact','test-crm-quote-follow-up',
   'test-quote-readiness',
   'test-departure-readiness',
