@@ -192,7 +192,16 @@ export async function saveFollowUp(id,payload,actor) {
 
 const invoicePreparations=()=>firestore().collection(collectionName('crm_invoice_preparations'));
 export async function getInvoicePreparations(){return (await invoicePreparations().orderBy('updatedAt','desc').get()).docs.map(d=>d.data());}
-export async function createInvoicePreparation(id,actor){const ref=invoicePreparations().doc(draftId(id));return firestore().runTransaction(async tx=>{const existing=await tx.get(ref);if(existing.exists)return existing.data();const q=await tx.get(drafts().doc(id)),l=await tx.get(requests().doc(id));const result=newInvoicePreparation(q.data(),l.data(),actor);tx.create(ref,result);return result;});}
+export async function createInvoicePreparation(id,actor){
+ const ref=invoicePreparations().doc(draftId(id));
+ return firestore().runTransaction(async tx=>{
+  const existing=await tx.get(ref);if(existing.exists)return existing.data();
+  const q=await tx.get(drafts().doc(id)),l=await tx.get(requests().doc(id)),quote=q.data();
+  const accepted=quote?.clientAcceptance?await tx.get(acceptances(id).doc(String(quote.clientAcceptance.quoteRevision))):null;
+  const result=newInvoicePreparation(quote,l.data(),actor,accepted?.data());
+  tx.create(ref,result);return result;
+ });
+}
 export async function saveInvoicePreparation(id,payload,actor){const ref=invoicePreparations().doc(draftId(id));return firestore().runTransaction(async tx=>{const current=await tx.get(ref);if(!current.exists)draftError(404,'Brouillon introuvable.');const result=reviseInvoicePreparation(current.data(),payload,actor);tx.set(ref,result);return result;});}
 
 import {initialInvoiceTestState,invoiceTestChange} from './crmInvoiceTestModel.mjs';

@@ -193,10 +193,12 @@ export function saveFollowUp(id,payload,actor) {
 
 export function getInvoicePreparations(){db().exec('CREATE TABLE IF NOT EXISTS invoice_preparations (id TEXT PRIMARY KEY, data TEXT NOT NULL)');return db().prepare('SELECT data FROM invoice_preparations').all().map(r=>JSON.parse(r.data)).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt));}
 export function createInvoicePreparation(id,actor){
- draftId(id);getInvoicePreparations();
+ draftId(id);getInvoicePreparations();acceptanceTable();
  return draftTransaction(c=>{const found=c.prepare('SELECT data FROM invoice_preparations WHERE id=?').get(id);if(found)return JSON.parse(found.data);
  const q=c.prepare('SELECT data FROM quote_drafts WHERE id=?').get(id),l=c.prepare('SELECT data FROM requests WHERE id=?').get(id);
- const result=newInvoicePreparation(q&&JSON.parse(q.data),l&&JSON.parse(l.data),actor);
+ const quote=q&&JSON.parse(q.data);
+ const accepted=quote?.clientAcceptance?c.prepare('SELECT data FROM quote_acceptances WHERE id=? AND revision=?').get(id,quote.clientAcceptance.quoteRevision):null;
+ const result=newInvoicePreparation(quote,l&&JSON.parse(l.data),actor,accepted&&JSON.parse(accepted.data));
  c.prepare('INSERT INTO invoice_preparations(id,data) VALUES(?,?)').run(id,JSON.stringify(result));return result;});
 }
 export function saveInvoicePreparation(id,payload,actor){draftId(id);getInvoicePreparations();return draftTransaction(c=>{const r=c.prepare('SELECT data FROM invoice_preparations WHERE id=?').get(id);if(!r)draftError(404,'Brouillon introuvable.');const result=reviseInvoicePreparation(JSON.parse(r.data),payload,actor);c.prepare('UPDATE invoice_preparations SET data=? WHERE id=?').run(JSON.stringify(result),id);return result;});}

@@ -1,7 +1,13 @@
 import {draftError} from './crmDraftModel.mjs';
 import {quoteTotals} from '../shared/quoteTotals.mjs';
-export function newInvoicePreparation(quote,lead,actor){
+export function newInvoicePreparation(quote,lead,actor,acceptance){
  if(!quote||!lead)draftError(404,'Devis ou dossier introuvable.');
+ // Never invoice a working amendment that the client has not accepted.
+ // Legacy dossiers without a recorded version retain their existing workflow.
+ if(quote.clientAcceptance){
+  if(!acceptance?.quote||acceptance.quoteRevision!==quote.clientAcceptance.quoteRevision||acceptance.quote.revision!==acceptance.quoteRevision||acceptance.quote.id!==quote.id||acceptance.quote.leadId!==lead.id)draftError(409,'La version acceptée est introuvable ou incohérente. Rechargez le dossier avant de préparer la facture.');
+  quote=acceptance.quote;
+ }
  if(!['confirme','termine'].includes(lead.status))draftError(409,'Le dossier doit être marqué accepté ou déménagement effectué.');
  const totals=quoteTotals(quote.items,quote.taxRate,quote.depositRate);
  if(!quote.items?.length||totals.amountTTC===null||totals.amountTTC<=0)draftError(400,'Enregistrez un devis chiffré avec une TVA définie.');
