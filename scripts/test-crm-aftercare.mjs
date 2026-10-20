@@ -11,6 +11,7 @@ assert.equal(enriched.find(l=>l.id==='legacy').moveFollowUp,null);
 assert.equal(enriched.find(l=>l.id==='resolved').moveFollowUp,null);
 assert.equal(enriched.find(l=>l.id==='cancelled').moveFollowUp,null);
 assert.equal(leads[0].moveFollowUp.note,'Client forged value','Projection must not mutate input');
+assert.equal(withMoveFollowUps([{id:'blank'}],[{leadId:'blank',closure:{followUp:' \n '}}])[0].moveFollowUp,null);
 const queue=workQueue(enriched,today);
 assert.deepEqual(queue.filter(r=>matchesWorkFilter(r,'aftercare',today)).map(r=>r.lead.id),['late','today','future']);
 assert.deepEqual(queue.filter(r=>matchesWorkFilter(r,'urgent',today)).map(r=>r.lead.id),['late','today']);

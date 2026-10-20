@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {workQueue,nextStep,matchesWorkFilter} from '../shared/crmWorkflow.mjs';
 import {followUpDateIn} from '../shared/followUp.mjs';
+import {dashboardWork,isWorkDueNow,dashboardResponsible} from '../shared/dashboardWork.mjs';
 const today='2026-10-02';
 const rows=[{id:'visit',status:'prise_contact',visitDate:'2026-09-30T10:00',visitStatus:'programmee',nextAction:{type:'visite',dueDate:'2026-10-05'}},{id:'call',status:'prise_contact',nextAction:{type:'rappeler',dueDate:today}},{id:'future',status:'prise_contact',nextAction:{type:'rappeler',dueDate:'2026-10-10'}},{id:'new',status:'nouveau'},{id:'closed',status:'refuse'}];
 const queue=workQueue(rows,today);assert.equal(queue.length,4);assert.equal(queue[0].lead.id,'visit');assert.equal(queue[0].bucket,'overdue');assert.equal(queue[0].step.label,'Vérifier la visite passée');assert.equal(queue[1].bucket,'today');assert.equal(queue.find(r=>r.lead.id==='future').bucket,'upcoming');assert.equal(queue.find(r=>r.lead.id==='new').bucket,'undated');
@@ -16,3 +17,29 @@ assert.equal(followUpDateIn(7,'2026-12-29'),'2027-01-05');
 assert.equal(followUpDateIn(1,'2026-03-28'),'2026-03-29');
 assert.equal(followUpDateIn(1,'2026-10-24'),'2026-10-25');
 console.log('Relances sans action et raccourcis de date validés, y compris changements de mois, année et heure.');
+const contextual=[
+ {id:'visit-15',fullName:'Visite après-midi',status:'prise_contact',visitDate:today+'T15:00',visitStatus:'programmee',nextAction:{type:'devis',dueDate:today}},
+ {id:'visit-09',fullName:'Visite matin',status:'prise_contact',visitDate:today+'T09:00',visitStatus:'programmee',nextAction:{type:'rappeler',dueDate:'2026-10-10'}},
+ {id:'done-visit',status:'prise_contact',visitDate:today+'T08:00',visitStatus:'effectuee'},
+ {id:'future-action',status:'prise_contact',nextAction:{type:'rappeler',dueDate:'2026-10-10'}},
+ {id:'new',status:'nouveau'},
+ {id:'billing',status:'termine'},
+ {id:'aftercare-unknown',status:'termine',moveFollowUp:{note:'Lettre à récupérer',owner:'',due:undefined}},
+ {id:'aftercare-future',status:'termine',moveFollowUp:{note:'Contacter',owner:'Bureau',due:'2026-10-10T10:00'}},
+];
+const unchanged=structuredClone(contextual),visits=dashboardWork(contextual,today,'visit');
+assert.deepEqual(visits.map(row=>row.lead.id),['visit-09','visit-15']);
+assert.ok(visits.every(row=>row.step.target==='visit'&&row.step.label==='Consulter la visite'&&row.bucket==='today'));
+assert.match(visits[0].step.reason,/09:00/);
+assert.equal(nextStep(contextual[1],today).target,'summary','Le contexte de visite ne modifie pas l’action réellement enregistrée');
+const focused=dashboardWork(contextual,today).filter(isWorkDueNow).map(row=>row.lead.id);
+for(const id of ['new','aftercare-unknown','visit-15','visit-09'])assert.ok(focused.includes(id));
+for(const id of ['billing','aftercare-future','future-action'])assert.ok(!focused.includes(id));
+assert.ok(dashboardWork(contextual,today,'urgent').some(row=>row.lead.id==='visit-09'&&row.step.target==='visit'));
+const incomplete=workQueue([contextual[6]],today)[0];assert.equal(incomplete.bucket,'undated');assert.match(incomplete.step.reason,/Échéance à préciser/);assert.doesNotMatch(incomplete.step.reason,/undefined/);
+assert.deepEqual(dashboardResponsible(contextual[6]),{id:'',name:'Responsable à définir'});
+assert.deepEqual(dashboardResponsible({...contextual[6],moveFollowUp:{...contextual[6].moveFollowUp,owner:' Bureau '}}),{id:'mission:Bureau',name:'Bureau'});
+assert.deepEqual(dashboardResponsible({assigneeId:'user',assigneeName:' Agent '}),{id:'user',name:'Agent'});
+assert.equal(dashboardResponsible({assigneeName:'Nom sans affectation'}).id,'');
+assert.deepEqual(contextual,unchanged);
+console.log('Vue du jour : actions futures accessibles, visites contextualisées et triées, suivi sans échéance valide, responsables et données enregistrées préservées.');
