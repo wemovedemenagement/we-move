@@ -29,6 +29,7 @@ const suites=[
   'test-aftercare-queue',
   'test-crm-aftercare',
   'test-crm-move-closure',
+  'test-closure-guidance',
   'test-planning-availability',
   'test-crm-absences',
   'test-crm-visit-photos',

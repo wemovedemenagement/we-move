@@ -28,6 +28,7 @@ export default function CrmMissionFieldSheet({dossier,booking,registry,dirty,sta
     {!!sheet.services.length&&<details className="field-sheet-services"><summary>Prestations et répartition · {sheet.referenceLabel}</summary>{(['entreprise','client'] as const).map(kind=><section key={kind}><h4>{kind==='entreprise'?'À la charge de WE MOVE':'À la charge du client'}</h4><ul>{sheet.services.filter(row=>row.responsibility===kind).map((row,index)=><li key={index}>{row.label}</li>)}</ul></section>)}</details>}
     {dossier.lead.notes&&<details className="field-sheet-services"><summary>Précisions transmises par le client</summary><p className="field-sheet-notes">{dossier.lead.notes}</p></details>}
     <CrmVisitReport lead={dossier.lead}/>
+    {booking&&!booking.cancelled&&['confirme','termine'].includes(dossier.lead.status)&&<button className="field-sheet-edit" type="button" onClick={()=>onOrganise('mission-closure')}>{booking.closure?'Consulter le retour d’intervention':'Renseigner le retour d’intervention'}<ArrowRight size={16}/></button>}
     <button className="field-sheet-edit" type="button" onClick={()=>onOrganise('mission-slot')}>Revenir à l’organisation de la mission<ArrowRight size={16}/></button>
   </section>;
 }
