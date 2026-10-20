@@ -1,3 +1,5 @@
+import {quotePeriodIssues} from '../../shared/quoteReadiness.mjs';
+import './crmQuoteDates.css';
 import type {CrmQuoteDetails} from '../types/crm';
 import {documentSections,formulaServices} from '../../shared/quoteDocument.mjs';
 import {movingFormulas} from '../../shared/movingFormulas.mjs';
@@ -7,11 +9,14 @@ type Field = [string,string,string?,string[]?];
 const definitions=(documentSections as {title:string;fields:Field[]}[]).flatMap(section=>section.fields);
 export default function QuoteDocumentFields({value,onChange,part='project'}:{value:CrmQuoteDetails;onChange:(value:CrmQuoteDetails)=>void;part?:'project'|'client'|'formula'|'route'|'conditions'}) {
  const services=formulaServices(value.fields.formula);
+ const dateIssues=quotePeriodIssues(value.fields);
  const set=(key:string,text:string)=>onChange({...value,fields:{...value.fields,[key]:text},...(key==='formula'?{services:formulaServices(text)||[]}: {})});
  const field=(key:string)=>{
   const definition=definitions.find(row=>row[0]===key);if(!definition)return null;
   const [,label,type,choices]=definition;
-  return <label key={key} className={type==='textarea'?'quote-document-wide':''} htmlFor={`qd-${key}`}>{label}{key==='clientName'&&<span aria-hidden="true"> *</span>}{type==='select'?<select id={`qd-${key}`} value={value.fields[key]||''} onChange={e=>set(key,e.target.value)}>{choices!.map(option=><option key={option} value={option}>{option||'À préciser'}</option>)}</select>:type==='textarea'?<textarea id={`qd-${key}`} rows={2} maxLength={3000} value={value.fields[key]||''} onChange={e=>set(key,e.target.value)}/>:<input id={`qd-${key}`} required={key==='clientName'} type={type||'text'} min={type==='number'?0:undefined} max={type==='number'?1000000000:undefined} step={type==='number'?'0.001':undefined} maxLength={254} value={value.fields[key]||''} onChange={e=>set(key,e.target.value)}/>}</label>;
+  const issue=type==='date'?dateIssues.find(item=>item.key===key):undefined;
+  const minimum=type==='date'&&key.endsWith('End')?value.fields[key.replace(/End$/,'Start')]||undefined:undefined;
+  return <label key={key} className={type==='textarea'?'quote-document-wide':''} htmlFor={`qd-${key}`}>{label}{key==='clientName'&&<span aria-hidden="true"> *</span>}{type==='select'?<select id={`qd-${key}`} value={value.fields[key]||''} onChange={e=>set(key,e.target.value)}>{choices!.map(option=><option key={option} value={option}>{option||'À préciser'}</option>)}</select>:type==='textarea'?<textarea id={`qd-${key}`} rows={2} maxLength={3000} value={value.fields[key]||''} onChange={e=>set(key,e.target.value)}/>:<input id={`qd-${key}`} required={key==='clientName'} type={type||'text'} min={type==='number'?0:minimum} aria-invalid={issue?true:undefined} aria-describedby={issue?`qd-${key}-issue`:undefined} max={type==='number'?1000000000:undefined} step={type==='number'?'0.001':undefined} maxLength={254} value={value.fields[key]||''} onChange={e=>set(key,e.target.value)}/>}{issue&&<small className="quote-date-issue" id={`qd-${key}-issue`}>{issue.message}</small>}</label>;
  };
  if(part==='conditions')return <div className="quote-document-fields"><section className="quote-edit-section" id="quote-conditions"><div className="quote-section-heading"><span>05</span><div><h3>Garanties et conditions</h3><p>Les engagements qui figurent sur votre proposition.</p></div><ShieldCheck size={21}/></div><div className="quote-document-grid">{['guarantee','coveredValue','itemLimit','balanceWhen','paymentMethods'].map(field)}</div><details className="quote-more"><summary>Conditions particulières et suppléments</summary><div className="quote-document-grid">{['insuranceNotes','liftExtra','vehicleExtra','staffExtra','co2','co2Method','signatureCity'].map(field)}</div></details><details className="quote-more"><summary>Interlocuteur commercial</summary><div className="quote-document-grid">{['salesName','salesEmail','salesPhone','salesMobile'].map(field)}</div></details></section><div className="quote-fixed-annexes"><ShieldCheck size={19}/><div><strong>Vos annexes restent inchangées</strong><p>CGV, information RGPD et formulaire de déclaration de valeur.</p></div></div></div>;
  return <div className="quote-document-fields">
