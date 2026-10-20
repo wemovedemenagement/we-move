@@ -4,3 +4,10 @@
 
 .crm-draft-dialog>.quote-editor-save-footer{margin:24px 0 0}
 
+
+.crm-draft-dialog>.quote-review-documents{margin:24px 28px 0}
+@media(max-width:700px){.crm-draft-dialog>.quote-review-documents{margin:20px 12px 0}}
+
+.crm-draft-dialog .quote-send-confirm{min-height:44px;padding:12px;border:1px solid var(--qe-border);border-radius:10px;background:var(--qe-soft);gap:10px;cursor:pointer}
+.crm-draft-dialog .quote-send-confirm input[type=checkbox]{width:18px;height:18px;min-height:18px;padding:0;margin:2px 0 0;accent-color:#17647a}
+
