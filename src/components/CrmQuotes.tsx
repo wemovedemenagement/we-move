@@ -1,3 +1,4 @@
+import CrmQuoteRequestPicker from './CrmQuoteRequestPicker';
 import CrmQuoteReadiness,{type QuoteReadinessIssue} from './CrmQuoteReadiness';
 import {quoteReadiness} from '../../shared/quoteReadiness.mjs';
 import CrmPricingProposal from './CrmPricingProposal';
@@ -12,29 +13,29 @@ import { createQuoteDraft, fetchQuoteDrafts, saveQuoteDraft } from '../services/
 import { quoteTotals } from '../../shared/quoteTotals.mjs';
 
 const money = (value: number|null) => value === null ? 'À compléter' : new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'}).format(value);
-type Props = {leads:QuoteLead[]; isDark:boolean; initialDraft:CrmQuoteDraft|null; onInitialConsumed:()=>void; onNewRequest:()=>void;onOpenDossier:(lead:QuoteLead)=>void;onLeadSaved:(lead:QuoteLead)=>void};
-export default function CrmQuotes({leads,isDark,initialDraft,onInitialConsumed,onNewRequest,onOpenDossier,onLeadSaved}:Props) {
+type Props = {leadsAvailable:boolean;leadsError:string;onRefreshLeads:()=>void;leads:QuoteLead[]; isDark:boolean; initialDraft:CrmQuoteDraft|null; onInitialConsumed:()=>void; onNewRequest:()=>void;onOpenDossier:(lead:QuoteLead)=>void;onLeadSaved:(lead:QuoteLead)=>void};
+export default function CrmQuotes({leadsAvailable,leadsError,onRefreshLeads,leads,isDark,initialDraft,onInitialConsumed,onNewRequest,onOpenDossier,onLeadSaved}:Props) {
   const [drafts,setDrafts]=useState<CrmQuoteDraft[]>([]);
   const [loaded,setLoaded]=useState(false),[loading,setLoading]=useState(false),[error,setError]=useState('');
-  const [showCreate,setShowCreate]=useState(false),[leadId,setLeadId]=useState('');
+  const [showCreate,setShowCreate]=useState(false),[readError,setReadError]=useState('');
   const [editor,setEditor]=useState<CrmQuoteDraft|null>(null);
   const [prepareSaved,setPrepareSaved]=useState(false);
   const [creating,setCreating]=useState(false),[success,setSuccess]=useState('');
   const createLock=useRef(false),readLock=useRef(false);
   const load=async()=>{
     if(readLock.current)return;readLock.current=true;setLoading(true);
-    try{setDrafts(await fetchQuoteDrafts());setLoaded(true);setError('');}catch(e){setError(e instanceof Error?e.message:'Lecture impossible.');}finally{setLoading(false);readLock.current=false;}
+    try{setDrafts(await fetchQuoteDrafts());setLoaded(true);setError('');setReadError('');}catch(e){const message=e instanceof Error?e.message:'Lecture impossible.';setError(message);setReadError(message);}finally{setLoading(false);readLock.current=false;}
   };
   useEffect(()=>{void load();const poll=()=>{if(document.visibilityState==='visible')void load();};const timer=window.setInterval(poll,20000);window.addEventListener('focus',poll);return()=>{clearInterval(timer);window.removeEventListener('focus',poll);};},[]);
   useEffect(()=>{if(initialDraft){setPrepareSaved(false);setEditor(initialDraft);onInitialConsumed();}},[initialDraft,onInitialConsumed]);
-  const create=async(e:FormEvent)=>{
-    e.preventDefault();if(!leadId||createLock.current)return;
+  const create=async(lead:QuoteLead)=>{
+    if(!leadsAvailable||!loaded||readError||createLock.current)return;
     createLock.current=true;setCreating(true);setError('');setSuccess('');
-    try{const draft=await createQuoteDraft(leadId);setPrepareSaved(false);setEditor(draft);setShowCreate(false);void load();}catch(e){setError(e instanceof Error?e.message:'Création impossible.');}finally{setCreating(false);createLock.current=false;}
+    try{const draft=await createQuoteDraft(lead.id);setPrepareSaved(false);setEditor(draft);setShowCreate(false);void load();}catch(e){setError(e instanceof Error?e.message:'Création impossible.');}finally{setCreating(false);createLock.current=false;}
   };
   return <section className="quotes-page">
-    <header className="quotes-page-heading"><div><p className="quotes-eyebrow">VOTRE ACTIVITÉ COMMERCIALE</p><h2>Devis</h2><p>Une vue claire sur vos propositions et leur préparation.</p></div><div><button type="button" disabled={loading} onClick={()=>void load()} className="quotes-refresh" aria-label="Actualiser les devis"><RefreshCw size={17} className={loading?'animate-spin':''}/></button><button type="button" className="quotes-new" aria-expanded={showCreate} aria-controls="quote-create" onClick={()=>setShowCreate(!showCreate)}><Plus size={17}/>Nouveau devis</button></div></header>
-    {showCreate&&<form id="quote-create" onSubmit={create} className="quotes-create"><div><h3>Quelle demande souhaitez-vous chiffrer ?</h3><p>Les informations du client seront reprises automatiquement.</p></div><label><span className="sr-only">Demande à chiffrer</span><select required value={leadId} onChange={e=>setLeadId(e.target.value)}><option value="">Choisir un dossier client</option>{leads.map(lead=><option key={lead.id} value={lead.id}>{lead.fullName} · {lead.id}</option>)}</select></label><button disabled={!leadId||creating} className="quotes-new">{creating?'Ouverture…':'Préparer le devis'}<ArrowRight size={16}/></button>{leads.length===0&&<button type="button" onClick={onNewRequest}>Créer une demande client</button>}</form>}
+    <header className="quotes-page-heading"><div><p className="quotes-eyebrow">VOTRE ACTIVITÉ COMMERCIALE</p><h2>Devis</h2><p>Une vue claire sur vos propositions et leur préparation.</p></div><div><button type="button" disabled={loading} onClick={()=>void load()} className="quotes-refresh" aria-label="Actualiser les devis"><RefreshCw size={17} className={loading?'animate-spin':''}/></button><button type="button" className="quotes-new" disabled={creating} aria-expanded={showCreate} aria-controls="quote-create" onClick={()=>setShowCreate(!showCreate)}><Plus size={17}/>Nouveau devis</button></div></header>
+    {showCreate&&<CrmQuoteRequestPicker leads={leads} drafts={drafts} ready={leadsAvailable&&loaded&&!readError} busy={creating} problem={leadsError||readError} onRetry={()=>{onRefreshLeads();void load();}} onChoose={lead=>void create(lead)} onNewRequest={onNewRequest}/>}
     {error&&<p role="alert" className="quotes-error">{error} {loaded?'La liste peut ne plus être à jour.':''}</p>}
     {success&&<p role="status" className="quotes-success">{success}</p>}
     <CrmQuoteList onLeadSaved={onLeadSaved} onOpenDossier={onOpenDossier} drafts={drafts} leads={leads} loaded={loaded} loading={loading} onOpen={draft=>{setSuccess('');setPrepareSaved(false);setEditor(draft);}}/>
