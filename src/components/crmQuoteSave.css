@@ -1,0 +1,6 @@
+.quote-save-confirmation{display:flex;align-items:flex-start;gap:10px;margin:18px 28px 0;padding:14px 16px;border:1px solid var(--qe-border);border-radius:12px;background:var(--qe-soft);color:var(--qe-ink)}
+.quote-save-confirmation>svg{flex-shrink:0;margin-top:2px}.quote-save-confirmation p{display:grid;gap:5px;font-size:12px;line-height:1.65}.quote-save-confirmation strong{font-weight:600}.quote-save-confirmation span{font-size:11px;color:var(--qe-muted)}
+@media(max-width:640px){.quote-save-confirmation{margin:14px 16px 0;padding:13px 14px}}
+
+.crm-draft-dialog>.quote-editor-save-footer{margin:24px 0 0}
+
