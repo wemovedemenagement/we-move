@@ -6,6 +6,14 @@ const server=createApp().listen(0,'127.0.0.1');await new Promise(r=>server.once(
 async function api(route,body){const r=await fetch(base+route,{method:body?'PATCH':'GET',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});return {status:r.status,body:await r.json()};}
 try{
  const members=(await api('/api/crm/members')).body.members;
+ const fresh=await store.createQuoteLead({fullName:'Premier contact isolé',email:'test@example.invalid',departureAddress:'Paris',arrivalAddress:'Versailles'});
+ const freshRoute='/api/quotes/'+fresh.id+'/follow-up';
+ let first=await api(freshRoute,{revision:0,assigneeId:members[0].id,action:{type:'rappeler',dueDate:'2026-11-03',note:'Confirmer les accès'},contact:{channel:'phone',outcome:'callback',note:'Rappeler à la demande du client.'}});
+ assert.equal(first.status,200);assert.equal(first.body.quote.status,'nouveau');assert.equal(first.body.quote.followUpRevision,1);assert.equal(first.body.quote.lastCommercialContact.outcome,'callback');
+ const recordedContact=first.body.quote.lastCommercialContact;
+ first=await api(freshRoute,{revision:1,assigneeId:members[0].id,action:{type:'visite',dueDate:'2026-11-04',note:'Proposer un créneau'}});
+ assert.equal(first.status,200);assert.deepEqual(first.body.quote.lastCommercialContact,recordedContact,'Changing the next action must not fabricate a new contact');
+ assert.equal((await store.getQuoteDrafts()).length,0,'First contact requires no quote');assert.equal((await store.getQuoteMails(fresh.id)).length,0);assert.equal((await store.getBillingRelated(fresh.id)).length,0);
  const lead=await store.createQuoteLead({fullName:'Contact isolé',email:'test@example.invalid',departureAddress:'Paris',arrivalAddress:'Lyon'});
  const draft=await store.createQuoteDraft(lead.id),route='/api/quotes/'+lead.id+'/follow-up';
  const contact={channel:'phone',outcome:'no_answer',note:'Deux appels sans réponse.'};
