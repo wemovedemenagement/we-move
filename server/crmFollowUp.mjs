@@ -7,7 +7,7 @@ export const followUpLabels=actionLabels;
 export function updateFollowUp(current,payload,actor){
   if(!payload||typeof payload!=='object'||Array.isArray(payload))draftError(400,'Suivi invalide.');
   if(Object.keys(payload).some(key=>!['revision','assigneeId','action','complete','contact'].includes(key)))draftError(400,'Champ de suivi invalide.');
-  if(payload.revision!==(current.followUpRevision||0))draftError(409,'Le suivi a été modifié ailleurs. Fermez puis rouvrez la fiche avant de réessayer.');
+  if(payload.revision!==(current.followUpRevision||0))draftError(409,'Le suivi a été modifié ailleurs. Consultez les données actuelles du dossier avant de réessayer.');
   const now=new Date().toISOString();let assigneeId=current.assigneeId||'',assigneeName=current.assigneeName||'',nextAction=current.nextAction||null,description;
   let contact;
   if(payload.contact!==undefined){
