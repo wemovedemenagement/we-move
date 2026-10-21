@@ -23,7 +23,7 @@ const suites=[
   'test-visit-checks',
   'test-visit-catalogue',
   'test-visit-report',
-  'test-crm-commercial-contact','test-crm-quote-follow-up',
+  'test-crm-commercial-contact','test-crm-quote-follow-up','test-crm-quote-postpone',
   'test-request-qualification',
   'test-quote-readiness',
   'test-departure-readiness',

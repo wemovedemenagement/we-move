@@ -3,11 +3,15 @@ import {draftError} from './crmDraftModel.mjs';
 import {crmMembers} from './crmAuth.mjs';
 import {contactOutcomes,contactChannels} from '../shared/commercialContact.mjs';
 import {actionLabels} from '../shared/followUp.mjs';
+import {quotePostponeMinimum} from '../shared/quotePostpone.mjs';
+import {requestedDate} from '../shared/planningQueue.mjs';
 export const followUpLabels=actionLabels;
 export function updateFollowUp(current,payload,actor){
   if(!payload||typeof payload!=='object'||Array.isArray(payload))draftError(400,'Suivi invalide.');
-  if(Object.keys(payload).some(key=>!['revision','assigneeId','action','complete','contact'].includes(key)))draftError(400,'Champ de suivi invalide.');
+  if(Object.keys(payload).some(key=>!['revision','assigneeId','action','complete','contact','postponeTo'].includes(key)))draftError(400,'Champ de suivi invalide.');
   if(payload.revision!==(current.followUpRevision||0))draftError(409,'Le suivi a été modifié ailleurs. Consultez les données actuelles du dossier avant de réessayer.');
+  const postponing=Object.hasOwn(payload,'postponeTo');
+  if(postponing&&Object.keys(payload).some(key=>!['revision','postponeTo'].includes(key)))draftError(400,'Le report ne peut modifier que l’échéance de la relance.');
   const now=new Date().toISOString();let assigneeId=current.assigneeId||'',assigneeName=current.assigneeName||'',nextAction=current.nextAction||null,description;
   let contact;
   if(payload.contact!==undefined){
@@ -17,7 +21,13 @@ export function updateFollowUp(current,payload,actor){
     if(value.outcome==='changes'&&!value.note.trim())draftError(400,'Précisez les modifications demandées par le client.');
     contact={channel:value.channel,outcome:value.outcome,note:value.note.trim(),createdAt:now,author:actor?.name||actor?.email||'Utilisateur CRM'};
   }
-  if(payload.complete===true){
+  if(postponing){
+    const minimum=quotePostponeMinimum(current),date=requestedDate(payload.postponeTo);
+    if(!minimum)draftError(409,'Aucune relance commerciale active à reporter. Consultez le dossier.');
+    if(!date||date<minimum)draftError(400,'Choisissez une date après aujourd’hui et après l’échéance enregistrée.');
+    description='Relance reportée : '+followUpLabels[nextAction.type]+' du '+(requestedDate(nextAction.dueDate)||'date à préciser')+' au '+date+'.';
+    nextAction={...nextAction,dueDate:date};
+  }else if(payload.complete===true){
     if(!nextAction)draftError(409,'Aucune action à terminer.');
     description='Action terminée : '+followUpLabels[nextAction.type]+' (échéance '+nextAction.dueDate+').';nextAction=null;
   }else{
@@ -36,6 +46,6 @@ export function updateFollowUp(current,payload,actor){
     description+=' Responsable : '+(assigneeName||'non attribué')+'.';
   }
   if(contact)description=`Échange commercial · ${contactChannels[contact.channel]} · ${contactOutcomes[contact.outcome]}.${contact.note?' '+contact.note:''}\n`+description;
-  return {...current,...(contact?{lastCommercialContact:contact}:{}),assigneeId,assigneeName,assignedAgent:assigneeName||'Non assigné',nextAction,followUpRevision:(current.followUpRevision||0)+1,updatedAt:now,
+  return {...current,...(contact?{lastCommercialContact:contact}:{}),...(postponing?{}:{assigneeId,assigneeName,assignedAgent:assigneeName||'Non assigné'}),nextAction,followUpRevision:(current.followUpRevision||0)+1,updatedAt:now,
     internalNotes:[{id:randomUUID(),author:actor?.name||'Saisie locale',content:description,createdAt:now},...(current.internalNotes||[])]};
 }
