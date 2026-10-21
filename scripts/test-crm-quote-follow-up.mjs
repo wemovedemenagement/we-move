@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { quoteFollowUp } from '../shared/quoteFollowUp.mjs';
+import {quoteListPriority,compareQuotePriority} from '../shared/quoteListPriority.mjs';
 const draft={revision:3,emailDelivery:{revision:3,state:'accepted'}};
 const lead={status:'devis_envoye',nextAction:null};
 const read=(d=draft,l=lead)=>quoteFollowUp(d,l,'2026-10-01');
@@ -15,4 +16,38 @@ assert.equal(read(draft,{...lead,nextAction:{type:'relancer',dueDate:'2026-10-01
 assert.equal(read(draft,{...lead,nextAction:{type:'rappeler',dueDate:'2026-09-30'}}).overdue,true);
 assert.equal(read(draft,{...lead,nextAction:{type:'relancer',dueDate:'2026-10-02'}}).followDue,false);
 assert.equal(read(draft,{...lead,nextAction:{type:'facturer',dueDate:'2026-09-30'}}).followDue,false);
-console.log('Suivi devis : envois réels, révisions, dossiers clos, actions datées et échéances validés.');
+for(const dueDate of ['',undefined,null,'2026-02-30','2026-9-30',{},'2026-09-30T10:00:00Z']){
+ const follow=read(draft,{...lead,nextAction:{type:'relancer',dueDate}});
+ assert.equal(follow.followDue,false);assert.equal(follow.overdue,false);assert.ok(follow.actionLabel.includes('Échéance à préciser'));
+}
+const today='2026-10-01',rows=[],leads=new Map();
+const add=(id,change={},leadChange={})=>{
+ const row={id,leadId:id,updatedAt:'2026-10-01T10:00:00Z',amountTTC:1200,validUntil:'2026-10-15',...draft,...change};
+ rows.push(row);leads.set(id,{...lead,...leadChange});return row;
+};
+add('closed-accepted',{emailDelivery:{state:'uncertain',revision:3}},{status:'confirme',nextAction:{type:'relancer',dueDate:'2026-09-01'}});
+add('future-later',{}, {nextAction:{type:'rappeler',dueDate:'2026-10-10'}});
+add('unpriced',{amountTTC:null,emailDelivery:undefined});
+add('overdue-newer',{}, {nextAction:{type:'relancer',dueDate:'2026-09-30'}});
+add('expired',{validUntil:'2026-09-20'});
+add('mail-issue',{emailDelivery:{state:'uncertain',revision:3}});
+add('no-next-action');
+add('future-sooner',{}, {nextAction:{type:'relancer',dueDate:'2026-10-02'}});
+add('today',{}, {nextAction:{type:'relancer',dueDate:today}});
+add('overdue-older',{}, {nextAction:{type:'rappeler',dueDate:'2026-09-15'}});
+add('unsent',{emailDelivery:undefined});
+add('missing');leads.delete('missing');
+add('closed-finished',{}, {status:'termine'});add('closed-declined',{}, {status:'refuse'});
+const beforeRows=structuredClone(rows),beforeLeads=structuredClone(leads);
+const ordered=[...rows].sort((a,b)=>compareQuotePriority(a,b,leads,today));
+assert.deepEqual(ordered.map(row=>row.id),['mail-issue','overdue-older','overdue-newer','today','expired','no-next-action','unpriced','unsent','future-sooner','future-later','missing','closed-accepted','closed-declined','closed-finished']);
+const plain={...rows[0],emailDelivery:undefined,validUntil:'2026-02-30'};
+assert.equal(quoteListPriority(plain,{...lead,nextAction:{type:'relancer',dueDate:'2026-02-30'}},today).rank,5);
+assert.equal(quoteListPriority({...plain,validUntil:today},{...lead},today).rank,5,'Valid until today is not expired');
+assert.equal(quoteListPriority({...plain,emailDelivery:draft.emailDelivery},{...lead,nextAction:{type:'visite',dueDate:'2026-09-01'}},today).rank,6,'A due visit is not a commercial callback');
+assert.equal(quoteListPriority({...plain,revision:4,emailDelivery:draft.emailDelivery},lead,today).rank,5,'A new version is not considered sent');
+assert.deepEqual(rows,beforeRows);assert.deepEqual(leads,beforeLeads);
+const tied={...plain,id:'a',leadId:'unsent',updatedAt:'2026-09-30T10:00:00Z'};
+assert.ok(compareQuotePriority(tied,{...tied,id:'b',updatedAt:'2026-10-01T10:00:00Z'},leads,today)>0);
+assert.ok(compareQuotePriority(tied,{...tied,id:'b'},leads,today)<0);
+console.log('Suivi devis : priorité des envois à vérifier et relances échues, ordre des dates, actions futures, dossiers clos/absents, dates invalides, révisions et absence de mutation vérifiés.');
