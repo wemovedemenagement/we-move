@@ -7,7 +7,7 @@ import {actionLabels,followUpDateIn} from '../../shared/followUp.mjs';
 import {contactOutcomes,contactChannels,quoteReminderText} from '../../shared/commercialContact.mjs';
 import {quoteFollowUp} from '../../shared/quoteFollowUp.mjs';
 import './crmQuoteContact.css';
-export default function CrmQuoteContact({draft,lead,onClose,onSaved}:{draft:CrmQuoteDraft;lead:QuoteLead;onClose:()=>void;onSaved:(lead:QuoteLead,logged:boolean)=>void}){
+export default function CrmQuoteContact({draft,lead,onClose,onSaved}:{draft:CrmQuoteDraft;lead:QuoteLead;onClose:()=>void;onSaved:(lead:QuoteLead,logged:boolean,completed?:boolean)=>void}){
   const dialog=useRef<HTMLDialogElement>(null),lock=useRef(false);
   const [logging,setLogging]=useState(false);
   const [channel,setChannel]=useState<'phone'|'email'|'other'>('phone'),[outcome,setOutcome]=useState(''),[note,setNote]=useState('');
@@ -20,6 +20,15 @@ export default function CrmQuoteContact({draft,lead,onClose,onSaved}:{draft:CrmQ
   useEffect(()=>{dialog.current?.showModal();},[]);
   useEffect(()=>{let alive=true;setLoading(true);setLoadError('');fetchCrmMembers().then(data=>{if(alive)setMembers(data);}).catch(()=>{if(alive)setLoadError('Responsables indisponibles. Vos saisies sont conservées.');}).finally(()=>{if(alive)setLoading(false);});return()=>{alive=false;};},[retry]);
   const close=()=>{if(!busy&&(!dirty||window.confirm('Fermer sans enregistrer vos modifications du suivi ?')))onClose();};
+  const complete=async()=>{
+    if(lock.current||loading||loadError||dirty||!lead.nextAction)return;
+    lock.current=true;setBusy(true);setError('');
+    try{
+      const result=await saveRequestFollowUp(lead.id,{revision:lead.followUpRevision||0,complete:true});
+      onSaved(result,false,true);
+    }catch(e){setError(e instanceof Error?e.message:'Impossible de terminer cette action.');}
+    finally{setBusy(false);lock.current=false;}
+  };
   const save=async(e:FormEvent)=>{e.preventDefault();if(lock.current||loading||loadError||!dirty)return;lock.current=true;setBusy(true);setError('');try{const contact={channel,outcome:outcome as NonNullable<FollowUpUpdate['contact']>['outcome'],note};const result=await saveRequestFollowUp(lead.id,{revision:lead.followUpRevision||0,assigneeId:owner,action:type?{type:type as RequestAction['type'],dueDate,note:actionNote}:null,...(logging?{contact}:{})});setDirty(false);onSaved(result,logging);}catch(e){setError(e instanceof Error?e.message:'Enregistrement impossible.');}finally{setBusy(false);lock.current=false;}};
   return <dialog ref={dialog} className="crm-request-dialog quote-contact-dialog" aria-labelledby="quote-contact-title" onCancel={e=>{e.preventDefault();close();}}>
     <header><div><p className="crm-eyebrow">SUIVI COMMERCIAL</p><h2 id="quote-contact-title">Une suite claire pour ce devis.</h2><p>{draft.clientName} · {draft.reference}</p></div><button type="button" aria-label="Fermer le suivi du devis" disabled={busy} onClick={close}><X size={21}/></button></header>
@@ -35,6 +44,7 @@ export default function CrmQuoteContact({draft,lead,onClose,onSaved}:{draft:CrmQ
         <div className="quote-contact-grid"><label>Prochaine action<select aria-label="Prochaine action commerciale" value={type} onChange={e=>setType(e.target.value as typeof type)}><option value="">Aucune action à prévoir</option>{Object.entries(actionLabels).filter(([id])=>id!=='documents'||type==='documents').map(([id,label])=><option key={id} value={id}>{label as string}</option>)}</select></label><label>Échéance<input aria-label="Échéance commerciale" type="date" required={!!type} disabled={!type} value={dueDate} onChange={e=>setDueDate(e.target.value)}/></label></div>
         {!!type&&<><div className="follow-up-date-shortcuts" role="group" aria-label="Raccourcis de relance">{([[1,'Demain'],[3,'Dans 3 jours'],[7,'Dans une semaine']] as const).map(([days,label])=><button type="button" key={days} aria-pressed={dueDate===followUpDateIn(days)} onClick={()=>{setDueDate(followUpDateIn(days));setDirty(true);}}><CalendarDays size={13}/>{label}</button>)}</div><label>Précision sur la prochaine action<input aria-label="Précision de l’action commerciale" maxLength={1000} value={actionNote} onChange={e=>setActionNote(e.target.value)}/></label></>}
         {!type&&<p>Aucune échéance de suivi ne sera créée. Sélectionnez une prochaine action si le dossier doit être repris.</p>}
+        {lead.nextAction&&<div className="quote-contact-complete"><button type="button" className="crm-quiet-action" disabled={busy||dirty} onClick={()=>void complete()}><Check size={16}/>Marquer l’action comme terminée</button><p>{dirty?'Enregistrez vos modifications avant de terminer l’action.':'Termine uniquement l’action enregistrée, sans ajouter d’échange ni clôturer le dossier.'}</p></div>}
         <footer><button type="button" disabled={busy} className="crm-quiet-action" onClick={close}>Annuler</button><button className="requests-primary" disabled={busy||!dirty}>{busy?'Enregistrement…':logging?'Enregistrer l’échange et la suite':'Enregistrer le suivi'}</button></footer>
       </fieldset>
       {loading&&<p role="status">Chargement des responsables…</p>}{(error||loadError)&&<p role="alert" className="quote-contact-error">{error||loadError}</p>}{loadError&&<button type="button" className="crm-quiet-action" onClick={()=>setRetry(v=>v+1)}>Réessayer</button>}

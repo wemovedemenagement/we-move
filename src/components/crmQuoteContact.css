@@ -4,3 +4,4 @@
 .quote-contact-dialog .quote-contact-toggle{display:flex;align-items:flex-start;gap:12px;padding:14px;border:1px solid var(--crm-line);border-radius:12px;background:var(--crm-soft);cursor:pointer}
 .quote-contact-dialog .quote-contact-toggle input{width:18px;height:18px;min-height:18px;padding:0;margin:2px 0 0;flex-shrink:0;accent-color:#17647a}
 .quote-contact-toggle span{min-width:0}.quote-contact-toggle strong{font-size:13px;line-height:1.6}.quote-contact-toggle small{display:block;margin-top:5px;font-size:11px;line-height:1.6;color:var(--crm-muted)}
+.quote-contact-complete{padding:14px;border:1px solid var(--crm-line);border-radius:12px;background:var(--crm-soft)}.quote-contact-complete button{display:flex;align-items:center;gap:8px;white-space:normal;text-align:left}.quote-contact-complete p{margin-top:8px}.quote-contact-complete button:disabled{opacity:.55;cursor:not-allowed}
