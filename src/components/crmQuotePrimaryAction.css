@@ -1,0 +1,5 @@
+.quotes-simple .quotes-actions>.quote-context-primary{flex-basis:100%;justify-content:space-between;gap:12px;min-height:44px;padding:11px 13px;background:#17647a;border-color:#17647a;color:#fff;text-align:left}
+.quotes-simple .quotes-actions>.quote-context-primary:hover{background:#124e60;border-color:#124e60;color:#fff}
+.quotes-simple .quotes-actions>.quote-context-primary>span{white-space:normal;line-height:1.5}
+.quote-context-primary>svg{flex-shrink:0}
+.quotes-simple .quotes-actions>button:not(.quote-context-primary){background:var(--crm-surface);border-color:var(--crm-line);color:var(--crm-muted)}

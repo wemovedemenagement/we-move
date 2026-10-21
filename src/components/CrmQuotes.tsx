@@ -16,7 +16,7 @@ import { createQuoteDraft, fetchQuoteDrafts, saveQuoteDraft } from '../services/
 import { quoteTotals } from '../../shared/quoteTotals.mjs';
 
 const money = (value: number|null) => value === null ? 'À compléter' : new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'}).format(value);
-type Props = {leadsAvailable:boolean;leadsError:string;onRefreshLeads:()=>void;leads:QuoteLead[]; isDark:boolean; initialDraft:CrmQuoteDraft|null; onInitialConsumed:()=>void; onNewRequest:()=>void;onOpenDossier:(lead:QuoteLead)=>void;onLeadSaved:(lead:QuoteLead)=>void};
+type Props = {leadsAvailable:boolean;leadsError:string;onRefreshLeads:()=>void;leads:QuoteLead[]; isDark:boolean; initialDraft:CrmQuoteDraft|null; onInitialConsumed:()=>void; onNewRequest:()=>void;onOpenDossier:(lead:QuoteLead,section?:'summary'|'move')=>void;onLeadSaved:(lead:QuoteLead)=>void};
 export default function CrmQuotes({leadsAvailable,leadsError,onRefreshLeads,leads,isDark,initialDraft,onInitialConsumed,onNewRequest,onOpenDossier,onLeadSaved}:Props) {
   const [drafts,setDrafts]=useState<CrmQuoteDraft[]>([]);
   const [loaded,setLoaded]=useState(false),[loading,setLoading]=useState(false),[error,setError]=useState('');
@@ -42,7 +42,7 @@ export default function CrmQuotes({leadsAvailable,leadsError,onRefreshLeads,lead
     {showCreate&&<CrmQuoteRequestPicker leads={leads} drafts={drafts} ready={leadsAvailable&&loaded&&!readError} busy={creating} problem={leadsError||readError} onRetry={()=>{onRefreshLeads();void load();}} onChoose={lead=>void create(lead)} onNewRequest={onNewRequest}/>}
     {error&&<p role="alert" className="quotes-error">{error} {loaded?'La liste peut ne plus être à jour.':''}</p>}
     {success&&<p role="status" className="quotes-success">{success}</p>}
-    <CrmQuoteList onLeadSaved={onLeadSaved} onOpenDossier={onOpenDossier} drafts={drafts} leads={leads} loaded={loaded} loading={loading} onOpen={draft=>{setSuccess('');setResumeStep(0);setSaveNotice(false);setPrepareSaved(false);setEditor(draft);}}/>
+    <CrmQuoteList actionsReady={leadsAvailable&&loaded&&!readError} onLeadSaved={onLeadSaved} onOpenDossier={onOpenDossier} drafts={drafts} leads={leads} loaded={loaded} loading={loading} onOpen={(draft,step=0)=>{setSuccess('');setResumeStep(step);setSaveNotice(false);setPrepareSaved(false);setEditor(draft);}}/>
     {editor&&<DraftEditor key={`${editor.id}:${editor.revision}:${editorReset}`} draft={editor} prepareSaved={prepareSaved} resumeStep={resumeStep} saveNotice={saveNotice} source={leads.find(lead=>lead.id===editor.leadId)} onClose={()=>setEditor(null)} onSaved={(saved,prepare,step)=>{setDrafts(current=>[saved,...current.filter(d=>d.id!==saved.id)]);setLoaded(true);setResumeStep(prepare?2:step);setSaveNotice(true);setPrepareSaved(prepare);setEditor(saved);setSuccess('Brouillon enregistré. Aucun envoi n’a été effectué.');}} onReload={async()=>{const latest=await fetchQuoteDrafts();const found=latest.find(d=>d.id===editor.id);if(!found)throw new Error('Brouillon introuvable.');setDrafts(latest);setResumeStep(0);setSaveNotice(false);setPrepareSaved(false);setEditorReset(value=>value+1);setEditor(found);}}/>}
   </section>;
 }
