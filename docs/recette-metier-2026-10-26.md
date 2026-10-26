@@ -7,9 +7,10 @@ correction décrite ci-dessous. Les quatre parcours navigateur contrôlés passe
 également. Aucun échec métier bloquant n'a été constaté dans ce périmètre isolé.
 Ce résultat ne constitue pas un feu vert pour la bascule depuis PARC.
 
-Base du contrôle : commit `abb4ab5`, avec correction locale de l'affichage de
-l'horaire dans l'ordre de mission. Cette correction n'est pas publiée par cette
-recette : la session CLI du compte Firebase WE MOVE est absente.
+Base du contrôle applicatif : commit `abb4ab5`, puis correction de l'affichage de
+l'horaire dans l'ordre de mission enregistrée dans `3e3940d`. La session CLI WE MOVE,
+initialement absente, a été rétablie pendant la reprise de cette mission.
+Les contrôles cloud ci-dessous ont alors été effectués avant publication.
 
 ## Parcours et preuves
 
@@ -47,13 +48,13 @@ corrections de l'application.
 
 ## Limites et suites avant bascule
 
-- Le contrôle cloud authentifié n'a pas pu démarrer : `Session Google locale
-  indisponible` pour le compte WE MOVE. Les rôles IAM, PITR, sauvegardes, configuration
-  privée et indicateur de facturation réel ne sont donc pas revalidés à cette date.
-  Le connecteur disponible utilise un autre compte ; aucune opération cloud n'a
-  été réalisée avec cette identité pour contourner ce manque.
-- La correction PDF doit encore être publiée puis contrôlée sur le commit exact,
-  après reconnexion du compte WE MOVE et passage du contrôle de déploiement.
+- Le premier contrôle cloud était bloqué par `Session Google locale indisponible`.
+  La reconnexion locale du compte `wemove.demenagement@gmail.com` a levé ce blocage.
+  Aucune attribution IAM ni configuration cloud n'a été modifiée pour le résoudre.
+- La publication du correctif est pilotée par le contrôle de déploiement du dépôt.
+  Sa preuve finale doit confirmer le commit exact, le trafic à 100 %, les protections
+  après publication et les réponses HTTP publiques. Cette preuve est conservée dans
+  `output/crm-correctif-horaire-verification-2026-10-26.json` après réussite.
 - Le gérant doit valider des dossiers représentatifs avec les ressources et les
   paramètres réels de l'entreprise avant une bascule. Aucun compteur de production
   n'a été réinitialisé ; le dernier numéro effectivement émis dans PARC reste à
@@ -63,11 +64,36 @@ Les données des essais sont isolées dans des bases temporaires. Le transport
 d'envoi est simulé. Aucun e-mail client ni facture de production n'a été envoyé,
 et aucun droit cloud ou réglage de production n'a été modifié.
 
+## Contrôles cloud après reconnexion
+
+Lectures du 26 octobre sur le projet `wemove-b0057`, avec le compte WE MOVE :
+
+- Firestore `(default)` à Paris : protection de suppression active, PITR actif,
+  fenêtre de récupération de 604 800 secondes et règles déployées refusant tous
+  les accès des clients. Sept sauvegardes prêtes ; la plus récente date du
+  26 octobre à 07:51 UTC. Sauvegarde quotidienne avec rétention de sept jours.
+- Le compte serveur conserve les quatre rôles prévus : `datastore.user`,
+  `firebaseauth.viewer`, `firebaseapphosting.computeRunner` et
+  `developerconnect.readTokenAccessor`. Il s'agit d'un contrôle ciblé des attributions
+  directes de ce compte, pas d'un audit exhaustif de toutes les permissions du projet.
+- Photos à Paris : accès uniforme au bucket, prévention d'accès public imposée,
+  aucune attribution publique observée. L'accès du service au secret de messagerie
+  est limité à son rôle d'accès au secret ; aucune valeur secrète n'a été lue.
+- Runtime : stockage Firestore, accès local désactivé, facturation réelle désactivée,
+  notifications internes et accusés clients activés, fournisseur de mail Resend.
+- Authentification : e-mail/mot de passe et Google activés, domaine `we-move.fr`
+  autorisé, MFA désactivée conformément à la décision différée du gérant.
+
+Ces lectures ne remplacent pas une nouvelle recette Firestore avec écritures,
+un exercice de restauration complet ou une validation opérationnelle du gérant.
+
 ## Artefacts locaux
 
 - `tmp/recette-finale-2026-10-26.log` et `.exit` : validation finale (code 0).
 - `tmp/recette-{visite,devis,moyens,facture}-2026-10-26.log` et `.exit` : parcours navigateur.
 - `output/recette-production-http-2026-10-26.json` : observations HTTP publiques.
+- `output/controle-sauvegardes-2026-10-26.json` : sauvegardes, PITR et règles relus.
+- `tmp/controle-cloud-2026-10-26.log` et `tmp/controle-auth-2026-10-26.log` : lectures ciblées de configuration et d'accès.
 - `output/pdf/recette-2026-10-26/resultats.json` : montants et révisions du scénario unique.
 - `output/pdf/recette-2026-10-26/controle-structure.json` : structure des PDF de recette.
 - `output/recette-*-mobile-2026-10-26.png` : captures mobiles inspectées.
