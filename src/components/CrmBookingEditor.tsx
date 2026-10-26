@@ -35,7 +35,8 @@ import {
   emptyMoveOperations,
   parkingStates,
 } from "../../shared/moveOperations.mjs";
-import { movePreparation } from "../../shared/movePreparation.mjs";
+import { movePreparationDetails } from "../../shared/movePreparation.mjs";
+import './crmMissionPreparationLinks.css';
 import { requestCity } from "../../shared/requestCity.mjs";
 
 export default function CrmBookingEditor({
@@ -149,13 +150,14 @@ export default function CrmBookingEditor({
   },[initialSection,loading,dossier]);
   const selectionReview=missionSelectionReview(data?.registry.resources||[],data?.bookings||[],start,end,lead.id,ids,resourcesStale);
   const resourceAvailability=selectionReview.availability;
-  const issues = data
-    ? movePreparation(
+  const preparationChecks: {label:string;target:string}[] = data
+    ? movePreparationDetails(
         lead,
-        { resourceIds: ids, cancelled: false, operations },
+        { resourceIds: ids, start, end, cancelled: false, operations },
         data.registry,
       )
     : [];
+  const issues = preparationChecks.map(issue=>issue.label);
   const selectedUnavailable = selectionReview.issues.length>0;
   const fields = (dossier?.acceptance?.quote || dossier?.quote)?.document?.fields || {};
   const leave=(action:()=>void)=>{if(!busy&&!agreementBusy&&!documentBusy&&!reminderBusy&&(!(dirty||closureDirty||agreementDirty||documentDirty||reminderDirty)||window.confirm("Quitter sans enregistrer les modifications ?")))action();};
@@ -303,17 +305,17 @@ export default function CrmBookingEditor({
         </p>
       )}
       {!loading && data && (
-        <details className="mission-preparation">
+        <details className="mission-preparation" open={issues.length>0||undefined}>
           <summary>
             <ClipboardCheck size={18} />
             {issues.length
-              ? `${issues.length} points à vérifier`
+              ? `${issues.length} point${issues.length>1?'s':''} à vérifier`
               : "Points de préparation renseignés"}
             <span>{dirty ? "Saisie non enregistrée" : "Voir le détail"}</span>
           </summary>
           <ul>
             {issues.length ? (
-              issues.map((issue) => <li key={issue}>{issue}</li>)
+              preparationChecks.map((issue) => <li key={issue.label}><button type="button" className="mission-preparation-link" disabled={busy||agreementBusy||documentBusy||reminderBusy||(['summary','documents'].includes(issue.target)&&!dossier)} onClick={()=>{if(issue.target==='details')leave(onEdit);else jump(issue.target==='summary'?'mission-agreement':issue.target==='move'?'mission-slot':'mission-'+issue.target);}}>{issue.label}<ArrowRight size={15} aria-hidden="true"/></button></li>)
             ) : (
               <li>
                 Vérifiez les consignes et les moyens avec l’équipe avant le

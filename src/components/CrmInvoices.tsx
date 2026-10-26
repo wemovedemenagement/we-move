@@ -1,18 +1,29 @@
 import {useEffect,useRef,useState} from 'react';
 import CrmInvoiceTests from './CrmInvoiceTests';
-import CrmBillingWorkbench from './CrmBillingWorkbench';
+import CrmBillingWorkbench,{type BillingReviewHandle} from './CrmBillingWorkbench';
 import CrmInvoiceSource,{invoiceSource} from './CrmInvoiceSource';
 import {Receipt,Plus,RefreshCw,Search,ArrowRight,Check} from 'lucide-react';
 import {fetchInvoicePreparations,createInvoicePreparation,saveInvoicePreparation,fetchQuoteDrafts,fetchCrmDossier,refreshInvoicePreparationSource,type CrmDossier,type InvoicePreparation} from '../services/crmService';
 import type {QuoteLead,CrmQuoteDraft,CrmIdentity} from '../types/crm';
+import {useUnsavedChanges} from '../hooks/useUnsavedChanges';
 const money=(value:number)=>value.toLocaleString('fr-FR',{style:'currency',currency:'EUR'});
-export default function CrmInvoices({leads,identity,initialLeadId,initialDocumentId}:{leads:QuoteLead[];identity:CrmIdentity;initialLeadId?:string;initialDocumentId?:string}){
+export default function CrmInvoices({leads,identity,initialLeadId,initialDocumentId,onOpenDossier,onRegisterLeaveGuard}:{leads:QuoteLead[];identity:CrmIdentity;initialLeadId?:string;initialDocumentId?:string;onOpenDossier:(lead:QuoteLead)=>void;onRegisterLeaveGuard:(guard:(()=>boolean)|null)=>void}){
  const [invoices,setInvoices]=useState<InvoicePreparation[]>([]),[quotes,setQuotes]=useState<CrmQuoteDraft[]>([]),[error,setError]=useState(''),[busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false),[search,setSearch]=useState(''),[quoteId,setQuoteId]=useState(''),[selected,setSelected]=useState<InvoicePreparation|null>(null),[dueDate,setDueDate]=useState(''),[notes,setNotes]=useState(''),[saved,setSaved]=useState(false);
- const lock=useRef(false); const allowed=['gerant','secretaire'].includes(identity.role);
+ const lock=useRef(false),writing=useRef(false); const allowed=['gerant','secretaire'].includes(identity.role);
+ const billingReview=useRef<BillingReviewHandle>(null);
  const [sourceState,setSourceState]=useState<{id:string;dossier:CrmDossier|null;error:string}|null>(null);
  const [sourceReload,setSourceReload]=useState(0);
  const dirty=!!selected&&(dueDate!==selected.dueDate||notes!==selected.notes);
+ useUnsavedChanges(dirty);
  const mayDiscard=()=>!dirty||window.confirm('Abandonner les modifications non enregistrées de ce brouillon ?');
+ useEffect(()=>{
+  onRegisterLeaveGuard(()=>{
+   const billing=billingReview.current?.leaveState();
+   if(writing.current||billing?.busy)return false;
+   return !(dirty||billing?.dirty)||window.confirm('Abandonner les modifications non enregistrées de la facturation ?');
+  });
+  return()=>onRegisterLeaveGuard(null);
+ },[dirty,onRegisterLeaveGuard]);
  useEffect(()=>{
   if(!quoteId||!allowed){setSourceState(null);return;}
   let active=true;setSourceState(null);
@@ -20,15 +31,16 @@ export default function CrmInvoices({leads,identity,initialLeadId,initialDocumen
   return ()=>{active=false;};
  },[quoteId,sourceReload,allowed]);
  const source=sourceState?.id===quoteId&&!sourceState.error?invoiceSource(sourceState.dossier):null;
+ const sourceLead=source?leads.find(lead=>lead.id===source.quote.leadId):undefined;
  const refresh=async()=>{if(lock.current||!allowed)return;lock.current=true;setBusy(true);try{const [i,q]=await Promise.all([fetchInvoicePreparations(),fetchQuoteDrafts()]);setInvoices(i);setQuotes(q);setSourceState(null);setSourceReload(x=>x+1);setLoaded(true);setError('');}catch(e){setError(e instanceof Error?e.message:'Lecture impossible.');}finally{lock.current=false;setBusy(false);}};
  useEffect(()=>{void refresh();},[]);
  const eligible=quotes.filter(q=>leads.some(l=>l.id===q.leadId&&['confirme','termine'].includes(l.status))&&!invoices.some(i=>i.quoteId===q.id));
  const open=(i:InvoicePreparation)=>{setSelected(i);setDueDate(i.dueDate);setNotes(i.notes);setSaved(false);};
  useEffect(()=>{if(!loaded||!initialLeadId)return;const found=invoices.find(i=>i.quoteId===initialLeadId);if(found)open(found);else setQuoteId(initialLeadId);},[loaded,initialLeadId]);
- const create=async()=>{if(lock.current||!quoteId||!source?.ready||!mayDiscard())return;lock.current=true;setBusy(true);try{const i=await createInvoicePreparation(quoteId,source.quote.revision);setInvoices(old=>[i,...old.filter(x=>x.id!==i.id)]);open(i);setQuoteId('');setError('');}catch(e){setError(e instanceof Error?e.message:'Création impossible.');setSourceState(null);setSourceReload(x=>x+1);}finally{lock.current=false;setBusy(false);}};
- const save=async()=>{if(lock.current||!selected)return;lock.current=true;setBusy(true);try{const i=await saveInvoicePreparation(selected,dueDate,notes);setInvoices(old=>old.map(x=>x.id===i.id?i:x));setSelected(i);setSaved(true);setError('');}catch(e){setError(e instanceof Error?e.message:'Enregistrement impossible.');}finally{lock.current=false;setBusy(false);}};
+ const create=async()=>{if(lock.current||!quoteId||!source?.ready||!mayDiscard())return;lock.current=true;writing.current=true;setBusy(true);try{const i=await createInvoicePreparation(quoteId,source.quote.revision);setInvoices(old=>[i,...old.filter(x=>x.id!==i.id)]);open(i);setQuoteId('');setError('');}catch(e){setError(e instanceof Error?e.message:'Création impossible.');setSourceState(null);setSourceReload(x=>x+1);}finally{lock.current=false;writing.current=false;setBusy(false);}};
+ const save=async()=>{if(lock.current||!selected)return;lock.current=true;writing.current=true;setBusy(true);try{const i=await saveInvoicePreparation(selected,dueDate,notes);setInvoices(old=>old.map(x=>x.id===i.id?i:x));setSelected(i);setSaved(true);setError('');}catch(e){setError(e instanceof Error?e.message:'Enregistrement impossible.');}finally{lock.current=false;writing.current=false;setBusy(false);}};
  const refreshSource=async()=>{
-  if(lock.current||!selected||dirty)return;lock.current=true;setBusy(true);setError('');
+  if(lock.current||!selected||dirty)return;lock.current=true;writing.current=true;setBusy(true);setError('');
   try{
    const dossier=await fetchCrmDossier(selected.leadId||selected.quoteId),reference=invoiceSource(dossier);
    if(!reference?.ready)throw new Error('Le devis de référence est incomplet ou indisponible.');
@@ -36,7 +48,7 @@ export default function CrmInvoices({leads,identity,initialLeadId,initialDocumen
    const updated=await refreshInvoicePreparationSource(selected,reference.quote.revision);
    setInvoices(items=>items.map(i=>i.id===updated.id?updated:i));open(updated);
    setQuotes(items=>items.map(q=>q.id===dossier.quote?.id?dossier.quote!:q));
-  }catch(e){setError(e instanceof Error?e.message:'Mise à jour impossible.');}finally{lock.current=false;setBusy(false);}
+  }catch(e){setError(e instanceof Error?e.message:'Mise à jour impossible.');}finally{lock.current=false;writing.current=false;setBusy(false);}
  };
  if(!allowed)return <div className="crm-surface p-8">La facturation est accessible au gérant et au secrétariat.</div>;
  const selectedQuote=quotes.find(q=>q.id===selected?.quoteId);
@@ -44,13 +56,15 @@ export default function CrmInvoices({leads,identity,initialLeadId,initialDocumen
  const selectedStale=!!selected&&!!selectedReference&&selected.quoteRevision!==selectedReference;
  const filtered=invoices.filter(i=>[i.clientName,i.quoteReference].some(v=>v.toLocaleLowerCase('fr').includes(search.toLocaleLowerCase('fr'))));
  return <section className="crm-invoices space-y-5"><header className="flex flex-wrap items-center justify-between gap-4"><div><p className="text-xs uppercase tracking-widest text-slate-500">DU DEVIS À LA FACTURATION</p><h2 className="mt-2 text-3xl font-semibold">Factures</h2><p className="mt-2 text-sm text-slate-500">Préparez vos brouillons à partir des dossiers acceptés.</p></div><button disabled={busy} onClick={()=>void refresh()} className="crm-quiet-action"><RefreshCw size={16}/>Actualiser</button></header>
- <CrmBillingWorkbench initialDocumentId={initialDocumentId} initialLeadId={initialLeadId} preparations={invoices} identity={identity} dirtyPreparationId={selected&&(dueDate!==selected.dueDate||notes!==selected.notes)?selected.id:undefined}/>
+ <CrmBillingWorkbench ref={billingReview} leads={leads} initialDocumentId={initialDocumentId} initialLeadId={initialLeadId} preparations={invoices} identity={identity} dirtyPreparationId={selected&&(dueDate!==selected.dueDate||notes!==selected.notes)?selected.id:undefined}/>
  {identity.role==='gerant'&&<details className="crm-surface border p-5"><summary className="font-semibold cursor-pointer">Espace de test · sans valeur comptable</summary><div className="mt-5"><CrmInvoiceTests invoiceId={selected?.id} clientName={selected?.clientName} sourceDirty={!!selected&&(dueDate!==selected.dueDate||notes!==selected.notes)}/></div></details>}
  <details className="crm-surface border p-5" open={!!initialLeadId||undefined}><summary className="font-semibold cursor-pointer">Préparer les brouillons depuis les devis acceptés</summary><div className="space-y-5 mt-5">
  {error&&<p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">{error}</p>}
  <div className="crm-surface border p-5"><label htmlFor="invoice-source" className="text-sm font-medium">Préparer depuis un devis</label><div className="invoice-source-controls mt-3 flex flex-wrap gap-3"><select id="invoice-source" disabled={busy||!loaded} value={quoteId} onChange={e=>setQuoteId(e.target.value)} className="min-w-0 flex-1 rounded-xl border bg-transparent p-3 text-sm"><option value="">Choisir un dossier accepté…</option>{eligible.map(q=><option key={q.id} value={q.id}>{q.clientName} · {q.reference}</option>)}</select><button disabled={busy||!quoteId||!source?.ready} onClick={()=>void create()} className="crm-quiet-action"><Plus size={16}/>Créer le brouillon</button></div>{quoteId&&(sourceState?.id===quoteId?sourceState.error?<div role="alert" className="mt-4 text-sm">{sourceState.error}<button type="button" className="crm-quiet-action mt-2" disabled={busy} onClick={()=>setSourceReload(x=>x+1)}>Réessayer la lecture du devis</button></div>:<CrmInvoiceSource dossier={sourceState.dossier}/>:<p role="status" className="mt-3 text-sm">Vérification du devis de référence…</p>)}{loaded&&!eligible.length&&<p className="mt-3 text-xs text-slate-500">Aucun devis éligible supplémentaire. Marquez le dossier accepté et enregistrez son devis chiffré.</p>}</div>
+ {sourceLead&&<button type="button" disabled={busy} className="crm-quiet-action" onClick={()=>onOpenDossier(sourceLead)}>Ouvrir le dossier sélectionné<ArrowRight size={15}/></button>}
  <label className="flex items-center gap-3 rounded-xl border p-3"><Search size={17}/><span className="sr-only">Rechercher un client ou un devis</span><input className="w-full bg-transparent text-sm outline-none" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Client ou référence de devis…"/></label>
  {!loaded&&busy?<p role="status">Chargement des brouillons…</p>:loaded&&!filtered.length?<div className="crm-surface border border-dashed p-8"><Receipt size={26}/><h3 className="mt-4 font-semibold">{search?'Aucun résultat':'Aucun brouillon pour le moment'}</h3><p className="mt-2 text-sm text-slate-500">{search?'Essayez un autre nom ou une autre référence.':'Vos futurs brouillons apparaîtront ici après leur création.'}</p></div>:<div className="grid gap-3 md:grid-cols-2">{filtered.map(i=><button key={i.id} disabled={busy} onClick={()=>{if(selected?.id!==i.id&&mayDiscard())open(i);}} className="crm-surface flex items-center justify-between gap-4 border p-5 text-left"><span><small className="text-slate-500">Brouillon · {i.quoteReference}</small><strong className="mt-2 block">{i.clientName}</strong><span className="mt-2 block text-sm">{money(i.amountTTC)} TTC</span></span><ArrowRight size={18}/></button>)}</div>}
  {selected&&<div className="crm-surface border p-6"><h3 className="text-xl font-semibold">{selected.clientName}</h3><p className="mt-2 whitespace-pre-line text-sm text-slate-500">{selected.clientAddress}</p><CrmInvoiceSource preparation={selected} acceptedRevision={selectedQuote?.clientAcceptance?.quoteRevision} workingRevision={selectedQuote?.revision}/>{!!selected.sourceHistory?.length&&<details className="mt-3 text-xs text-slate-500"><summary className="cursor-pointer">Historique des mises à jour ({selected.sourceHistory.length})</summary><ul className="mt-3 space-y-3">{[...selected.sourceHistory].reverse().map((entry,index)=><li key={index}>Version {entry.quoteRevision} · {money(entry.amountTTC)} TTC remplacée le {new Date(entry.replacedAt).toLocaleString('fr-FR',{timeZone:'Europe/Paris'})}<span className="block break-all">{entry.replacedBy}</span></li>)}</ul></details>}{selectedStale&&<div className="mt-3 space-y-2"><button type="button" disabled={busy||dirty} onClick={()=>void refreshSource()} className="crm-quiet-action">Mettre à jour depuis la version {selectedReference}</button><p className="text-xs text-slate-500">{dirty?'Enregistrez ou annulez la saisie avant de mettre à jour la source.':'Possible uniquement si aucun document comptable n’a été émis depuis ce brouillon.'}</p></div>}<div className="my-5 divide-y">{selected.items.map((item,index)=><div key={index} className="flex justify-between gap-5 py-3 text-sm"><span>{item.description}<small className="mt-1 block text-slate-500">Quantité : {item.quantity}</small></span><span>{money(item.unitPriceHT)} HT / unité</span></div>)}</div><dl className="space-y-2 text-sm"><div className="flex justify-between"><dt>Total HT</dt><dd>{money(selected.amountHT)}</dd></div><div className="flex justify-between"><dt>TVA ({selected.taxRate} %)</dt><dd>{money(selected.taxAmount)}</dd></div><div className="flex justify-between text-lg font-semibold"><dt>Total TTC</dt><dd>{money(selected.amountTTC)}</dd></div></dl><label className="mt-6 block text-sm">Échéance envisagée<input type="date" value={dueDate} disabled={busy} onChange={e=>{setDueDate(e.target.value);setSaved(false);}} className="mt-2 block rounded-xl border bg-transparent p-3"/></label><label className="mt-4 block text-sm">Notes de préparation<textarea rows={3} maxLength={2000} value={notes} disabled={busy} onChange={e=>{setNotes(e.target.value);setSaved(false);}} className="mt-2 block w-full rounded-xl border bg-transparent p-3"/></label><div className="mt-4 flex flex-wrap items-center gap-4">{dirty&&<span role="status" className="text-sm text-slate-500">Modifications non enregistrées</span>}<button disabled={busy||!dirty} onClick={()=>void save()} className="crm-quiet-action">{busy?'Enregistrement…':'Enregistrer le brouillon'}</button>{dirty&&<button disabled={busy} onClick={()=>open(selected)} className="crm-quiet-action">Annuler la saisie</button>}{saved&&<span role="status" className="flex items-center gap-2 text-sm text-emerald-700"><Check size={16}/>Enregistré</span>}</div></div>}
+ {selected&&<div className="flex flex-wrap items-center gap-3"><button type="button" disabled={busy||dirty||selectedStale} className="requests-primary" onClick={()=>{if(!selected||dirty||selectedStale)return;const result=billingReview.current?.review(selected.id);if(result==='busy')setError('Une action de facturation est en cours. Réessayez après son résultat.');else if(!result||result==='unavailable')setError('Ce brouillon ne peut pas encore être vérifié. Actualisez sa préparation.');}}>Vérifier ce brouillon<ArrowRight size={16}/></button>{(dirty||selectedStale)&&<p className="text-xs text-slate-500">{dirty?'Enregistrez ou annulez la saisie avant de poursuivre.':'Mettez à jour la source du brouillon avant de poursuivre.'}</p>}</div>}
  </div></details></section>;
 }

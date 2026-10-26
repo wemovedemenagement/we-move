@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState, type FormEvent } from 'react';
 import {
   FileText,
   Download,
@@ -16,8 +16,10 @@ import {
   type InvoicePreparation,
   type TestBillingPayment,
 } from '../services/crmService';
-import type { CrmIdentity } from '../types/crm';
+import type { CrmIdentity, QuoteLead } from '../types/crm';
 import { parisToday } from '../../shared/followUp.mjs';
+import { useUnsavedChanges } from '../hooks/useUnsavedChanges';
+import './crmBillingReviewSummary.css';
 type Settings = {
   revision: number;
   active: boolean;
@@ -108,19 +110,22 @@ const companyLabels: Record<string, string> = {
 };
 const base = '/api/crm/billing';
 const dateLabel=(value:string)=>value?value.split('-').reverse().join('/'):'—';
-export default function CrmBillingWorkbench({
-  preparations,
-  identity,
-  dirtyPreparationId,
-  initialDocumentId,
-  initialLeadId,
-}: {
+export type BillingReviewHandle={review:(id:string)=>'opened'|'cancelled'|'busy'|'unavailable';leaveState:()=>{busy:boolean;dirty:boolean}};
+const CrmBillingWorkbench=forwardRef<BillingReviewHandle, {
   preparations: InvoicePreparation[];
+  leads: QuoteLead[];
   identity: CrmIdentity;
   dirtyPreparationId?: string;
   initialDocumentId?:string;
   initialLeadId?:string;
-}) {
+}>(function CrmBillingWorkbench({
+  preparations,
+  leads,
+  identity,
+  dirtyPreparationId,
+  initialDocumentId,
+  initialLeadId,
+},ref) {
   const [config, setConfig] = useState<Config | null>(null),
     [draft, setDraft] = useState<Settings | null>(null),
     [documents, setDocuments] = useState<BillingListItem[]>([]),
@@ -141,15 +146,40 @@ export default function CrmBillingWorkbench({
     [scopeId,setScopeId]=useState(initialLeadId),
     [kind, setKind] = useState('facture'),
     [rate, setRate] = useState('30'),
-    [clientType, setClientType] = useState('particulier'),
+    [clientType, setClientType] = useState(''),
     [mail, setMail] = useState<MailPreparation | null>(null),
     [correction, setCorrection] = useState(false);
   const lock = useRef(false),
     isManager = identity.role === 'gerant';
   const source = preparations.find((i) => i.id === sourceId);
+  const clientTypeSource=useRef<string|null>(null),clientTypeChosen=useRef(false);
+  useEffect(()=>{
+    const key=tab==='issue'&&source?`${source.id}:${source.revision}`:null;
+    if(clientTypeSource.current!==key){clientTypeSource.current=key;clientTypeChosen.current=false;setClientType('');}
+    if(!key||clientTypeChosen.current)return;
+    const lead=leads.find(item=>item.id===(source?.leadId||source?.quoteId));
+    if(lead&&['particulier','entreprise'].includes(lead.projectType)){setClientType(lead.projectType);clientTypeChosen.current=true;}
+  },[tab,source?.id,source?.revision,leads]);
   const sourceDirty=!!source&&source.id===dirtyPreparationId;
   const dirty =
     !!config && JSON.stringify(config.state) !== JSON.stringify(draft);
+  const reviewForm=useRef<HTMLFormElement>(null),sourcePicker=useRef<HTMLSelectElement>(null),reviewDirty=useRef(false),focusReview=useRef(false);
+  const [reviewVersion,setReviewVersion]=useState(0);
+  const [reviewModified,setReviewModified]=useState(false);
+  useUnsavedChanges(dirty||reviewModified||busy);
+  const mayReplaceReview=()=>!reviewDirty.current||window.confirm('Abandonner les informations non enregistrées de cette vérification de facture ?');
+  useEffect(()=>{reviewDirty.current=false;setReviewModified(false);},[sourceId,source?.revision,tab]);
+  useImperativeHandle(ref,()=>({review(id){
+    if(lock.current)return 'busy';
+    if(!config||!preparations.some(item=>item.id===id)||dirtyPreparationId===id)return 'unavailable';
+    if(tab==='issue'&&sourceId!==id&&!mayReplaceReview())return 'cancelled';
+    setSourceId(id);setTab('issue');focusReview.current=true;setReviewVersion(version=>version+1);return 'opened';
+  },leaveState(){return {busy:lock.current,dirty:dirty||reviewDirty.current};}}));
+  useEffect(()=>{
+    if(!focusReview.current||tab!=='issue'||!reviewForm.current)return;
+    const frame=requestAnimationFrame(()=>{const form=reviewForm.current;if(form){form.scrollIntoView({block:'start',behavior:'smooth'});form.focus({preventScroll:true});focusReview.current=false;}});
+    return()=>cancelAnimationFrame(frame);
+  },[reviewVersion,tab,sourceId,source?.revision]);
   const load = async () => {
     const c = await request<Config>(base + '/settings');
     setConfig(c);
@@ -412,7 +442,7 @@ export default function CrmBillingWorkbench({
           <button
             key={String(id)}
             aria-current={tab === id ? 'page' : undefined}
-            onClick={() => setTab(String(id))}
+            onClick={() => {if(tab==='issue'&&String(id)!==tab&&!mayReplaceReview())return;setTab(String(id));}}
           >
             <Icon size={16} />
             {String(label)}
@@ -628,7 +658,11 @@ export default function CrmBillingWorkbench({
       {tab === 'issue' && (
         <form
           key={sourceId+String(source?.revision)}
-          className="crm-surface border p-6"
+          ref={reviewForm}
+          tabIndex={-1}
+          aria-label="Vérification du brouillon de facturation"
+          onChange={event=>{if((event.target as HTMLElement)!==sourcePicker.current){reviewDirty.current=true;setReviewModified(true);}}}
+          className="crm-surface border p-6 crm-billing-review-form"
           onSubmit={(e) => {
             e.preventDefault();
             issue(e.currentTarget, false);
@@ -638,15 +672,15 @@ export default function CrmBillingWorkbench({
             Du brouillon au document définitif
           </h3>
           <p className="text-sm text-slate-500 my-3">
-            Préparez un brouillon depuis un devis accepté dans la section
-            ci-dessous, puis sélectionnez-le ici.
+            {source?'Le brouillon est sélectionné. Vérifiez les informations avant de demander un aperçu.':'Préparez un brouillon depuis un devis accepté dans la section ci-dessous, puis sélectionnez-le ici.'}
           </p>
           <fieldset className="crm-live-fields" disabled={busy}>
             <label className="crm-span-full">
               Brouillon à facturer
               <select
+                ref={sourcePicker}
                 value={sourceId}
-                onChange={(e) => setSourceId(e.target.value)}
+                onChange={(e) => {if(e.target.value!==sourceId&&!mayReplaceReview())return;setSourceId(e.target.value);}}
               >
                 <option value="">Choisir un brouillon…</option>
                 {preparations.map((i) => (
@@ -659,6 +693,11 @@ export default function CrmBillingWorkbench({
             </label>
             {source && (
               <>
+                <section className="crm-billing-review-source crm-span-full" aria-label="Brouillon repris pour la vérification">
+                  <header><div><p>VOTRE BROUILLON DE RÉFÉRENCE</p><strong>{source.clientName}</strong></div><span>Brouillon</span></header>
+                  <dl><div><dt>Devis d’origine</dt><dd>{source.quoteReference}<small>Version {source.quoteRevision}</small></dd></div><div><dt>Base TTC du brouillon</dt><dd className="billing-review-base">{money(Math.round(source.amountTTC*100))}</dd></div></dl>
+                  <p className="billing-review-source-note">Le montant du document se vérifie dans l’aperçu PDF.</p>
+                </section>
                 <label>
                   Type de document
                   <select
@@ -690,12 +729,17 @@ export default function CrmBillingWorkbench({
                 <label>
                   Type de client
                   <select
+                    required
+                    aria-label="Type de client"
+                    aria-describedby="billing-client-type-help"
                     value={clientType}
-                    onChange={(e) => setClientType(e.target.value)}
+                    onChange={(e) => {clientTypeChosen.current=true;setClientType(e.target.value);}}
                   >
+                    <option value="">À préciser…</option>
                     <option value="particulier">Particulier</option>
                     <option value="entreprise">Entreprise</option>
                   </select>
+                  <small id="billing-client-type-help">Modifiable selon le destinataire de la facture.</small>
                 </label>
                 <label>
                   {kind === 'acompte'
@@ -1181,4 +1225,5 @@ export default function CrmBillingWorkbench({
       )}
     </section>
   );
-}
+});
+export default CrmBillingWorkbench;

@@ -17,7 +17,7 @@ import CrmHeaderActions from '../components/CrmHeaderActions';
 import CrmSessionGate from '../components/CrmSessionGate';
 import CrmRequestSummary from '../components/CrmRequestSummary';
 import CrmQuotes from '../components/CrmQuotes';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { LayoutGrid, Inbox, FileText, CalendarDays, Receipt, Truck, Users, Box, BarChart3, Settings, ShieldCheck, Plus, RefreshCw, ArrowRight, X, Menu, Sun, Moon } from 'lucide-react';
 import { Logo } from '../components/Logo';
 import CrmRequests, { NewRequestDialog } from '../components/CrmRequests';
@@ -46,10 +46,14 @@ export function CrmPage() { return <CrmSessionGate>{(identity,connect,logout)=><
 function CrmWorkspace({identity,onConnect,onLogout}:{identity:CrmIdentity;onConnect:()=>void;onLogout:()=>void}) {
   const [invoiceLeadId,setInvoiceLeadId]=useState<string|undefined>();
   const [invoiceDocumentId,setInvoiceDocumentId]=useState<string|undefined>();
+  const [invoiceOpenVersion,setInvoiceOpenVersion]=useState(0);
   const [draftToOpen,setDraftToOpen] = useState<CrmQuoteDraft|null>(null);
   const prepareLock = useRef(false);
   const [preparing,setPreparing] = useState(false);
   const [tab, setTab] = useState<Tab>('dashboard');
+  const invoiceLeaveGuard=useRef<(()=>boolean)|null>(null);
+  const navigationRevision=useRef(0);
+  const registerInvoiceLeaveGuard=useCallback((guard:(()=>boolean)|null)=>{invoiceLeaveGuard.current=guard;},[]);
   const [mobileNav, setMobileNav] = useState(false);
   const [dark, setDark] = useState(() => { try { return typeof window !== 'undefined' && localStorage.getItem('wemove_crm_theme') === 'dark'; } catch { return false; } });
   const [leads,setLeads] = useState<QuoteLead[]>([]);
@@ -75,21 +79,26 @@ function CrmWorkspace({identity,onConnect,onLogout}:{identity:CrmIdentity;onConn
     window.addEventListener('focus',poll);
     return () => {clearInterval(timer);window.removeEventListener('focus',poll);};
   },[]);
-  const open = (lead:QuoteLead, section:typeof editorSection = 'summary') => {setSelected(lead);setEditorSection(section);};
+  const open = (lead:QuoteLead, section:typeof editorSection = 'summary') => {navigationRevision.current++;setSelected(lead);setEditorSection(section);};
+  const mayLeaveInvoices=()=>tab!=='invoices'||!invoiceLeaveGuard.current||invoiceLeaveGuard.current();
+  const showInvoices=(leadId?:string,documentId?:string)=>{if(!mayLeaveInvoices())return;navigationRevision.current++;setInvoiceLeadId(leadId);setInvoiceDocumentId(documentId);setInvoiceOpenVersion(version=>version+1);setSelected(null);setTab('invoices');setMobileNav(false);};
   const prepareQuote = async (lead:QuoteLead) => {
-    if(prepareLock.current)return;prepareLock.current=true;setPreparing(true);
-    try {setDraftToOpen(await createQuoteDraft(lead.id));setTab('quotes');setError('');}
-    catch(e) {setError(e instanceof Error?e.message:'Le brouillon n’a pas pu être créé.');}
+    if(prepareLock.current)return;
+    if(tab==='invoices'){if(!mayLeaveInvoices())return;navigationRevision.current++;setTab('quotes');}
+    const openingRevision=navigationRevision.current;
+    setSelected(null);prepareLock.current=true;setPreparing(true);
+    try {const draft=await createQuoteDraft(lead.id);if(openingRevision!==navigationRevision.current)return;navigationRevision.current++;setDraftToOpen(draft);setTab('quotes');setError('');}
+    catch(e) {if(openingRevision===navigationRevision.current)setError(e instanceof Error?e.message:'Le brouillon n’a pas pu être créé.');}
     finally {prepareLock.current=false;setPreparing(false);}
   };
-  const choose = (value:Tab) => {setTab(value);setMobileNav(false);};
+  const choose = (value:Tab) => {if(value!==tab){if(!mayLeaveInvoices())return;navigationRevision.current++;}setTab(value);setMobileNav(false);};
   const panel = dark ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900';
   const visibleNavigation=navigation.filter(item=>(item.id!=='access'||identity.role==='gerant')&&(item.id!=='invoices'||identity.role!=='commercial'));
   const current = navigation.find(n=>n.id===tab)!;
   const unavailableModule = unavailable[tab];
   const empty = (title:string, detail:string) => <div className={`crm-surface border border-dashed p-8 sm:p-12 ${panel}`}><current.icon size={28} className="mb-5 text-sky-600"/><h3 className="text-lg font-semibold">{title}</h3><p className="mt-3 max-w-xl text-sm leading-7 text-slate-500">{detail}</p></div>;
   return <div className={`crm-workspace min-h-screen ${dark?'text-slate-100':'text-slate-900'}`} data-theme={dark?'dark':'light'}>
-    <header className="crm-topbar sticky top-0 z-20 flex h-16 items-center justify-between border-b px-5"><div className="flex items-center gap-3"><button aria-label="Ouvrir la navigation" className="p-2 lg:hidden" onClick={()=>setMobileNav(!mobileNav)}><Menu size={20}/></button><h1>WE MOVE <span className="ml-2 font-normal text-slate-500">Espace de gestion</span></h1></div><div className="crm-topbar-tools"><CrmCommandSearch leads={leads} loaded={loaded} error={error} destinations={visibleNavigation.map(({id,label})=>({id,label}))} onNavigate={id=>choose(id as Tab)} onOpen={lead=>open(lead)} onCreate={()=>setCreate(true)}/><CrmHeaderActions identity={identity} dark={dark} loaded={loaded} error={error} leads={leads} onTheme={()=>{setDark(!dark);try{localStorage.setItem('wemove_crm_theme',dark?'light':'dark');}catch{}}} onConnect={onConnect} onLogout={onLogout} onSettings={()=>choose('settings')} onAccess={()=>choose('access')} onOpen={lead=>open(lead)}/></div></header>
+    <header className="crm-topbar sticky top-0 z-20 flex h-16 items-center justify-between border-b px-5"><div className="flex items-center gap-3"><button aria-label="Ouvrir la navigation" className="p-2 lg:hidden" onClick={()=>setMobileNav(!mobileNav)}><Menu size={20}/></button><h1>WE MOVE <span className="ml-2 font-normal text-slate-500">Espace de gestion</span></h1></div><div className="crm-topbar-tools"><CrmCommandSearch leads={leads} loaded={loaded} error={error} destinations={visibleNavigation.map(({id,label})=>({id,label}))} onNavigate={id=>choose(id as Tab)} onOpen={lead=>open(lead)} onCreate={()=>setCreate(true)}/><CrmHeaderActions identity={identity} dark={dark} loaded={loaded} error={error} leads={leads} onTheme={()=>{setDark(!dark);try{localStorage.setItem('wemove_crm_theme',dark?'light':'dark');}catch{}}} onConnect={()=>{if(mayLeaveInvoices())onConnect();}} onLogout={()=>{if(mayLeaveInvoices())onLogout();}} onSettings={()=>choose('settings')} onAccess={()=>choose('access')} onOpen={lead=>open(lead)}/></div></header>
     <div className="flex min-h-[calc(100vh-4rem)]">
       <aside className={`crm-sidebar sticky top-16 h-[calc(100vh-4rem)] w-64 shrink-0 overflow-y-auto ${mobileNav?'!fixed left-0 z-30 block shadow-xl':'hidden lg:block'}`}><div className="px-4"><div className="crm-brand"><Logo size="sm" showSubtitle/></div><nav className="crm-navigation flex flex-col gap-1" aria-label="Navigation du CRM">{visibleNavigation.map(item=><button key={item.id} aria-current={tab===item.id?'page':undefined} onClick={()=>choose(item.id)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-left"><item.icon size={19}/><span>{item.label}</span></button>)}</nav></div></aside>
       <div className="flex min-w-0 flex-1 flex-col">
@@ -97,7 +106,7 @@ function CrmWorkspace({identity,onConnect,onLogout}:{identity:CrmIdentity;onConn
         {tab!=='requests' && <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-xs text-slate-500">Gestion / {current.label}</p><button onClick={()=>void refresh()} disabled={loading} className="crm-quiet-action"><RefreshCw size={14} className={loading?'animate-spin':''}/>{loading?'Actualisation…':syncedAt?`Actualisé à ${syncedAt}`:'Actualiser'}</button></div>}
         {error && tab!=='requests' && <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">{error} {loaded?'Les dernières données reçues restent affichées ; elles peuvent être anciennes.':'Aucune donnée n’a pu être chargée.'}</div>}
         {!loaded && !error && <p role="status" className="p-6 text-sm text-slate-500">Chargement des données enregistrées…</p>}
-        {tab==='dashboard' && <CrmToday error={error} onPrepare={(lead,target)=>open(lead,target)} onPlanning={()=>choose('planning')} finance={['gerant','secretaire'].includes(identity.role)?<CrmBillingOverview onOpen={id=>{setInvoiceLeadId(undefined);setInvoiceDocumentId(id);choose('invoices');}}/>:undefined} leads={leads} loaded={loaded} onOpen={lead=>open(lead)} onCreate={()=>setCreate(true)} onAction={(lead,target)=>{if(target==='quote')void prepareQuote(lead);else if(target==='invoice'&&identity.role!=='commercial'){setInvoiceDocumentId(undefined);setInvoiceLeadId(lead.id);choose('invoices');}else open(lead,target==='slot'?'slot':target==='documents'?'documents':target==='move'?'move':target==='visit'?'visit':'summary');}}/>}
+        {tab==='dashboard' && <CrmToday error={error} onPrepare={(lead,target)=>open(lead,target)} onPlanning={()=>choose('planning')} finance={['gerant','secretaire'].includes(identity.role)?<CrmBillingOverview onOpen={id=>showInvoices(undefined,id)}/>:undefined} leads={leads} loaded={loaded} onOpen={lead=>open(lead)} onCreate={()=>setCreate(true)} onAction={(lead,target)=>{if(target==='quote')void prepareQuote(lead);else if(target==='invoice'&&identity.role!=='commercial'){showInvoices(lead.id);}else open(lead,target==='slot'?'slot':target==='documents'?'documents':target==='move'?'move':target==='visit'?'visit':'summary');}}/>}
         {tab==='requests' && <CrmRequests leads={leads} loading={loading} error={error} syncedAt={syncedAt} isDark={dark} onRefresh={()=>void refresh()} onCreate={()=>setCreate(true)} onOpen={lead=>open(lead)} onVisit={lead=>open(lead,'visit')} onQuote={lead=>void prepareQuote(lead)} onEdit={lead=>open(lead,'details')} onDelete={identity.role==='gerant'?async lead=>{await deleteQuoteLead(lead.id);setLeads(current=>current.filter(item=>item.id!==lead.id));void refresh();}:undefined}/>}
         {preparing && <p role="status" className="text-sm text-sky-700">Ouverture du brouillon enregistré…</p>}
         {tab==='quotes' && <CrmQuotes leadsAvailable={loaded&&!error} leadsError={error} onRefreshLeads={()=>void refresh()} onLeadSaved={saved=>{setLeads(current=>current.map(l=>l.id===saved.id?saved:l));void refresh();}} onOpenDossier={(lead,section)=>open(lead,section)} leads={leads} isDark={dark} initialDraft={draftToOpen} onInitialConsumed={()=>setDraftToOpen(null)} onNewRequest={()=>setCreate(true)}/>}
@@ -106,17 +115,17 @@ function CrmWorkspace({identity,onConnect,onLogout}:{identity:CrmIdentity;onConn
         {tab==='statistics'&&loaded&&<CrmStatistics leads={leads}/>}
         {tab==='fleet'&&<CrmResources identity={identity}/>}
         {tab==='planning'&&loaded&&<CrmPlanning leads={leads} onOpen={lead=>open(lead)} onFollowUp={lead=>open(lead,'closure')} onPrepare={(lead,target)=>open(lead,target)}/>}
-        {tab==='invoices' && <CrmInvoices leads={leads} identity={identity} initialLeadId={invoiceLeadId} initialDocumentId={invoiceDocumentId}/>}
+        {tab==='invoices' && <CrmInvoices key={invoiceOpenVersion} leads={leads} identity={identity} initialLeadId={invoiceLeadId} initialDocumentId={invoiceDocumentId} onOpenDossier={lead=>open(lead)} onRegisterLeaveGuard={registerInvoiceLeaveGuard}/>}
         {unavailableModule && <><h2>{current.label}</h2>{empty(unavailableModule.title,unavailableModule.detail)}</>}
         {tab==='settings' && (identity.role==='gerant'?<CrmPricingSettings/>:<><h2>Paramètres</h2><p>La grille tarifaire est configurée par le gérant. Les propositions sont disponibles dans l’édition des devis.</p></>)}
       </main>
       <footer className="crm-footer">© {new Date().getFullYear()} We Move Déménagement. Tous droits réservés.<CrmVersion/></footer>
       </div>
     </div>
-    {create && <NewRequestDialog onClose={()=>setCreate(false)} onSave={async payload=>{const saved=await submitQuoteLead(payload);setLeads(current=>[saved,...current.filter(l=>l.id!==saved.id)]);setCreate(false);setSelected(saved);setEditorSection('summary');setTab('requests');void refresh();}}/>}
-    {selected && editorSection==='summary' && <CrmRequestSummary lead={selected} canInvoice={identity.role!=='commercial'} onDocuments={()=>setEditorSection('documents')} onMove={()=>setEditorSection('move')} onInvoice={()=>{setInvoiceDocumentId(undefined);setInvoiceLeadId(selected.id);setSelected(null);choose('invoices');}} onSaveFollowUp={async payload=>{const saved=await saveRequestFollowUp(selected.id,payload);setSelected(saved);setLeads(current=>current.map(l=>l.id===saved.id?saved:l));}} onClose={()=>setSelected(null)} onEdit={()=>setEditorSection('details')} onVisit={()=>setEditorSection('visit')} onQuote={()=>{const lead=selected;setSelected(null);void prepareQuote(lead);}}/>}
-    {selected && (['move','documents','team','preparation','closure','slot'].includes(editorSection)) && <CrmBookingEditor initialSection={editorSection==='documents'||editorSection==='team'||editorSection==='preparation'||editorSection==='closure'||editorSection==='slot'?editorSection:undefined} onVisit={()=>setEditorSection('visit')} canEdit={identity.role!=='commercial'} onEdit={()=>setEditorSection('details')} onQuote={()=>{const lead=selected;setSelected(null);void prepareQuote(lead);}} lead={selected} onClose={()=>setEditorSection('summary')} onSaved={saved=>{setSelected(saved);setLeads(current=>current.map(l=>l.id===saved.id?saved:l));void refresh();}}/>}
-    {selected && (editorSection==='details'||editorSection==='visit') && <RequestEditor key={selected.id+editorSection} onQuote={()=>{const lead=selected;setSelected(null);void prepareQuote(lead);}} lead={selected} section={editorSection} onClose={()=>setEditorSection('summary')} onSave={async updates=>{const saved=await updateQuoteLead(selected.id,updates);if(!saved)throw new Error('Le dossier est introuvable.');setLeads(current=>current.map(l=>l.id===saved.id?saved:l));setSelected(saved);void refresh();}}/>}
+    {create && <NewRequestDialog onClose={()=>setCreate(false)} onSave={async payload=>{if(!mayLeaveInvoices())throw new Error('La demande reste ouverte. Votre saisie de facturation reste sur cette page.');const saved=await submitQuoteLead(payload);navigationRevision.current++;setLeads(current=>[saved,...current.filter(l=>l.id!==saved.id)]);setCreate(false);setSelected(saved);setEditorSection('summary');setTab('requests');void refresh();}}/>}
+    {selected && editorSection==='summary' && <CrmRequestSummary lead={selected} canInvoice={identity.role!=='commercial'} onDocuments={()=>setEditorSection('documents')} onMove={()=>setEditorSection('move')} onInvoice={()=>showInvoices(selected.id)} onSaveFollowUp={async payload=>{const saved=await saveRequestFollowUp(selected.id,payload);setSelected(saved);setLeads(current=>current.map(l=>l.id===saved.id?saved:l));}} onClose={()=>setSelected(null)} onEdit={()=>setEditorSection('details')} onVisit={()=>setEditorSection('visit')} onQuote={()=>void prepareQuote(selected)}/>}
+    {selected && (['move','documents','team','preparation','closure','slot'].includes(editorSection)) && <CrmBookingEditor initialSection={editorSection==='documents'||editorSection==='team'||editorSection==='preparation'||editorSection==='closure'||editorSection==='slot'?editorSection:undefined} onVisit={()=>setEditorSection('visit')} canEdit={identity.role!=='commercial'} onEdit={()=>setEditorSection('details')} onQuote={()=>void prepareQuote(selected)} lead={selected} onClose={()=>setEditorSection('summary')} onSaved={saved=>{setSelected(saved);setLeads(current=>current.map(l=>l.id===saved.id?saved:l));void refresh();}}/>}
+    {selected && (editorSection==='details'||editorSection==='visit') && <RequestEditor key={selected.id+editorSection} onQuote={()=>void prepareQuote(selected)} lead={selected} section={editorSection} onClose={()=>setEditorSection('summary')} onSave={async updates=>{const saved=await updateQuoteLead(selected.id,updates);if(!saved)throw new Error('Le dossier est introuvable.');setLeads(current=>current.map(l=>l.id===saved.id?saved:l));setSelected(saved);void refresh();}}/>}
   </div>;
 }
 

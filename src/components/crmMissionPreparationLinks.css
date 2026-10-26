@@ -1,0 +1,5 @@
+.mission-preparation-link{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:8px 0;text-align:left;color:inherit;font:inherit;border-radius:5px}
+.mission-preparation-link svg{flex-shrink:0}
+.mission-preparation-link:hover:not(:disabled){text-decoration:underline;text-underline-offset:3px}
+.mission-preparation-link:focus-visible{outline:2px solid var(--crm-accent,#17647a);outline-offset:3px}
+.mission-preparation-link:disabled{opacity:.6;cursor:wait}

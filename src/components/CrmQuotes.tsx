@@ -31,7 +31,7 @@ export default function CrmQuotes({leadsAvailable,leadsError,onRefreshLeads,lead
     try{setDrafts(await fetchQuoteDrafts());setLoaded(true);setError('');setReadError('');}catch(e){const message=e instanceof Error?e.message:'Lecture impossible.';setError(message);setReadError(message);}finally{setLoading(false);readLock.current=false;}
   };
   useEffect(()=>{void load();const poll=()=>{if(document.visibilityState==='visible')void load();};const timer=window.setInterval(poll,20000);window.addEventListener('focus',poll);return()=>{clearInterval(timer);window.removeEventListener('focus',poll);};},[]);
-  useEffect(()=>{if(initialDraft){setResumeStep(0);setSaveNotice(false);setPrepareSaved(false);setEditor(initialDraft);onInitialConsumed();}},[initialDraft,onInitialConsumed]);
+  useEffect(()=>{if(initialDraft){setResumeStep(Math.min(2,...quoteReadiness(initialDraft).map(issue=>issue.step)));setSaveNotice(false);setPrepareSaved(false);setEditor(initialDraft);onInitialConsumed();}},[initialDraft,onInitialConsumed]);
   const create=async(lead:QuoteLead)=>{
     if(!leadsAvailable||!loaded||readError||createLock.current)return;
     createLock.current=true;setCreating(true);setError('');setSuccess('');

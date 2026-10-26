@@ -9,8 +9,14 @@ export function invoiceSource(dossier:CrmDossier|null) {
   if(working.clientAcceptance&&(!accepted||accepted.quoteRevision!==working.clientAcceptance.quoteRevision||accepted.quote.revision!==accepted.quoteRevision||accepted.quote.id!==working.id||accepted.quote.leadId!==dossier.lead.id))return null;
   const quote=working.clientAcceptance?accepted!.quote:working;
   const totals=quoteTotals(quote.items,quote.taxRate,quote.depositRate);
+  const issues=[
+    !['confirme','termine'].includes(dossier.lead.status)&&'Acceptation du dossier à confirmer',
+    !quote.document?.fields.clientName?.trim()&&'Nom du client à renseigner',
+    !quote.document?.fields.clientAddress?.trim()&&'Adresse de facturation à renseigner',
+    !(totals.amountTTC!==null&&totals.amountTTC>0)&&'Chiffrage positif à renseigner',
+  ].filter((issue):issue is string=>!!issue);
   return {quote,amount:totals.amountTTC,accepted:!!working.clientAcceptance,workingRevision:working.revision,
-    ready:['confirme','termine'].includes(dossier.lead.status)&&!!quote.document?.fields.clientName?.trim()&&!!quote.document?.fields.clientAddress?.trim()&&totals.amountTTC!==null&&totals.amountTTC>0};
+    ready:issues.length===0,issues};
 }
 const money=(value:number)=>value.toLocaleString('fr-FR',{style:'currency',currency:'EUR'});
 export default function CrmInvoiceSource({dossier,preparation,acceptedRevision,workingRevision}:{dossier?:CrmDossier|null;preparation?:InvoicePreparation;acceptedRevision?:number;workingRevision?:number}) {
@@ -26,7 +32,7 @@ export default function CrmInvoiceSource({dossier,preparation,acceptedRevision,w
     <div className="invoice-source-content"><span className="invoice-source-eyebrow">{preparation?'Brouillon conservé':source?.accepted?'Accord client enregistré':'Accord sur une version à enregistrer'}</span>
       <strong>{preparation?preparation.quoteReference:source?.quote.reference} · version {preparation?preparation.quoteRevision:source?.quote.revision}</strong>
       <p>{preparation?changed?`${acceptedRevision?'Un accord plus récent est enregistré':'Le devis de travail est maintenant'} en version ${referenceRevision}. Ce brouillon conserve sa version ${preparation.quoteRevision} : mettez sa source à jour avant de facturer.`:'Cette copie est figée. Une modification du devis ne la met pas à jour.':source?.accepted?source.workingRevision!==source.quote.revision?`La version de travail ${source.workingRevision} est différente. Le brouillon reprendra uniquement la version acceptée ${source.quote.revision}.`:'Le brouillon reprendra le montant et les prestations de cette version acceptée.':'Ce dossier est marqué accepté, mais aucun accord versionné n’est enregistré. Le brouillon reprendra le devis de travail.'}</p>
-      {!preparation&&source&&!source.ready&&<p role="alert">Complétez le chiffrage, le nom et l’adresse de facturation, et vérifiez que le dossier est accepté.</p>}
+      {!preparation&&source&&!source.ready&&<div role="alert" className="invoice-source-missing"><p>Avant de créer ce brouillon :</p><ul>{source.issues.map(issue=><li key={issue}>{issue}</li>)}</ul>{source.accepted&&<p>Ces informations concernent la version acceptée. Modifier le devis de travail ne remplace pas cet accord.</p>}</div>}
     </div>
     <div className="invoice-source-amount"><span>Total TTC</span><strong>{amount===null||amount===undefined?'À compléter':money(amount)}</strong></div>
   </aside>;

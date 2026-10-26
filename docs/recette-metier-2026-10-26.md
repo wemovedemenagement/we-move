@@ -89,6 +89,189 @@ un exercice de restauration complet ou une validation opérationnelle du gérant
 
 ## Artefacts locaux
 
+### Type de client proposé depuis le dossier
+
+La vérification de facture reprend le type enregistré dans le dossier lié à
+la préparation : particulier ou entreprise. Un dossier entreprise affiche ainsi
+les champs professionnels existants, dont le SIREN, sans les renseigner ni en
+déduire une identité juridique. Le destinataire reste à confirmer par l’utilisateur.
+
+Une correction manuelle n’est pas remplacée par une actualisation de la liste
+des demandes. Revenir au même brouillon conserve ce choix ; passer explicitement
+à un autre brouillon reprend le type de son propre dossier. Si le dossier ou
+son type est indisponible, le champ reste à préciser et devient obligatoire.
+Cette proposition ne modifie ni le dossier ni les factures déjà émises.
+
+Recette navigateur sur ordinateur et mobile : entreprise avec SIREN visible,
+particulier, correction manuelle conservée, changement de source, dossier absent,
+choix obligatoire et données reçues tardivement après une correction. Zéro
+écriture API ni demande de PDF. Le test serveur de facturation existant passe
+également (base temporaire, aucun envoi réel).
+
+Résultats : `output/type-client-facture-2026-10-26.json` ; journal
+`tmp/type-client-facture-ui-2026-10-26.log` (code 0). Typage et compilation :
+`tmp/validation-type-client-facture-2026-10-26.log` (code 0).
+
+### Référence lisible avant l’aperçu de facture
+
+La vérification affiche désormais une synthèse distincte du sélecteur : nom
+du client, référence du devis d’origine, version reprise et base TTC du brouillon.
+Ces valeurs proviennent de la préparation sélectionnée, sans recalcul d’acompte
+ou de solde et sans affirmation d’un accord non enregistré. Le montant du
+document reste à contrôler dans l’aperçu PDF.
+
+Le bloc reprend les couleurs du CRM, passe en une colonne sur mobile et laisse
+le nom et la référence revenir à la ligne. Le défilement vers le formulaire
+réserve aussi l’espace du header fixe afin de ne pas masquer son début.
+
+Typage et compilation : `tmp/validation-synthese-facture-finale-2026-10-26.log`
+(code 0). La recette navigateur existante de vérification a été rejouée pour
+contrôler l’affichage et les changements de brouillon, sans écriture API,
+demande de PDF ni émission. Captures : `output/synthese-facture-*-visible-2026-10-26.png`
+et `output/verification-brouillon-*-2026-10-26.png`.
+
+### Protection composée avant la sortie de Factures
+
+Le contrôle de sortie de la rubrique consulte maintenant aussi l’état du
+formulaire de vérification et des paramètres société. Une seule confirmation
+est présentée lorsque plusieurs de ces saisies et les notes de préparation
+sont modifiées. Annuler conserve les valeurs et la rubrique. Le contrôle refuse
+également la navigation pendant une action de facturation en cours.
+
+Le rechargement ou la fermeture du navigateur dispose de l’alerte native pour
+les champs de vérification modifiés, les paramètres société modifiés et l’action
+en cours. La protection disparaît après abandon explicite de la vérification ou
+restauration des paramètres à leurs valeurs enregistrées. Cela n’enregistre
+aucune saisie et ne modifie aucun rôle, compteur ou réglage d’activation.
+
+Recettes isolées sur ordinateur et mobile : sortie refusée avec adresse/date
+de vérification conservées, notes et vérification modifiées ensemble avec une
+seule confirmation, paramètres conservés, alerte native présente puis retirée,
+navigation suspendue pendant une lecture volontairement retardée. La recette
+antérieure des notes, échéances et réponses tardives reste passante. Aucun envoi
+ni document émis ; zéro écriture API et zéro demande de PDF dans le nouveau parcours.
+
+Résultats : `output/protection-verification-2026-10-26.json` ; journaux
+`tmp/protection-verification-ui-2026-10-26.log` et
+`tmp/regression-navigation-verification-2026-10-26.log` (codes 0).
+Typage et compilation : `tmp/validation-protection-verification-2026-10-26.log`
+(code 0).
+
+### Du brouillon préparé à sa vérification
+
+Le bouton « Vérifier ce brouillon » ouvre directement l’onglet de préparation
+du document, sélectionne le bon brouillon et place le focus sur le formulaire.
+Il ne demande aucun PDF et n’émet aucun document. Il est désactivé si la
+préparation contient des modifications non enregistrées ou une source périmée.
+
+Revenir sur la même vérification conserve les informations saisies. Le passage
+vers un autre brouillon (raccourci ou sélecteur) et le changement d’onglet de
+facturation demandent confirmation si cette vérification a été modifiée. Les
+paramètres de société restent contrôlés par leurs actions existantes ; aucun
+réglage d’activation ou de compteur n’a changé.
+
+Recette isolée sur ordinateur et mobile sombre : bon brouillon, focus,
+préparation modifiée bloquée, retour sans perte, annulation et confirmation de
+changement de source et d’onglet, source périmée bloquée après nouvel accord,
+émission désactivée. Zéro écriture API ni demande de PDF dans le navigateur.
+Le test serveur des mises à jour de source reste également passant.
+Résultats : `output/verification-brouillon-2026-10-26.json` ; journal
+`tmp/verification-brouillon-ui-2026-10-26.log` (code 0).
+
+### Navigation protégée pendant la préparation d’une facture
+
+Les notes et l’échéance non enregistrées d’un brouillon de préparation disposent
+d’une confirmation avant de quitter Factures : navigation latérale, recherche de
+module, paramètres du header, changement de connexion, ouverture d’un devis et
+retour vers la facturation d’un autre dossier. Annuler conserve la rubrique, le
+dossier éventuellement ouvert et la saisie ; confirmer ne sauvegarde rien.
+Cliquer sur la rubrique Factures déjà ouverte ne redemande pas de confirmation.
+
+Le changement est suspendu pendant la création, l’enregistrement ou la mise à
+jour de source du brouillon. Une réponse tardive à une ouverture de devis ne
+change plus de rubrique si une autre navigation est intervenue entre-temps.
+Le devis demandé peut avoir été créé côté serveur ; son ouverture tardive ne
+remplace pas l’écran courant.
+
+La recette isolée a vérifié sur ordinateur : annulations via la sidebar, la
+recherche, les paramètres, la connexion et le dossier ; changement confirmé de
+dossier, y compris vers le même contexte initial ; erreur de sauvegarde ;
+sauvegarde volontairement retardée ; réponse de devis volontairement retardée ;
+sortie sans sauvegarde implicite ; navigation libre après enregistrement.
+Sur mobile : annulation par la sidebar et la recherche, confirmation de sortie,
+échéance conservée et thème sombre sans perte de saisie. Aucun envoi ni document
+comptable émis. Le contrôle des notes et de l’échéance est désormais composé
+avec celui de la vérification et des paramètres société, décrit plus haut.
+Les formulaires de règlement, correction et envoi ne sont pas couverts par
+ce nouveau contrôle.
+
+Résultats : `output/navigation-factures-2026-10-26.json` ; journal
+`tmp/navigation-factures-ui-2026-10-26.log` (code 0).
+Validation finale : typage, compilation et 62 contrôles de livraison réussis
+(`tmp/validation-navigation-factures-finale-2026-10-26.log`, code 0).
+
+### Blocages de préparation de facture explicites
+
+La référence de facture détaille maintenant les seuls points qui empêchent la
+création du brouillon : acceptation du dossier, nom, adresse de facturation et
+montant positif. Les conditions de création restent identiques. Une version
+acceptée incomplète reste bloquante même si la version de travail est complète ;
+le message précise qu’une modification de travail ne remplace pas l’accord.
+
+Un bouton ouvre le dossier correspondant à la source effectivement chargée.
+Il disparaît en cas d’échec de lecture et ne déclenche aucune création. Les notes
+du brouillon restent présentes à la fermeture du dossier consulté. Une alerte
+native protège également le rechargement ou la fermeture du navigateur lorsque
+ces notes ou l’échéance sont modifiées. La confirmation de navigation interne
+est détaillée dans la section précédente.
+
+La recette navigateur isolée a vérifié le blocage sur la seule adresse de la
+version acceptée, le blocage sur le seul chiffrage, la différence de versions et
+de montants, l’absence d’aperçu périmé après erreur, le dossier ciblé, les saisies
+conservées, le changement explicite de source et les thèmes clair/sombre avec
+contrôle mobile. Journal : `tmp/facture-reperes-ui-2026-10-26.log` (code 0).
+Capture : `output/facture-reperes-mobile-2026-10-26.png`.
+Validation finale : typage, compilation et 62 contrôles de livraison réussis
+(`tmp/validation-facture-reperes-finale-2026-10-26.log`, code 0), sans publication.
+
+### Préparation de mission accessible directement
+
+Les points manquants de la synthèse de mission sont maintenant des boutons :
+ils rejoignent les moyens, la préparation, les pièces client ou l’accord, et
+ouvrent l’édition du dossier lorsque les coordonnées manquent. La synthèse est
+ouverte lorsqu’elle contient des points à vérifier. Les déplacements internes
+ne sauvegardent ni n’effacent les saisies ; la sortie conserve la confirmation
+d’abandon des modifications.
+
+La synthèse utilise désormais aussi les heures de début et de fin saisies pour
+repérer les périodes d’absence des ressources sélectionnées, comme le contrôle
+des disponibilités déjà présent dans la section des moyens.
+
+Trois parcours navigateur (ordinateur, mobile clair et mobile sombre) ont vérifié
+les liens, le focus sur la section cible, une absence sur le créneau, les consignes
+non enregistrées et la confirmation de fermeture. Aucune écriture API déclenchée.
+Résultats : `output/mission-liens-2026-10-26.json` ; captures correspondantes
+`output/mission-liens-*-2026-10-26.png`.
+
+### Reprise du devis depuis un dossier
+
+L’ouverture depuis le dossier ou une demande rejoint maintenant la première
+étape incomplète dans l’ordre du formulaire : client et trajet, formule et prix,
+puis vérification. Si tous les contrôles sont renseignés, elle ouvre la vérification.
+Les onglets restent accessibles et aucune saisie, sauvegarde ou préparation
+d’envoi n’est déclenchée par ce choix d’étape.
+
+Quatre cas ont été contrôlés dans le navigateur local : prix seul manquant,
+adresse client manquante, prix et garantie manquants ensemble, proposition complète.
+Les trois derniers ont été vérifiés à 390 px, sans débordement du formulaire ;
+le retour à l’étape client conserve l’adresse enregistrée. Les réponses de création
+du devis ont été interceptées : aucun envoi ni mutation persistée par ce contrôle.
+Résultats : `output/entree-devis-2026-10-26.json` et captures
+`output/entree-devis-*-2026-10-26.png`.
+La validation `npm run validate:release` a également réussi : typage,
+compilation et 62 contrôles de livraison, sans publication. Journal :
+`tmp/validation-entree-devis-2026-10-26.log` (code de sortie 0).
+
 - `tmp/recette-finale-2026-10-26.log` et `.exit` : validation finale (code 0).
 - `tmp/recette-{visite,devis,moyens,facture}-2026-10-26.log` et `.exit` : parcours navigateur.
 - `output/recette-production-http-2026-10-26.json` : observations HTTP publiques.
