@@ -3,6 +3,7 @@ import {readFile} from 'node:fs/promises';
 import {formulaServices,emptyQuoteDocument} from '../shared/quoteDocument.mjs';
 import {quoteTotals} from '../shared/quoteTotals.mjs';
 import {renderReferenceQuote} from './crmQuoteReference.mjs';
+import {missionLocalTime} from '../shared/missionFieldSheet.mjs';
 export const documentTypes={devis:'Devis',mission:'Ordre de mission','lettre-voiture':'Lettre de voiture','declaration-valeur':'Déclaration de valeur','cgv-rgpd':'CGV et RGPD',proforma:'Pro forma'};
 const ink=rgb(.08,.19,.26),muted=rgb(.35,.43,.48),accent=rgb(0,.46,.63),soft=rgb(.94,.97,.98),line=rgb(.83,.88,.91);
 const euro=n=>Number.isFinite(n)?new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'}).format(n):'À compléter';
@@ -212,7 +213,7 @@ export async function generateCrmPdf(type,draft,lead={}) {
   }
  }else if(type==='mission'){
   newPage('PRÉPARATOIRE · Référence dossier '+reference);compactMission();section('ÉQUIPE ET MOYENS');
-  entry('Horaire planifié',lead.scheduledTime);entry('Véhicule',lead.assignedTruckName);entry('Chauffeur',lead.assignedDriver);entry('Déménageurs',(lead.teamMembers||[]).join(', '));entry('Matériel',(lead.assignedEquipment||[]).join(', '));entry('Chef d’équipe','');entry('N° de licence','');
+  entry('Horaire planifié',lead.scheduledTime?missionLocalTime(lead.scheduledTime):'');entry('Véhicule',lead.assignedTruckName);entry('Chauffeur',lead.assignedDriver);entry('Déménageurs',(lead.teamMembers||[]).join(', '));entry('Matériel',(lead.assignedEquipment||[]).join(', '));entry('Chef d’équipe','');entry('N° de licence','');
   if(draft.notes){section('INSTRUCTIONS PARTICULIÈRES');text(draft.notes,{size:9});}
   section('ENCAISSEMENT');text('Montant à encaisser : à confirmer avec les paiements enregistrés.',{font:bold});
  }else{
